@@ -1,0 +1,25 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Check JavaScript syntax
+        run: node --check app.js
+      - name: Check required PWA files
+        run: |
+          test -f index.html
+          test -f app.css
+          test -f app.js
+          test -f manifest.webmanifest
+          test -f sw.js
+          test -f icon.svg
