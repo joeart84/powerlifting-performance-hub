@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#101214">
+  <meta name="description" content="Powerlifting athlete dashboard, meet planner and meet-day companion.">
+  <title>Powerlifting Performance Hub</title>
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="icon" href="./icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="./app.css">
+</head>
+<body>
+  <header class="topbar">
+    <div>
+      <div class="eyebrow">POWERLIFTING-CALCULATOR.COM</div>
+      <h1>Performance Hub</h1>
+    </div>
+    <button id="installBtn" class="ghost" hidden>Install app</button>
+  </header>
+
+  <main class="shell">
+    <section id="onboarding" class="panel">
+      <div class="eyebrow">MVP · LOCAL-FIRST</div>
+      <h2>Build your athlete dashboard</h2>
+      <p class="muted">For this first test, your data stays only in this browser on your device.</p>
+
+      <div class="grid two">
+        <label>Name<input id="name" placeholder="Joe Lifter"></label>
+        <label>Sex<select id="sex"><option value="M">Male</option><option value="F">Female</option></select></label>
+        <label>Bodyweight (kg)<input id="bodyweight" type="number" step="0.1" placeholder="83"></label>
+        <label>Next meet date<input id="meetDate" type="date"></label>
+        <label>Squat best (kg)<input id="squatBest" type="number" step="0.5" placeholder="180"></label>
+        <label>Bench best (kg)<input id="benchBest" type="number" step="0.5" placeholder="120"></label>
+        <label>Deadlift best (kg)<input id="deadliftBest" type="number" step="0.5" placeholder="220"></label>
+      </div>
+
+      <button id="saveProfile" class="primary">Create dashboard</button>
+    </section>
+
+    <section id="app" hidden>
+      <section class="hero panel">
+        <div>
+          <div class="eyebrow">ATHLETE DASHBOARD</div>
+          <h2 id="athleteName">Your dashboard</h2>
+          <p id="countdown" class="muted"></p>
+        </div>
+        <div class="heroScore">
+          <span>Current total</span>
+          <strong id="currentTotal">0</strong>
+          <small>kg</small>
+        </div>
+      </section>
+
+      <nav class="tabs" aria-label="Performance Hub">
+        <button data-tab="dashboard" class="active">Dashboard</button>
+        <button data-tab="planner">Meet Planner</button>
+        <button data-tab="meetday">Meet Day</button>
+        <button data-tab="report">Report</button>
+      </nav>
+
+      <section id="tab-dashboard" class="tab panel">
+        <div class="cards">
+          <article class="metric"><span>Bodyweight</span><strong id="metricBw">—</strong><small>kg</small></article>
+          <article class="metric"><span>Squat</span><strong id="metricSq">—</strong><small>kg</small></article>
+          <article class="metric"><span>Bench</span><strong id="metricBp">—</strong><small>kg</small></article>
+          <article class="metric"><span>Deadlift</span><strong id="metricDl">—</strong><small>kg</small></article>
+        </div>
+
+        <div class="subpanel">
+          <h3>Next meet snapshot</h3>
+          <div id="meetSnapshot" class="snapshot"></div>
+        </div>
+
+        <button id="editProfile" class="ghost">Edit athlete profile</button>
+      </section>
+
+      <section id="tab-planner" class="tab panel" hidden>
+        <h2>Meet Planner</h2>
+        <p class="muted">A simple starting plan is suggested from your current best lifts. Adjust every attempt as you like.</p>
+        <div id="plannerRows"></div>
+        <div class="plannerSummary">
+          <span>Projected total</span>
+          <strong id="projectedTotal">0 kg</strong>
+        </div>
+        <button id="savePlan" class="primary">Save attempt plan</button>
+      </section>
+
+      <section id="tab-meetday" class="tab panel" hidden>
+        <div class="meetHeader">
+          <div>
+            <div class="eyebrow">MEET DAY MODE</div>
+            <h2>Tap Good or Miss after each attempt</h2>
+          </div>
+          <button id="resetMeet" class="ghost danger">Reset</button>
+        </div>
+        <div id="meetDayRows"></div>
+        <div class="meetStats">
+          <article><span>Made</span><strong id="madeCount">0</strong></article>
+          <article><span>Missed</span><strong id="missCount">0</strong></article>
+          <article><span>Best total so far</span><strong id="liveTotal">0 kg</strong></article>
+        </div>
+      </section>
+
+      <section id="tab-report" class="tab panel" hidden>
+        <div class="eyebrow">POST-MEET REPORT</div>
+        <h2 id="reportTitle">Complete the meet to build your report</h2>
+        <div id="reportBody"></div>
+        <button id="shareReport" class="primary">Share report</button>
+      </section>
+    </section>
+  </main>
+
+  <footer>Prototype MVP · Powerlifting Performance Hub</footer>
+  <script src="./app.js"></script>
+</body>
+</html>
