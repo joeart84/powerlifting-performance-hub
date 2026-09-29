@@ -400,12 +400,12 @@ function renderTools(){
   const box=$("strengthContext");if(!box)return;
   const p=state.profile||{},total=currentBestTotal(),dots=dotsScore(p.sex,p.bodyweight,total);
   if(!performanceReference){
-    box.innerHTML='<div class="muted">Reference data is loading or not available yet.</div>';
+    box.innerHTML='<div class="muted">'+esc(t("dynamic.reference_unavailable"))+'</div>';
   }else if(!dots){
-    box.innerHTML='<div class="muted">Add bodyweight and a current total to calculate strength context.</div>';
+    box.innerHTML='<div class="muted">'+esc(t("dynamic.add_bw_total"))+'</div>';
   }else{
     const ctx=contextFor(p.sex,p.bodyweight,dots,latestWeightClass());
-    if(!ctx)box.innerHTML='<div class="muted">No suitable reference class is available.</div>';
+    if(!ctx)box.innerHTML='<div class="muted">'+esc(t("dynamic.no_reference"))+'</div>';
     else{
       const pct=ctx.percentile==null?"—":ctx.percentile+"th";
       box.innerHTML='<div class="contextHero"><div><span class="muted">Estimated percentile</span><strong>'+pct+'</strong></div><div><span class="muted">Context</span><strong>'+esc(ctx.label)+'</strong></div></div><div class="contextScale"><span style="width:'+Math.max(2,ctx.percentile||0)+'%"></span></div><div class="contextMeta">Reference class: '+esc(ctx.row.weight_class_kg)+' kg · n='+Number(ctx.row.n).toLocaleString()+' · Raw full-power · '+esc(performanceReference.analysis_window||"")+'</div>';
@@ -472,7 +472,7 @@ function renderMeetDay(){
     const g=document.createElement("div");g.className="liftGroup";g.innerHTML="<h3>"+l+"</h3>";
     state.plan[l].forEach((v,i)=>{
       const val=state.results[l][i],row=document.createElement("div");row.className="attemptRow";
-      row.innerHTML="<span>#"+(i+1)+" · "+(v||"—")+" kg</span><div class=\"attemptActions\"><button class=\"good "+(val==="good"?"active":"")+"\" data-r=\"good\" data-lift=\""+l+"\" data-idx=\""+i+"\">Good</button><button class=\"miss "+(val==="miss"?"active":"")+"\" data-r=\"miss\" data-lift=\""+l+"\" data-idx=\""+i+"\">Miss</button></div>";
+      row.innerHTML="<span>#"+(i+1)+" · "+(v||"—")+" kg</span><div class=\"attemptActions\"><button class=\"good "+(val==="good"?"active":"")+"\" data-r=\"good\" data-lift=\""+l+"\" data-idx=\""+i+"\">"+esc(t("meetday.good"))+"</button><button class=\"miss "+(val==="miss"?"active":"")+"\" data-r=\"miss\" data-lift=\""+l+"\" data-idx=\""+i+"\">"+esc(t("meetday.miss"))+"</button></div>";
       g.appendChild(row);
     });root.appendChild(g);
   });
@@ -505,11 +505,11 @@ function renderProgress(){
   status.textContent=meets.length?t("dynamic.results_stored",{count:meets.length}):t("progress.empty");
   const pr=meetPrs();
   summary.innerHTML=[
-    ["Best total",pr.total?pr.total+" kg":"—"],
-    ["Best DOTS",pr.dots||"—"],
-    ["Best squat",pr.squat?pr.squat+" kg":"—"],
-    ["Best bench",pr.bench?pr.bench+" kg":"—"],
-    ["Best deadlift",pr.deadlift?pr.deadlift+" kg":"—"]
+    [t("dynamic.best_total"),pr.total?pr.total+" kg":"—"],
+    [t("dynamic.best_dots"),pr.dots||"—"],
+    [t("dynamic.best_squat"),pr.squat?pr.squat+" kg":"—"],
+    [t("dynamic.best_bench"),pr.bench?pr.bench+" kg":"—"],
+    [t("dynamic.best_deadlift"),pr.deadlift?pr.deadlift+" kg":"—"]
   ].map(x=>'<article class="metric"><span>'+x[0]+'</span><strong>'+x[1]+'</strong></article>').join("");
   $("totalChart").innerHTML=svgChart(meets,"total");
   $("dotsChart").innerHTML=svgChart(meets,"dots");
@@ -538,8 +538,8 @@ function renderCompetitionPicker(){
   });
   sel.innerHTML=options.join("");
   status.textContent=upcomingCompetitions.length
-    ? upcomingCompetitions.length+" upcoming meet"+(upcomingCompetitions.length===1?"":"s")+" available."
-    : "No upcoming crawler events are available right now. You can still enter a meet date manually.";
+    ? t("dynamic.competitions_available",{count:upcomingCompetitions.length})
+    : t("dynamic.no_competitions");
   if(p.meetName){
     const idx=upcomingCompetitions.findIndex(m=>m.event===p.meetName&&m.start_date===p.meetDate);
     if(idx>=0)sel.value=String(idx);
@@ -548,7 +548,7 @@ function renderCompetitionPicker(){
 function chooseCompetition(){
   const idx=Number($("competitionSelect").value);
   if(!Number.isInteger(idx)||idx<0||!upcomingCompetitions[idx]){
-    $("competitionStatus").textContent="Choose a competition first.";return;
+    $("competitionStatus").textContent=t("dynamic.choose_competition");return;
   }
   const m=upcomingCompetitions[idx],p=state.profile||{};
   p.meetName=m.event||"Powerlifting meet";
@@ -557,15 +557,15 @@ function chooseCompetition(){
   p.meetFederation=m.federation||"";
   p.meetUrl=m.url||"";
   state.profile=p;save();render();
-  $("competitionStatus").textContent="Next meet saved: "+p.meetName+".";
+  $("competitionStatus").textContent=t("dynamic.meet_saved",{meet:p.meetName});
 }
 function saveCurrentGoal(){
   const p=state.profile||{},targetDots=num($("goalDots").value),bw=num($("goalBodyweight").value);
   const targetTotal=totalForDots(p.sex,bw,targetDots);
-  if(!targetDots||!bw||!targetTotal){$("goalResult").textContent="Calculate a valid target first.";return}
+  if(!targetDots||!bw||!targetTotal){$("goalResult").textContent=t("dynamic.valid_goal");return}
   state.goal={targetDots,targetBodyweight:bw,targetTotal,targetDate:$("goalDate").value||""};
   save();renderGoalSnapshot();
-  $("goalResult").innerHTML='<strong class="big">Goal saved</strong><p>'+targetDots+' DOTS at '+bw+' kg requires about '+targetTotal+' kg total.</p>';
+  $("goalResult").innerHTML='<strong class="big">'+esc(t("dynamic.goal_saved"))+'</strong><p>'+esc(t("dynamic.goal_saved_text",{dots:targetDots,bw:bw,total:targetTotal}))+'</p>';
 }
 function buildMeetRecord(){
   const p=state.profile||{},total=liveTotal();
@@ -590,14 +590,14 @@ function buildMeetRecord(){
 }
 function saveMeetToHistory(){
   const record=buildMeetRecord();
-  if(!record){$("reportStatus").textContent="Record at least one successful lift before saving the meet.";return}
+  if(!record){$("reportStatus").textContent=t("dynamic.need_success");return}
   state.meets=dedupeMeets([...(state.meets||[]),record]);
   const p=state.profile||{};
   p.squatBest=Math.max(num(p.squatBest),record.squat);
   p.benchBest=Math.max(num(p.benchBest),record.bench);
   p.deadliftBest=Math.max(num(p.deadliftBest),record.deadlift);
   state.profile=p;save();render();
-  $("reportStatus").textContent="Meet result saved to your Progress history.";
+  $("reportStatus").textContent=t("dynamic.saved_history");
 }
 function roundedRect(ctx,x,y,w,h,r){
   ctx.beginPath();ctx.roundRect(x,y,w,h,r);ctx.fill();
@@ -637,7 +637,7 @@ async function shareResultCard(){
       const url=URL.createObjectURL(blob),a=document.createElement("a");
       a.href=url;a.download=file.name;document.body.appendChild(a);a.click();a.remove();
       setTimeout(()=>URL.revokeObjectURL(url),1000);
-      $("reportStatus").textContent="Result card saved as a PNG image.";
+      $("reportStatus").textContent=t("dynamic.card_saved");
     }
   }catch(err){$("reportStatus").textContent=err.message}
 }
@@ -716,7 +716,7 @@ async function logoutCloud(){
 
 function renderReport(){
   const mm=madeMiss(),attempts=mm.made+mm.miss,body=$("reportBody");
-  $("reportTitle").textContent=attempts?mm.made+"/"+attempts+" attempts made":"Complete the meet to build your report";
+  $("reportTitle").textContent=attempts?t("dynamic.attempts_made",{made:mm.made,attempts:attempts}):t("report.empty");
   const total=liveTotal(),success=attempts?Math.round(mm.made/attempts*1000)/10:0;
   const p=state.profile||{},dots=total?dotsScore(p.sex,p.bodyweight,total):null;
   body.innerHTML="<div class=\"reportCard\"><h3>"+esc(p.meetName||"Meet Day")+"</h3><div class=\"reportGrid\"><div><span>Success rate</span><strong>"+success+"%</strong></div><div><span>Best total</span><strong>"+total+" kg</strong></div><div><span>DOTS</span><strong>"+(dots?dots.toFixed(2):"—")+"</strong></div></div><p style=\"margin-top:14px\">Squat "+(bestMade("squat")||"—")+" · Bench "+(bestMade("bench")||"—")+" · Deadlift "+(bestMade("deadlift")||"—")+"</p></div>";
