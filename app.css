@@ -56,3 +56,10 @@ footer{text-align:center;color:#737b84;padding:24px}
 .settingsCard p{margin:12px 0 0}
 .tabs{grid-template-columns:repeat(8,1fr)}
 @media(max-width:920px){.tabs{grid-template-columns:repeat(2,1fr)}}
+
+.meetFinder{margin-bottom:18px}.finderHead{display:flex;justify-content:space-between;gap:14px;align-items:flex-start}.finderHead p{margin:4px 0 0}.finderSearch{margin:12px 0}
+.scopeChips{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 14px}.scopeChips button{border:1px solid #343a42;background:#111418;color:#c8cdd3;border-radius:999px;padding:9px 13px;font-weight:800;cursor:pointer}.scopeChips button.active{background:#f0b54b;color:#101214;border-color:#f0b54b}
+.finderFilters{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px}
+.competitionResults{display:grid;gap:10px;margin-top:14px}.competitionCard{background:#111418;border:1px solid #2d3238;border-radius:14px;padding:15px}.competitionTop{display:flex;justify-content:space-between;gap:14px;align-items:flex-start}.competitionCard h4{margin:0 0 4px;font-size:16px}.competitionPlace{color:#c4c9cf}.competitionVenue,.competitionMeta{font-size:12px;color:#8f98a1;margin-top:7px}.distanceBadge{white-space:nowrap;background:#20262c;border:1px solid #343b43;border-radius:999px;padding:5px 9px;font-size:12px;font-weight:800;color:#f0b54b}
+.competitionActions{display:flex;gap:8px;justify-content:flex-end;align-items:center;margin-top:12px}.linkButton{text-decoration:none;display:inline-flex;align-items:center}.selectedMeet{border:1px solid #6b572e;background:#2d2719;color:#f0b54b;border-radius:10px;padding:10px 13px;font-weight:800}.finderEmpty{padding:22px;text-align:center;color:#8f98a1;border:1px dashed #343a42;border-radius:12px}
+@media(max-width:720px){.finderFilters{grid-template-columns:1fr}.finderHead{display:block}.finderHead .ghost{margin-top:10px}.competitionTop{gap:8px}.competitionActions{justify-content:stretch}.competitionActions>*{flex:1;justify-content:center;text-align:center}}
