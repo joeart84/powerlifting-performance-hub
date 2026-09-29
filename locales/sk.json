@@ -217,5 +217,15 @@
   "settings.home_location_note": "Používa sa iba na filtrovanie a zoradenie blízkych súťaží. Zadaj mesto ručne alebo povoľ aktuálnu polohu.",
   "settings.home_country": "Krajina",
   "settings.home_city": "Mesto",
-  "settings.save_location": "Uložiť domovskú lokalitu"
+  "settings.save_location": "Uložiť domovskú lokalitu",
+  "dynamic.top_1": "Top ~1 %",
+  "dynamic.top_5": "Top ~5 %",
+  "dynamic.top_10": "Top ~10 %",
+  "dynamic.top_25": "Top ~25 %",
+  "dynamic.above_median": "Nad mediánom",
+  "dynamic.percentile_25_50": "25.–50. percentil",
+  "dynamic.below_25": "Pod 25. percentilom",
+  "dynamic.percentile_value": "{{pct}}. percentil",
+  "dynamic.raw_full_power": "Raw trojboj",
+  "dynamic.last_3_years": "Posledné 3 roky"
 }
