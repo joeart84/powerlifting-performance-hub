@@ -263,5 +263,22 @@
   "settings.profile_saved": "Athlete profile saved.",
   "dynamic.age_value": "Age {{age}}",
   "dynamic.masters_40": "Masters 40+",
-  "dynamic.add_birth_date": "Add date of birth"
+  "dynamic.add_birth_date": "Add date of birth",
+  "auth.email_signup_title": "Create your free account",
+  "auth.email_signup_note": "Enter your email. A six-digit code verifies it and creates your account. Your cloud data is stored on powerlifting-calculator.com. No password needed.",
+  "auth.email_signin_note": "Enter your email to receive a six-digit sign-in code. If you are new, verifying your email also creates your free account.",
+  "auth.email_confirm": "Verify email and continue",
+  "auth.connection_check": "Check connection",
+  "auth.connection_checking": "Checking the account service…",
+  "auth.connection_ready": "The account service is reachable. You can request a code; this check did not send an email.",
+  "auth.backend_missing": "The account backend needs an update. Please try again later.",
+  "auth.api_rate_limited": "Please wait before requesting another code.",
+  "auth.api_mail_failed": "The email could not be sent. Please try again later.",
+  "auth.api_expired_code": "This code has expired. Request a new one.",
+  "auth.api_incorrect_code": "That code is not correct. Check the six digits in your email.",
+  "auth.api_too_many_attempts": "Too many incorrect attempts. Request a new code.",
+  "auth.api_session_error": "Your session could not be saved. Please try again later.",
+  "auth.open_account": "Create account or sign in",
+  "auth.back_to_profile": "Create athlete dashboard",
+  "auth.create_profile_note": "Your account is ready. Create your athlete dashboard to save your data."
 }

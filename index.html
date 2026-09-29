@@ -59,6 +59,7 @@
       </div>
 
       <button id="saveProfile" class="primary" data-i18n="profile.create">Create dashboard</button>
+      <button id="onboardingAccount" class="textButton" type="button" data-i18n="auth.open_account">Create account or sign in</button>
     </section>
 
     <section id="app" hidden>
@@ -308,6 +309,7 @@
         <h2 data-i18n="account.title">Keep your Hub on every device</h2>
         <p class="muted" data-i18n="account.intro">Sign in to keep your athlete profile, goals and meet plan across devices. Your data on this device stays available without an account.</p>
 
+        <button id="accountBackToProfile" class="textButton" type="button" data-i18n="auth.back_to_profile" hidden>Create athlete dashboard</button>
         <div id="accountSignedOut">
           <div id="firebasePanel" class="accountBox authCard" hidden>
             <h3 data-i18n="auth.welcome">Welcome back</h3>
@@ -331,8 +333,12 @@
             <div id="firebaseStatus" class="authStatus" role="status" aria-live="polite"></div>
           </div>
           <div class="accountBox authCard" id="legacyAccount">
-            <h3 data-i18n="auth.code_title">Sign in with an email code</h3>
-            <p class="muted" data-i18n="auth.code_note">Existing cloud account? We'll email a six-digit code. No password needed.</p>
+            <div class="authModes" role="group" aria-label="Email account">
+              <button id="emailModeSignUp" class="active" type="button" data-i18n="auth.create" aria-pressed="true">Create account</button>
+              <button id="emailModeSignIn" type="button" data-i18n="auth.sign_in" aria-pressed="false">Sign in</button>
+            </div>
+            <h3 id="emailAccountTitle" data-i18n="auth.email_signup_title">Create your free account</h3>
+            <p id="emailAccountNote" class="muted" data-i18n="auth.email_signup_note">Enter your email. A six-digit code verifies it and creates your account. Your profile is saved on powerlifting-calculator.com.</p>
             <form id="legacyEmailForm" class="authForm">
               <label><span data-i18n="account.email">Email</span><input id="accountEmail" type="email" placeholder="you@example.com" autocomplete="email" required></label>
               <button id="requestCode" class="primary authCta" type="submit" data-i18n="account.send_code">Email me a code</button>
@@ -342,6 +348,7 @@
               <button id="verifyCode" class="primary authCta" type="submit" data-i18n="account.sign_in">Sign in</button>
             </form>
             <div id="accountStatus" class="authStatus" role="status" aria-live="polite"></div>
+            <button id="checkAccountConnection" class="textButton" type="button" data-i18n="auth.connection_check">Check connection</button>
           </div>
         </div>
 

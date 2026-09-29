@@ -222,5 +222,22 @@
   "dynamic.context_explain": "Około {{above}}% wyników odniesienia jest powyżej tego wyniku. Etykieta kontekstu ({{label}}) oznacza zaokrąglony przedział, a pasek wskazuje {{pct}}. percentyl w skali 0–100.",
   "dynamic.reference_explain": "Jako punkt odniesienia używana jest kategoria wagowa z ostatnich zapisanych zawodów, jeśli jest dostępna; w przeciwnym razie kategoria najbliższa masie ciała z profilu. n to liczba wyników, a nie indywidualnych zawodników.",
   "dynamic.raw_full_power": "Raw trójbój",
-  "dynamic.last_3_years": "Ostatnie 3 lata"
+  "dynamic.last_3_years": "Ostatnie 3 lata",
+  "auth.email_signup_title": "Utwórz bezpłatne konto",
+  "auth.email_signup_note": "Wpisz swój adres e-mail. Sześciocyfrowy kod potwierdzi go i utworzy Twoje konto. Dane w chmurze są przechowywane na powerlifting-calculator.com. Hasło nie jest potrzebne.",
+  "auth.email_signin_note": "Wpisz adres e-mail, aby otrzymać sześciocyfrowy kod logowania. Jeśli jesteś nowym użytkownikiem, potwierdzenie adresu utworzy także bezpłatne konto.",
+  "auth.email_confirm": "Potwierdź e-mail i kontynuuj",
+  "auth.connection_check": "Sprawdź połączenie",
+  "auth.connection_checking": "Sprawdzanie usługi kont…",
+  "auth.connection_ready": "Usługa kont jest dostępna. Możesz poprosić o kod; ten test nie wysłał żadnego e-maila.",
+  "auth.backend_missing": "Usługa kont wymaga aktualizacji. Spróbuj później.",
+  "auth.api_rate_limited": "Poczekaj przed zamówieniem kolejnego kodu.",
+  "auth.api_mail_failed": "Nie udało się wysłać e-maila. Spróbuj później.",
+  "auth.api_expired_code": "Kod wygasł. Poproś o nowy.",
+  "auth.api_incorrect_code": "Kod jest nieprawidłowy. Sprawdź sześć cyfr w e-mailu.",
+  "auth.api_too_many_attempts": "Zbyt wiele błędnych prób. Poproś o nowy kod.",
+  "auth.api_session_error": "Nie udało się zapisać sesji. Spróbuj później.",
+  "auth.open_account": "Utwórz konto lub zaloguj się",
+  "auth.back_to_profile": "Utwórz profil zawodnika",
+  "auth.create_profile_note": "Twoje konto jest gotowe. Utwórz profil zawodnika, aby zapisać swoje dane."
 }

@@ -222,5 +222,22 @@
   "dynamic.context_explain": "Etwa {{above}} % der Referenzergebnisse liegen über diesem Wert. Die Einordnung ({{label}}) ist eine gerundete Gruppe; der Balken zeigt das {{pct}}. Perzentil auf einer Skala von 0 bis 100.",
   "dynamic.reference_explain": "Als Referenz dient die Gewichtsklasse deines letzten gespeicherten Wettkampfs, falls vorhanden; sonst die Klasse, die deinem Körpergewicht im Profil am nächsten liegt. n zählt Ergebnisse, nicht einzelne Athletinnen und Athleten.",
   "dynamic.raw_full_power": "Raw Dreikampf",
-  "dynamic.last_3_years": "Letzte 3 Jahre"
+  "dynamic.last_3_years": "Letzte 3 Jahre",
+  "auth.email_signup_title": "Kostenloses Konto erstellen",
+  "auth.email_signup_note": "Gib deine E-Mail-Adresse ein. Ein sechsstelliger Code bestätigt sie und erstellt dein Konto. Deine Cloud-Daten werden auf powerlifting-calculator.com gespeichert. Du brauchst kein Passwort.",
+  "auth.email_signin_note": "Gib deine E-Mail-Adresse ein, um einen sechsstelligen Anmeldecode zu erhalten. Wenn du neu bist, wird nach der Bestätigung auch dein kostenloses Konto erstellt.",
+  "auth.email_confirm": "E-Mail bestätigen und fortfahren",
+  "auth.connection_check": "Verbindung prüfen",
+  "auth.connection_checking": "Kontodienst wird geprüft…",
+  "auth.connection_ready": "Der Kontodienst ist erreichbar. Du kannst einen Code anfordern; diese Prüfung hat keine E-Mail gesendet.",
+  "auth.backend_missing": "Der Kontodienst benötigt ein Update. Bitte versuche es später erneut.",
+  "auth.api_rate_limited": "Bitte warte, bevor du einen weiteren Code anforderst.",
+  "auth.api_mail_failed": "Die E-Mail konnte nicht gesendet werden. Bitte versuche es später erneut.",
+  "auth.api_expired_code": "Dieser Code ist abgelaufen. Fordere einen neuen an.",
+  "auth.api_incorrect_code": "Der Code ist nicht korrekt. Prüfe die sechs Ziffern in deiner E-Mail.",
+  "auth.api_too_many_attempts": "Zu viele falsche Versuche. Fordere einen neuen Code an.",
+  "auth.api_session_error": "Deine Sitzung konnte nicht gespeichert werden. Bitte versuche es später erneut.",
+  "auth.open_account": "Konto erstellen oder anmelden",
+  "auth.back_to_profile": "Athletenprofil erstellen",
+  "auth.create_profile_note": "Dein Konto ist bereit. Erstelle dein Athletenprofil, um deine Daten zu speichern."
 }

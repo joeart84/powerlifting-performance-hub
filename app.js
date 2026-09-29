@@ -545,8 +545,15 @@ function renderTools(){
 
 function render(){
   const p=state.profile;
-  $("onboarding").hidden=!!p;$("app").hidden=!p;
-  if(!p)return;
+  $("onboarding").hidden=!!p||accountOnly;$("app").hidden=!p&&!accountOnly;
+  document.querySelector("#app > .heroPanel").hidden=!p;
+  document.querySelector("#app > .primaryNav").hidden=!p;
+  document.querySelector("#app > .utilityNav").hidden=!p;
+  $("accountBackToProfile").hidden=!!p;
+  if(!p){
+    if(accountOnly)document.querySelectorAll(".tab").forEach(tab=>tab.hidden=tab.id!=="tab-account");
+    renderAccount();return;
+  }
   ensureState();suggestPlan();
   $("athleteName").textContent=p.name||"Your dashboard";
   setAnimatedMetric("metricBw",p.bodyweight||"—");setAnimatedMetric("metricSq",p.squatBest||"—");setAnimatedMetric("metricBp",p.benchBest||"—");setAnimatedMetric("metricDl",p.deadliftBest||"—");
@@ -946,24 +953,64 @@ function authHeaders(){
   return session.token?{"Accept":"application/json","Content-Type":"application/json","Authorization":"Bearer "+session.token}:{"Accept":"application/json","Content-Type":"application/json"};
 }
 async function hubRequest(path,options={}){
+  const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),30000);
   let res;
-  try{res=await fetch(HUB_API+path,{...options,signal:AbortSignal.timeout(15000)})}
-  catch(err){
-    throw new Error(err.name==="TimeoutError"?t("auth.timeout"):t("auth.network_error"));
-  }
+  try{res=await fetch(HUB_API+path,{...options,signal:controller.signal})}
+  catch(err){throw new Error(err.name==="AbortError"?t("auth.timeout"):t("auth.network_error"))}
+  finally{clearTimeout(timer)}
   let data;
   try{data=await res.json()}catch(e){throw new Error(t("auth.server_error"))}
-  if(!res.ok)throw new Error(data.message||t("auth.server_error"));
+  if(!res.ok){
+    const key="auth.api_"+data.code;
+    const error=new Error(messages[key]!==undefined?t(key):(data.message||t("auth.server_error")));
+    error.code=data.code;error.status=res.status;throw error;
+  }
   return data;
+}
+function hubAuthRequest(path,values){
+  return hubRequest(path,{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded;charset=UTF-8"},body:new URLSearchParams(values)});
+}
+let emailMode="signup";
+let accountOnly=false;
+function openAccountFromOnboarding(){
+  accountOnly=true;render();
+  document.querySelectorAll("[data-tab]").forEach(button=>button.classList.toggle("active",button.dataset.tab==="account"));
+  window.scrollTo({top:0,behavior:"auto"});
+}
+function setEmailMode(mode,reset=false){
+  emailMode=mode==="signin"?"signin":"signup";
+  const signIn=emailMode==="signin";
+  $("emailModeSignIn").classList.toggle("active",signIn);
+  $("emailModeSignUp").classList.toggle("active",!signIn);
+  $("emailModeSignIn").setAttribute("aria-pressed",String(signIn));
+  $("emailModeSignUp").setAttribute("aria-pressed",String(!signIn));
+  $("emailAccountTitle").textContent=t(signIn?"auth.code_title":"auth.email_signup_title");
+  $("emailAccountNote").textContent=t(signIn?"auth.email_signin_note":"auth.email_signup_note");
+  $("verifyCode").textContent=t(signIn?"account.sign_in":"auth.email_confirm");
+  if(reset){
+    delete session.pendingEmail;saveSession();$("codeStep").hidden=true;
+    $("accountCode").value="";$("accountStatus").textContent="";
+  }
+}
+async function checkAccountConnection(){
+  const button=$("checkAccountConnection"),status=$("accountStatus");
+  button.disabled=true;status.textContent=t("auth.connection_checking");
+  try{
+    await hubAuthRequest("/auth/request-code",{email:""});
+    status.textContent=t("auth.server_error");
+  }catch(error){
+    status.textContent=error.code==="invalid_email"?t("auth.connection_ready"):
+      error.code==="rest_no_route"?t("auth.backend_missing"):error.message;
+  }finally{button.disabled=false}
 }
 async function requestLoginCode(){
   const emailInput=$("accountEmail"),email=emailInput.value.trim(),status=$("accountStatus"),button=$("requestCode");
-  if(!emailInput.reportValidity())return;
+  if(button.disabled||!emailInput.reportValidity())return;
   button.disabled=true;
   status.textContent=t("dynamic.sending_code");
   try{
-    await hubRequest("/auth/request-code",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email})});
-    session.pendingEmail=email;saveSession();$("codeStep").hidden=false;
+    await hubAuthRequest("/auth/request-code",{email});
+    session.pendingEmail=email;saveSession();$("accountCode").value="";$("codeStep").hidden=false;
     status.textContent=t("dynamic.code_sent");
     $("accountCode").focus();
   }catch(err){status.textContent=err.message}
@@ -971,22 +1018,25 @@ async function requestLoginCode(){
 }
 async function verifyLoginCode(){
   const email=(session.pendingEmail||$("accountEmail").value).trim(),code=$("accountCode").value.trim(),status=$("accountStatus"),button=$("verifyCode");
-  if(!$("accountCode").reportValidity())return;
+  if(button.disabled||!$("accountCode").reportValidity())return;
   button.disabled=true;
   status.textContent=t("dynamic.signing_in");
   try{
-    const data=await hubRequest("/auth/verify-code",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email,code})});
+    const data=await hubAuthRequest("/auth/verify-code",{email,code});
     session.token=data.token;session.email=data.email;session.expiresAt=data.expires_at;delete session.pendingEmail;saveSession();
     renderAccount();
     if(data.profile&&Object.keys(data.profile).length){
       $("cloudStatus").textContent=t("dynamic.cloud_found");
-    }else{
+    }else if(state.profile){
       await uploadCloud(false);
+    }else{
+      $("cloudStatus").textContent=t("auth.create_profile_note");
     }
   }catch(err){status.textContent=err.message}
   finally{button.disabled=false}
 }
 function renderAccount(){
+  setEmailMode(emailMode);
   const firebaseUser=window.PPHCloud?.user;
   const signed=!!firebaseUser||!!session.token;
   $("accountSignedOut").hidden=signed;$("accountSignedIn").hidden=!signed;
@@ -1041,6 +1091,7 @@ function renderReport(){
 $("saveProfile").addEventListener("click",()=>{
   state.profile={name:$("name").value.trim()||"Athlete",sex:$("sex").value,bodyweight:num($("bodyweight").value),age:parseAge($("age").value),meetDate:$("meetDate").value,meetName:(state.profile&&state.profile.meetName)||"",squatBest:num($("squatBest").value),benchBest:num($("benchBest").value),deadliftBest:num($("deadliftBest").value)};
   state.plan=blankPlan();state.results=blankResults();suggestPlan();save();render();
+  document.querySelector('[data-tab="dashboard"]').click();
 });
 $("editProfile").addEventListener("click",()=>{const p=state.profile||{};$("name").value=p.name||"";$("sex").value=p.sex||"M";$("bodyweight").value=p.bodyweight||"";$("age").value=p.age||"";$("meetDate").value=p.meetDate||"";$("squatBest").value=p.squatBest||"";$("benchBest").value=p.benchBest||"";$("deadliftBest").value=p.deadliftBest||"";delete state.profile;save();render();window.scrollTo({top:0,behavior:"smooth"})});
 $("savePlan").addEventListener("click",()=>{save();alert(t("dynamic.plan_saved"))});
@@ -1123,11 +1174,15 @@ $("saveGoal").addEventListener("click",saveCurrentGoal);
 $("saveMeetResult").addEventListener("click",saveMeetToHistory);
 $("shareCard").addEventListener("click",shareResultCard);
 $("legacyEmailForm").addEventListener("submit",e=>{e.preventDefault();requestLoginCode()});
+$("emailModeSignIn").addEventListener("click",()=>setEmailMode("signin",true));
+$("emailModeSignUp").addEventListener("click",()=>setEmailMode("signup",true));
+$("checkAccountConnection").addEventListener("click",checkAccountConnection);
+$("onboardingAccount").addEventListener("click",openAccountFromOnboarding);
+$("accountBackToProfile").addEventListener("click",()=>{accountOnly=false;render()});
 $("codeStep").addEventListener("submit",e=>{e.preventDefault();verifyLoginCode()});
 $("uploadCloud").addEventListener("click",()=>uploadCloud(false));
 $("downloadCloud").addEventListener("click",downloadCloud);
 $("signOut").addEventListener("click",logoutCloud);
-$("accountCode").addEventListener("keydown",e=>{if(e.key==="Enter")verifyLoginCode()});
 $("languageSelect").addEventListener("change",e=>setLanguage(e.target.value,true));
 document.querySelectorAll("[data-tab]").forEach(b=>b.addEventListener("click",()=>{
   const target=b.dataset.tab;
