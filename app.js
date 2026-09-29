@@ -432,8 +432,8 @@ function render(){
   const currentDots=dotsScore(p.sex,p.bodyweight,currentBestTotal());
   $("currentDots").textContent=currentDots?currentDots.toFixed(2):"—";
   const d=daysUntil(p.meetDate);
-  $("countdown").textContent=p.meetDate?(d>=0?d+" days until your next meet":"Meet date has passed"):"Add a meet date to start the countdown.";
-  $("meetSnapshot").innerHTML="<div><strong>Meet:</strong> "+esc(p.meetName||"Not selected")+"</div><div><strong>Date:</strong> "+esc(p.meetDate||"Not set")+"</div><div><strong>Projected total:</strong> "+totalFromPlan()+" kg</div><div><strong>Current best total:</strong> "+currentBestTotal()+" kg</div><div><strong>Current DOTS:</strong> "+(currentDots?currentDots.toFixed(2):"—")+"</div>";
+  $("countdown").textContent=p.meetDate?(d>=0?t("dynamic.days_until",{days:d}):t("dynamic.meet_passed")):t("dynamic.add_meet_date");
+  $("meetSnapshot").innerHTML="<div><strong>"+esc(t("dynamic.meet_label"))+":</strong> "+esc(p.meetName||t("common.not_set"))+"</div><div><strong>"+esc(t("dynamic.date_label"))+":</strong> "+esc(p.meetDate||t("common.not_set"))+"</div><div><strong>"+esc(t("planner.projected_total"))+":</strong> "+totalFromPlan()+" kg</div><div><strong>"+esc(t("dynamic.current_best"))+":</strong> "+currentBestTotal()+" kg</div><div><strong>"+esc(t("dynamic.current_dots"))+":</strong> "+(currentDots?currentDots.toFixed(2):"—")+"</div>";
   renderGoalSnapshot();
   renderPlanner();renderMeetDay();renderProgress();renderTools();renderReport();renderAccount();
 }
@@ -441,12 +441,12 @@ function render(){
 function renderGoalSnapshot(){
   const root=$("goalSnapshot");if(!root)return;
   const gp=goalProgress();
-  if(!gp){root.innerHTML='<div class="muted">No saved goal yet. Use Goal Planner to create one.</div>';return}
+  if(!gp){root.innerHTML='<div class="muted">'+esc(t("dynamic.no_goal"))+'</div>';return}
   root.innerHTML='<div><strong>Target:</strong> '+(gp.targetDots?gp.targetDots+" DOTS · ":"")+gp.target+' kg total</div>'
-    +'<div><strong>Target bodyweight:</strong> '+(gp.targetBodyweight||"—")+' kg</div>'
-    +(gp.targetDate?'<div><strong>Target date:</strong> '+esc(gp.targetDate)+'</div>':'')
+    +'<div><strong>'+esc(t("dynamic.target_bw"))+':</strong> '+(gp.targetBodyweight||"—")+' kg</div>'
+    +(gp.targetDate?'<div><strong>'+esc(t("dynamic.target_date"))+':</strong> '+esc(gp.targetDate)+'</div>':'')
     +'<div class="goalProgress"><span style="width:'+gp.pct+'%"></span></div>'
-    +'<div><strong>'+gp.pct+'%</strong> of target total · '+(gp.gap>0?gp.gap+' kg to go':'goal reached/exceeded')+'</div>';
+    +'<div><strong>'+esc(t("dynamic.of_target",{pct:gp.pct}))+'</strong> · '+esc(gp.gap>0?t("dynamic.to_go",{gap:gp.gap}):t("dynamic.goal_reached"))+'</div>';
 }
 
 function renderPlanner(){
@@ -455,7 +455,7 @@ function renderPlanner(){
     const g=document.createElement("div");g.className="liftGroup";g.innerHTML="<h3>"+l+"</h3>";
     state.plan[l].forEach((v,i)=>{
       const row=document.createElement("div");row.className="attemptRow";
-      row.innerHTML="<span>Attempt "+(i+1)+"</span><input type=\"number\" step=\"2.5\" data-lift=\""+l+"\" data-idx=\""+i+"\" value=\""+(v||"")+"\" placeholder=\"kg\">";
+      row.innerHTML="<span>"+esc(t("planner.attempt"))+" "+(i+1)+"</span><input type=\"number\" step=\"2.5\" data-lift=\""+l+"\" data-idx=\""+i+"\" value=\""+(v||"")+"\" placeholder=\"kg\">";
       g.appendChild(row);
     });root.appendChild(g);
   });
@@ -485,7 +485,7 @@ function renderMeetDay(){
 
 function svgChart(rows,key){
   const data=rows.filter(r=>num(r[key])>0);
-  if(data.length<2)return '<div class="chartEmpty">Import at least two meets to show progress.</div>';
+  if(data.length<2)return '<div class="chartEmpty">'+esc(t("dynamic.chart_need_two"))+'</div>';
   const w=520,h=210,pad=34;
   const vals=data.map(r=>num(r[key])),min=Math.min(...vals),max=Math.max(...vals),range=Math.max(1,max-min);
   const x=i=>pad+(i*(w-pad*2)/(data.length-1));
@@ -502,7 +502,7 @@ function svgChart(rows,key){
 function renderProgress(){
   ensureState();
   const meets=state.meets||[],status=$("importStatus"),summary=$("progressSummary"),rows=$("historyRows");
-  status.textContent=meets.length?meets.length+" competition result"+(meets.length===1?"":"s")+" stored on this device.":"No competition history imported yet.";
+  status.textContent=meets.length?t("dynamic.results_stored",{count:meets.length}):t("progress.empty");
   const pr=meetPrs();
   summary.innerHTML=[
     ["Best total",pr.total?pr.total+" kg":"—"],
@@ -514,7 +514,7 @@ function renderProgress(){
   $("totalChart").innerHTML=svgChart(meets,"total");
   $("dotsChart").innerHTML=svgChart(meets,"dots");
   rows.innerHTML=meets.slice().reverse().map(m=>'<tr><td>'+esc(m.date||"—")+'</td><td>'+esc(m.meet||"—")+'</td><td>'+fmt(m.bodyweight)+'</td><td>'+fmt(m.squat)+'</td><td>'+fmt(m.bench)+'</td><td>'+fmt(m.deadlift)+'</td><td><strong>'+fmt(m.total)+'</strong></td><td>'+fmt(m.dots,2)+'</td></tr>').join("");
-  if(!meets.length)rows.innerHTML='<tr><td colspan="8" class="muted">No meet history yet.</td></tr>';
+  if(!meets.length)rows.innerHTML='<tr><td colspan="8" class="muted">'+esc(t("dynamic.no_history"))+'</td></tr>';
 }
 function fmt(v,d=1){const n=num(v);return n?n.toFixed(d).replace(/\.0$/,""):"—"}
 
