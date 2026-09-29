@@ -351,3 +351,7 @@ input:focus,select:focus{outline:none;border-color:#6a5730;box-shadow:0 0 0 3px 
   .metric,.subpanel,.toolCard,.reportCard,.primary,.ghost{transition:none}
   .metric:hover,.subpanel:hover,.toolCard:hover,.reportCard:hover,.primary:hover,.ghost:hover,.primary:active,.ghost:active{transform:none}
 }
+
+#legacyAccount .authModes{margin-bottom:20px}
+#onboardingAccount{margin-left:16px}
+@media(max-width:520px){#onboardingAccount{display:block;margin-left:0}}

@@ -222,5 +222,22 @@
   "dynamic.context_explain": "Alrededor del {{above}} % de los resultados de referencia están por encima de esta puntuación. La etiqueta de contexto ({{label}}) es una franja redondeada; la barra marca el percentil {{pct}} en una escala de 0 a 100.",
   "dynamic.reference_explain": "Se usa la categoría de peso de tu última competición guardada si está disponible; en caso contrario, la categoría más cercana al peso corporal de tu perfil. n cuenta resultados, no deportistas individuales.",
   "dynamic.raw_full_power": "Powerlifting raw completo",
-  "dynamic.last_3_years": "Últimos 3 años"
+  "dynamic.last_3_years": "Últimos 3 años",
+  "auth.email_signup_title": "Crea tu cuenta gratuita",
+  "auth.email_signup_note": "Introduce tu correo electrónico. Un código de seis dígitos lo verifica y crea tu cuenta. Tus datos en la nube se guardan en powerlifting-calculator.com. No necesitas contraseña.",
+  "auth.email_signin_note": "Introduce tu correo electrónico para recibir un código de acceso de seis dígitos. Si eres nuevo, al verificarlo también se crea tu cuenta gratuita.",
+  "auth.email_confirm": "Verificar correo y continuar",
+  "auth.connection_check": "Comprobar conexión",
+  "auth.connection_checking": "Comprobando el servicio de cuentas…",
+  "auth.connection_ready": "El servicio de cuentas está disponible. Puedes solicitar un código; esta comprobación no envió ningún correo.",
+  "auth.backend_missing": "El servicio de cuentas necesita una actualización. Inténtalo más tarde.",
+  "auth.api_rate_limited": "Espera antes de solicitar otro código.",
+  "auth.api_mail_failed": "No se pudo enviar el correo. Inténtalo más tarde.",
+  "auth.api_expired_code": "El código ha caducado. Solicita uno nuevo.",
+  "auth.api_incorrect_code": "El código no es correcto. Comprueba los seis dígitos del correo.",
+  "auth.api_too_many_attempts": "Demasiados intentos incorrectos. Solicita un código nuevo.",
+  "auth.api_session_error": "No se pudo guardar tu sesión. Inténtalo más tarde.",
+  "auth.open_account": "Crear cuenta o iniciar sesión",
+  "auth.back_to_profile": "Crear perfil de deportista",
+  "auth.create_profile_note": "Tu cuenta está lista. Crea tu perfil de deportista para guardar tus datos."
 }

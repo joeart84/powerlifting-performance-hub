@@ -222,5 +222,22 @@
   "dynamic.context_explain": "Přibližně {{above}} % referenčních výkonů je nad tímto skóre. Označení kontextu ({{label}}) je zaokrouhlené pásmo; pruh ukazuje {{pct}}. percentil na stupnici 0–100.",
   "dynamic.reference_explain": "Jako reference se použije váhová kategorie z poslední uložené soutěže, pokud je dostupná; jinak nejbližší kategorie podle hmotnosti v profilu. n je počet výkonů, ne jednotlivých závodníků.",
   "dynamic.raw_full_power": "Raw trojboj",
-  "dynamic.last_3_years": "Poslední 3 roky"
+  "dynamic.last_3_years": "Poslední 3 roky",
+  "auth.email_signup_title": "Vytvoř si bezplatný účet",
+  "auth.email_signup_note": "Zadej svůj e-mail. Šestimístný kód ho ověří a vytvoří tvůj účet. Cloudová data se ukládají na powerlifting-calculator.com. Heslo nepotřebuješ.",
+  "auth.email_signin_note": "Zadej svůj e-mail a pošleme ti šestimístný přihlašovací kód. Pokud jsi tu nový, ověřením e-mailu se zároveň vytvoří bezplatný účet.",
+  "auth.email_confirm": "Ověřit e-mail a pokračovat",
+  "auth.connection_check": "Zkontrolovat spojení",
+  "auth.connection_checking": "Kontroluji službu účtů…",
+  "auth.connection_ready": "Služba účtů je dostupná. Můžeš požádat o kód; tato kontrola neposlala žádný e-mail.",
+  "auth.backend_missing": "Služba účtů potřebuje aktualizaci. Zkus to později.",
+  "auth.api_rate_limited": "Před vyžádáním dalšího kódu chvíli počkej.",
+  "auth.api_mail_failed": "E-mail se nepodařilo odeslat. Zkus to později.",
+  "auth.api_expired_code": "Platnost kódu vypršela. Vyžádej si nový.",
+  "auth.api_incorrect_code": "Kód není správný. Zkontroluj šest číslic v e-mailu.",
+  "auth.api_too_many_attempts": "Příliš mnoho nesprávných pokusů. Vyžádej si nový kód.",
+  "auth.api_session_error": "Přihlášení se nepodařilo uložit. Zkus to později.",
+  "auth.open_account": "Vytvořit účet nebo se přihlásit",
+  "auth.back_to_profile": "Vytvořit profil závodníka",
+  "auth.create_profile_note": "Tvůj účet je připravený. Vytvoř si profil závodníka, abys mohl uložit svá data."
 }

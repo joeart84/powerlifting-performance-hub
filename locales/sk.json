@@ -263,5 +263,22 @@
   "settings.profile_saved": "Profil športovca bol uložený.",
   "dynamic.age_value": "Vek {{age}}",
   "dynamic.masters_40": "Masters 40+",
-  "dynamic.add_birth_date": "Doplniť dátum narodenia"
+  "dynamic.add_birth_date": "Doplniť dátum narodenia",
+  "auth.email_signup_title": "Vytvor si bezplatný účet",
+  "auth.email_signup_note": "Zadaj svoj e-mail. Šesťmiestny kód ho overí a vytvorí tvoj účet. Cloudové dáta sa ukladajú na powerlifting-calculator.com. Heslo nepotrebuješ.",
+  "auth.email_signin_note": "Zadaj svoj e-mail a pošleme ti šesťmiestny prihlasovací kód. Ak si tu nový, overením e-mailu sa zároveň vytvorí bezplatný účet.",
+  "auth.email_confirm": "Overiť e-mail a pokračovať",
+  "auth.connection_check": "Skontrolovať spojenie",
+  "auth.connection_checking": "Kontrolujem službu účtov…",
+  "auth.connection_ready": "Služba účtov je dostupná. Môžeš požiadať o kód; táto kontrola neposlala žiadny e-mail.",
+  "auth.backend_missing": "Služba účtov potrebuje aktualizáciu. Skús to neskôr.",
+  "auth.api_rate_limited": "Pred vyžiadaním ďalšieho kódu chvíľu počkaj.",
+  "auth.api_mail_failed": "E-mail sa nepodarilo odoslať. Skús to neskôr.",
+  "auth.api_expired_code": "Platnosť kódu vypršala. Vyžiadaj si nový.",
+  "auth.api_incorrect_code": "Kód nie je správny. Skontroluj šesť číslic v e-maile.",
+  "auth.api_too_many_attempts": "Príliš veľa nesprávnych pokusov. Vyžiadaj si nový kód.",
+  "auth.api_session_error": "Prihlásenie sa nepodarilo uložiť. Skús to neskôr.",
+  "auth.open_account": "Vytvoriť účet alebo sa prihlásiť",
+  "auth.back_to_profile": "Vytvoriť profil pretekára",
+  "auth.create_profile_note": "Tvoj účet je pripravený. Vytvor si profil pretekára, aby si mohol uložiť svoje dáta."
 }
