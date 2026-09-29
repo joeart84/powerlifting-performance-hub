@@ -356,6 +356,19 @@
           <div id="settingsStatus" class="muted small"></div>
         </div>
 
+        <div class="settingsCard" id="athleteProfileSettings">
+          <h3 data-i18n="settings.profile_title">Athlete profile</h3>
+          <p class="muted" data-i18n="settings.profile_note">Keep athlete details here. Date of birth is used to calculate the WUAP McCulloch Masters score.</p>
+          <div class="grid two">
+            <label><span data-i18n="profile.birth_date">Date of birth</span><input id="birthDate" type="date"></label>
+            <label><span data-i18n="profile.age">Age</span><input id="profileAge" type="number" disabled></label>
+          </div>
+          <div class="buttonRow">
+            <button id="saveAthleteProfile" class="primary" data-i18n="settings.save_profile">Save athlete profile</button>
+          </div>
+          <div id="athleteProfileStatus" class="muted small"></div>
+        </div>
+
         <div class="settingsCard">
           <h3 data-i18n="settings.home_location">Home location</h3>
           <p class="muted" data-i18n="settings.home_location_note">Used only to sort and filter nearby competitions. You can enter a city manually or share your current location.</p>
