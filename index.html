@@ -114,13 +114,47 @@
         <h2 data-i18n="planner.title">Meet Planner</h2>
         <p class="muted" data-i18n="planner.note">A simple starting plan is suggested from your current best lifts. Adjust every attempt as you like.</p>
 
-        <div class="subpanel meetPicker">
-          <h3 data-i18n="planner.choose_meet">Choose your next meet</h3>
-          <div class="lookupRow">
-            <select id="competitionSelect"><option value="" data-i18n="planner.loading_competitions">Loading upcoming competitions…</option></select>
-            <button id="useCompetition" class="ghost" data-i18n="planner.use_meet">Use this meet</button>
+        <div class="subpanel meetFinder">
+          <div class="finderHead">
+            <div>
+              <h3 data-i18n="finder.title">Find your next competition</h3>
+              <p class="muted" data-i18n="finder.note">Search nearby first, but keep worldwide events available.</p>
+            </div>
+            <button id="useCurrentLocation" class="ghost" data-i18n="finder.use_location">Use my location</button>
           </div>
+
+          <input id="competitionSearch" class="finderSearch" placeholder="Search competition, city or federation…" data-i18n-placeholder="finder.search">
+
+          <div class="scopeChips" id="competitionScopes">
+            <button class="active" data-scope="nearby" data-i18n="finder.nearby">Near me</button>
+            <button data-scope="country" data-i18n="finder.my_country">My country</button>
+            <button data-scope="europe" data-i18n="finder.europe">Europe</button>
+            <button data-scope="world" data-i18n="finder.worldwide">Worldwide</button>
+          </div>
+
+          <div class="finderFilters">
+            <label><span data-i18n="finder.date_range">Date range</span>
+              <select id="competitionDateRange">
+                <option value="30" data-i18n="finder.days30">Next 30 days</option>
+                <option value="90" selected data-i18n="finder.months3">Next 3 months</option>
+                <option value="180" data-i18n="finder.months6">Next 6 months</option>
+                <option value="9999" data-i18n="finder.any_date">Any date</option>
+              </select>
+            </label>
+            <label><span data-i18n="finder.radius">Radius</span>
+              <select id="competitionRadius">
+                <option value="100">100 km</option>
+                <option value="250" selected>250 km</option>
+                <option value="500">500 km</option>
+              </select>
+            </label>
+            <label><span data-i18n="finder.federation">Federation</span>
+              <select id="competitionFederation"><option value="" data-i18n="finder.all_federations">All federations</option></select>
+            </label>
+          </div>
+
           <div id="competitionStatus" class="muted small"></div>
+          <div id="competitionResults" class="competitionResults"></div>
         </div>
 
         <div id="plannerRows"></div>
@@ -295,6 +329,20 @@
           </label>
           <p class="muted" data-i18n="settings.language_note">Choose the app language. “System language” follows your phone or browser.</p>
           <div id="settingsStatus" class="muted small"></div>
+        </div>
+
+        <div class="settingsCard">
+          <h3 data-i18n="settings.home_location">Home location</h3>
+          <p class="muted" data-i18n="settings.home_location_note">Used only to sort and filter nearby competitions. You can enter a city manually or share your current location.</p>
+          <div class="grid two">
+            <label><span data-i18n="settings.home_country">Country</span><input id="homeCountry" placeholder="Slovakia"></label>
+            <label><span data-i18n="settings.home_city">City</span><input id="homeCity" placeholder="Trnava"></label>
+          </div>
+          <div class="buttonRow">
+            <button id="saveHomeLocation" class="primary" data-i18n="settings.save_location">Save home location</button>
+            <button id="settingsUseLocation" class="ghost" data-i18n="finder.use_location">Use my location</button>
+          </div>
+          <div id="locationStatus" class="muted small"></div>
         </div>
       </section>
     </section>

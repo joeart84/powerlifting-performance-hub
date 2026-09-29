@@ -14,6 +14,7 @@ const HUB_API="https://powerlifting-calculator.com/wp-json/plc-radar/v1/hub";
 let performanceReference=null;
 let upcomingCompetitions=[];
 let suppressCloud=false;
+let competitionScope="nearby";
 const LANGUAGE_KEY="plc-performance-hub-language";
 const SUPPORTED_LANGUAGES=["en","sk","cs","de","es","pl"];
 let messages={};
@@ -32,16 +33,19 @@ function t(key,vars={}){
   return interpolate(value,vars);
 }
 async function loadMessages(lang){
+  let base={};
+  try{
+    const enRes=await fetch("./locales/en.json",{cache:"no-cache"});
+    if(enRes.ok)base=await enRes.json();
+  }catch(e){}
+  if(lang==="en")return base;
   try{
     const res=await fetch("./locales/"+lang+".json",{cache:"no-cache"});
     if(!res.ok)throw new Error("locale");
-    return await res.json();
+    const local=await res.json();
+    return {...base,...local};
   }catch(e){
-    if(lang!=="en"){
-      const res=await fetch("./locales/en.json",{cache:"no-cache"});
-      return await res.json();
-    }
-    return {};
+    return base;
   }
 }
 function applyTranslations(){
@@ -64,7 +68,7 @@ async function setLanguage(preference,announce=false){
   const select=$("languageSelect");
   if(select)select.value=preference;
   render();
-  renderCompetitionPicker();
+  renderCompetitionFinder();
   renderAccount();
   if(announce&&$("settingsStatus"))$("settingsStatus").textContent=t("settings.saved");
 }
@@ -82,6 +86,13 @@ function ensureState(){
   state.results=state.results||blankResults();
   state.meets=Array.isArray(state.meets)?state.meets:[];
   state.goal=state.goal||null;
+  state.preferences=state.preferences||{
+    homeCountry:"",
+    homeCity:"",
+    homeLat:null,
+    homeLon:null,
+    locationSource:""
+  };
 }
 function totalFromPlan(){return lifts.reduce((sum,l)=>sum+Math.max.apply(null,state.plan[l].map(num)),0)}
 function currentBestTotal(){const p=state.profile||{};return num(p.squatBest)+num(p.benchBest)+num(p.deadliftBest)}
@@ -111,6 +122,7 @@ function cloudPayload(){
     results:state.results||blankResults(),
     meets:state.meets||[],
     goal:state.goal||null,
+    preferences:state.preferences||{},
     saved_at:new Date().toISOString()
   };
 }
@@ -122,6 +134,7 @@ function applyCloudPayload(payload){
   state.results=payload.results||blankResults();
   state.meets=Array.isArray(payload.meets)?payload.meets:[];
   state.goal=payload.goal||null;
+  state.preferences=payload.preferences||state.preferences||{};
   save();
   suppressCloud=false;
   render();
@@ -435,7 +448,7 @@ function render(){
   $("countdown").textContent=p.meetDate?(d>=0?t("dynamic.days_until",{days:d}):t("dynamic.meet_passed")):t("dynamic.add_meet_date");
   $("meetSnapshot").innerHTML="<div><strong>"+esc(t("dynamic.meet_label"))+":</strong> "+esc(p.meetName||t("common.not_set"))+"</div><div><strong>"+esc(t("dynamic.date_label"))+":</strong> "+esc(p.meetDate||t("common.not_set"))+"</div><div><strong>"+esc(t("planner.projected_total"))+":</strong> "+totalFromPlan()+" kg</div><div><strong>"+esc(t("dynamic.current_best"))+":</strong> "+currentBestTotal()+" kg</div><div><strong>"+esc(t("dynamic.current_dots"))+":</strong> "+(currentDots?currentDots.toFixed(2):"—")+"</div>";
   renderGoalSnapshot();
-  renderPlanner();renderMeetDay();renderProgress();renderTools();renderReport();renderAccount();
+  renderPlanner();renderMeetDay();renderProgress();renderTools();renderReport();renderAccount();populateLocationSettings();renderCompetitionFinder();
 }
 
 function renderGoalSnapshot(){
@@ -518,6 +531,80 @@ function renderProgress(){
 }
 function fmt(v,d=1){const n=num(v);return n?n.toFixed(d).replace(/\.0$/,""):"—"}
 
+const EUROPE_COUNTRIES=new Set([
+  "albania","andorra","austria","belarus","belgium","bosnia and herzegovina","bulgaria","croatia","cyprus",
+  "czech republic","czechia","denmark","estonia","finland","france","germany","greece","hungary","iceland",
+  "ireland","italy","kosovo","latvia","liechtenstein","lithuania","luxembourg","malta","moldova","monaco",
+  "montenegro","netherlands","north macedonia","norway","poland","portugal","romania","san marino","serbia",
+  "slovakia","slovenia","spain","sweden","switzerland","ukraine","united kingdom","great britain","england",
+  "scotland","wales","northern ireland"
+]);
+const NEIGHBORS={
+  "slovakia":["czech republic","czechia","austria","hungary","poland","ukraine"],
+  "czech republic":["slovakia","austria","germany","poland"],
+  "czechia":["slovakia","austria","germany","poland"],
+  "austria":["slovakia","czech republic","czechia","hungary","germany","slovenia","italy","switzerland"],
+  "hungary":["slovakia","austria","slovenia","croatia","serbia","romania","ukraine"],
+  "poland":["slovakia","czech republic","czechia","germany","ukraine","lithuania","belarus"]
+};
+function normText(v){return String(v||"").trim().toLowerCase()}
+function countryMatches(a,b){
+  const x=normText(a),y=normText(b);
+  if(!x||!y)return false;
+  const aliases={"czechia":"czech republic","great britain":"united kingdom","uk":"united kingdom","usa":"united states","u.s.a.":"united states"};
+  return (aliases[x]||x)===(aliases[y]||y);
+}
+function haversineKm(lat1,lon1,lat2,lon2){
+  const r=6371,toRad=x=>x*Math.PI/180;
+  const dLat=toRad(lat2-lat1),dLon=toRad(lon2-lon1);
+  const a=Math.sin(dLat/2)**2+Math.cos(toRad(lat1))*Math.cos(toRad(lat2))*Math.sin(dLon/2)**2;
+  return Math.round(r*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a)));
+}
+function eventDistance(m){
+  const p=state.preferences||{},lat=num(m.latitude),lon=num(m.longitude);
+  if(!num(p.homeLat)||!num(p.homeLon)||!lat||!lon)return null;
+  return haversineKm(num(p.homeLat),num(p.homeLon),lat,lon);
+}
+function nearbyCountryFallback(country){
+  const home=normText((state.preferences||{}).homeCountry);
+  if(!home)return false;
+  if(countryMatches(country,home))return true;
+  return (NEIGHBORS[home]||[]).some(x=>countryMatches(country,x));
+}
+function competitionSearchText(m){
+  return [m.event,m.city,m.region,m.country,m.federation,m.venue,m.event_disciplines,m.equipment_categories].filter(Boolean).join(" ").toLowerCase();
+}
+function competitionMatchesScope(m,scope,radius){
+  const p=state.preferences||{},distance=eventDistance(m);
+  if(scope==="world")return true;
+  if(scope==="europe")return EUROPE_COUNTRIES.has(normText(m.country));
+  if(scope==="country")return p.homeCountry?countryMatches(m.country,p.homeCountry):false;
+  if(scope==="nearby"){
+    if(distance!==null)return distance<=radius;
+    return nearbyCountryFallback(m.country);
+  }
+  return true;
+}
+function filteredCompetitions(){
+  const q=normText($("competitionSearch")?.value);
+  const range=num($("competitionDateRange")?.value)||90;
+  const radius=num($("competitionRadius")?.value)||250;
+  const federation=$("competitionFederation")?.value||"";
+  const rows=upcomingCompetitions.filter(m=>{
+    if(q&&!competitionSearchText(m).includes(q))return false;
+    if(range<9999&&num(m.days_until)>range)return false;
+    if(federation&&m.federation!==federation)return false;
+    return competitionMatchesScope(m,competitionScope,radius);
+  }).map(m=>({...m,_distance:eventDistance(m)}));
+  rows.sort((a,b)=>{
+    if(competitionScope==="nearby"){
+      const ad=a._distance===null?999999:a._distance,bd=b._distance===null?999999:b._distance;
+      if(ad!==bd)return ad-bd;
+    }
+    return num(a.days_until)-num(b.days_until)||String(a.event).localeCompare(String(b.event));
+  });
+  return rows;
+}
 async function loadCompetitions(){
   try{
     const res=await fetch(HUB_API+"/competitions",{headers:{"Accept":"application/json"}});
@@ -525,39 +612,100 @@ async function loadCompetitions(){
     const data=await res.json();
     upcomingCompetitions=Array.isArray(data.competitions)?data.competitions:[];
   }catch(e){upcomingCompetitions=[]}
-  renderCompetitionPicker();
+  renderCompetitionFinder();
 }
-function renderCompetitionPicker(){
-  const sel=$("competitionSelect"),status=$("competitionStatus");
-  if(!sel)return;
+function renderFederationOptions(){
+  const sel=$("competitionFederation");if(!sel)return;
+  const current=sel.value;
+  const feds=[...new Set(upcomingCompetitions.map(m=>m.federation).filter(Boolean))].sort((a,b)=>a.localeCompare(b));
+  sel.innerHTML='<option value="">'+esc(t("finder.all_federations"))+'</option>'+feds.map(f=>'<option value="'+esc(f)+'">'+esc(f)+'</option>').join("");
+  if(feds.includes(current))sel.value=current;
+}
+function renderCompetitionFinder(){
+  const root=$("competitionResults"),status=$("competitionStatus");
+  if(!root||!status)return;
+  renderFederationOptions();
+  const p=state.preferences||{};
+  document.querySelectorAll("#competitionScopes button").forEach(btn=>btn.classList.toggle("active",btn.dataset.scope===competitionScope));
+  const rows=filteredCompetitions();
+  const hasLocation=num(p.homeLat)&&num(p.homeLon);
+  if((competitionScope==="nearby"&&!hasLocation&&!p.homeCountry)||(competitionScope==="country"&&!p.homeCountry)){
+    status.textContent=t("finder.location_needed");
+  }else{
+    status.textContent=t("finder.results_count",{count:rows.length});
+  }
+  if(!rows.length){
+    root.innerHTML='<div class="finderEmpty">'+esc(t("finder.no_results"))+'</div>';
+    return;
+  }
+  root.innerHTML=rows.slice(0,80).map((m)=>{
+    const place=[m.city,m.country].filter(Boolean).join(", ")||m.country||t("common.not_set");
+    const distance=m._distance!==null?'<span class="distanceBadge">'+m._distance+' km</span>':"";
+    const meta=[m.start_date,m.federation].filter(Boolean).join(" · ");
+    const venue=m.venue?'<div class="competitionVenue">'+esc(m.venue)+'</div>':"";
+    const selected=(state.profile||{}).meetName===m.event&&(state.profile||{}).meetDate===m.start_date;
+    return '<article class="competitionCard">'
+      +'<div class="competitionTop"><div><h4>'+esc(m.event||"Powerlifting meet")+'</h4><div class="competitionPlace">'+esc(place)+'</div></div>'+distance+'</div>'
+      +venue+'<div class="competitionMeta">'+esc(meta)+'</div>'
+      +'<div class="competitionActions">'
+      +(m.url?'<a class="ghost linkButton" href="'+esc(m.url)+'" target="_blank" rel="noopener">'+esc(t("finder.details"))+'</a>':'')
+      +'<button class="'+(selected?'selectedMeet':'primary compact')+'" data-select-event="'+esc(m.event||"")+'" data-select-date="'+esc(m.start_date||"")+'">'+esc(selected?t("finder.selected"):t("finder.select"))+'</button>'
+      +'</div></article>';
+  }).join("");
+  root.querySelectorAll("[data-select-event]").forEach(btn=>btn.addEventListener("click",()=>{
+    const m=upcomingCompetitions.find(x=>x.event===btn.dataset.selectEvent&&x.start_date===btn.dataset.selectDate);
+    if(m)selectCompetition(m);
+  }));
+}
+function selectCompetition(m){
   const p=state.profile||{};
-  const options=['<option value="">Select an upcoming meet</option>'];
-  upcomingCompetitions.forEach((m,i)=>{
-    const label=[m.start_date,m.event,m.country].filter(Boolean).join(" · ");
-    options.push('<option value="'+i+'">'+esc(label)+'</option>');
-  });
-  sel.innerHTML=options.join("");
-  status.textContent=upcomingCompetitions.length
-    ? t("dynamic.competitions_available",{count:upcomingCompetitions.length})
-    : t("dynamic.no_competitions");
-  if(p.meetName){
-    const idx=upcomingCompetitions.findIndex(m=>m.event===p.meetName&&m.start_date===p.meetDate);
-    if(idx>=0)sel.value=String(idx);
-  }
-}
-function chooseCompetition(){
-  const idx=Number($("competitionSelect").value);
-  if(!Number.isInteger(idx)||idx<0||!upcomingCompetitions[idx]){
-    $("competitionStatus").textContent=t("dynamic.choose_competition");return;
-  }
-  const m=upcomingCompetitions[idx],p=state.profile||{};
   p.meetName=m.event||"Powerlifting meet";
   p.meetDate=m.start_date||"";
   p.meetCountry=m.country||"";
+  p.meetCity=m.city||"";
+  p.meetVenue=m.venue||"";
   p.meetFederation=m.federation||"";
   p.meetUrl=m.url||"";
   state.profile=p;save();render();
   $("competitionStatus").textContent=t("dynamic.meet_saved",{meet:p.meetName});
+  renderCompetitionFinder();
+}
+async function saveHomeLocation(){
+  const country=$("homeCountry").value.trim(),city=$("homeCity").value.trim(),status=$("locationStatus");
+  state.preferences=state.preferences||{};
+  state.preferences.homeCountry=country;state.preferences.homeCity=city;
+  if(!city){
+    state.preferences.homeLat=null;state.preferences.homeLon=null;state.preferences.locationSource="country";
+    save();status.textContent=t("finder.location_saved");renderCompetitionFinder();return;
+  }
+  status.textContent=t("finder.resolving_location");
+  try{
+    const url=HUB_API+"/geocode?city="+encodeURIComponent(city)+"&country="+encodeURIComponent(country);
+    const res=await fetch(url,{headers:{"Accept":"application/json"}});
+    const data=await res.json();
+    if(!res.ok)throw new Error(data.message||"Location lookup failed.");
+    state.preferences.homeLat=num(data.latitude);state.preferences.homeLon=num(data.longitude);
+    state.preferences.locationSource="manual";save();
+    status.textContent=t("finder.location_resolved",{place:data.display_name||[city,country].filter(Boolean).join(", ")});
+    renderCompetitionFinder();
+  }catch(err){status.textContent=t("finder.location_error",{message:err.message})}
+}
+function useBrowserLocation(statusId="competitionStatus"){
+  const status=$(statusId)||$("competitionStatus");
+  if(!navigator.geolocation){status.textContent=t("finder.location_unsupported");return}
+  status.textContent=t("finder.getting_location");
+  navigator.geolocation.getCurrentPosition(pos=>{
+    state.preferences=state.preferences||{};
+    state.preferences.homeLat=pos.coords.latitude;
+    state.preferences.homeLon=pos.coords.longitude;
+    state.preferences.locationSource="device";
+    save();status.textContent=t("finder.location_ready");competitionScope="nearby";renderCompetitionFinder();
+  },()=>{status.textContent=t("finder.location_denied")},{enableHighAccuracy:false,timeout:10000,maximumAge:3600000});
+}
+function populateLocationSettings(){
+  const p=state.preferences||{};
+  if($("homeCountry")&&!$("homeCountry").value)$("homeCountry").value=p.homeCountry||"";
+  if($("homeCity")&&!$("homeCity").value)$("homeCity").value=p.homeCity||"";
 }
 function saveCurrentGoal(){
   const p=state.profile||{},targetDots=num($("goalDots").value),bw=num($("goalBodyweight").value);
@@ -753,7 +901,17 @@ $("oplCsv").addEventListener("change",async e=>{
   e.target.value="";
 });
 $("clearHistory").addEventListener("click",()=>{if(confirm(t("dynamic.confirm_clear"))){state.meets=[];save();renderProgress()}});
-$("useCompetition").addEventListener("click",chooseCompetition);
+$("competitionSearch").addEventListener("input",renderCompetitionFinder);
+$("competitionDateRange").addEventListener("change",renderCompetitionFinder);
+$("competitionRadius").addEventListener("change",renderCompetitionFinder);
+$("competitionFederation").addEventListener("change",renderCompetitionFinder);
+document.querySelectorAll("#competitionScopes button").forEach(btn=>btn.addEventListener("click",()=>{
+  competitionScope=btn.dataset.scope||"nearby";
+  renderCompetitionFinder();
+}));
+$("useCurrentLocation").addEventListener("click",()=>useBrowserLocation("competitionStatus"));
+$("settingsUseLocation").addEventListener("click",()=>useBrowserLocation("locationStatus"));
+$("saveHomeLocation").addEventListener("click",saveHomeLocation);
 $("runSimulator").addEventListener("click",()=>{
   const p=state.profile||{},bw=num($("simBodyweight").value),total=num($("simTotal").value);
   const currentDots=dotsScore(p.sex,p.bodyweight,currentBestTotal()),simDots=dotsScore(p.sex,bw,total);
