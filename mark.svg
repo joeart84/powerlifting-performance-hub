@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Powerlifting Performance Hub mark">
+  <rect width="64" height="64" rx="16" fill="#171c20"/>
+  <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M8 33h48" stroke="#edf2f0" stroke-width="3"/>
+    <path d="M14 25v16M19 27v12M50 25v16M45 27v12" stroke="#d9ad54" stroke-width="4"/>
+    <path d="M23 37l7-8 5 5 8-10m-4 0h4v4" stroke="#edf2f0" stroke-width="3.3"/>
+  </g>
+</svg>

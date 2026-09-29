@@ -14,7 +14,10 @@ jobs:
         with:
           node-version: "22"
       - name: Check JavaScript syntax
-        run: node --check app.js
+        run: |
+          node --check app.js
+          node --check firebase-config.js
+          node --input-type=module --check < firebase-auth.js
       - name: Check required PWA files
         run: |
           test -f index.html
@@ -23,6 +26,10 @@ jobs:
           test -f manifest.webmanifest
           test -f sw.js
           test -f icon.svg
+          test -f mark.svg
+          test -f logo.svg
+          test -f icon-192.png
+          test -f icon-512.png
       - name: Check event-listener element IDs
         run: |
           node - <<'NODE'

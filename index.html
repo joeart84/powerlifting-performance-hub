@@ -8,17 +8,13 @@
   <title>Powerlifting Performance Hub</title>
   <link rel="manifest" href="./manifest.webmanifest">
   <link rel="icon" href="./icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="./icon-192.png">
   <link rel="stylesheet" href="./app.css">
 </head>
 <body>
   <header class="topbar">
     <div class="brandLockup">
-      <div class="brandMark" aria-hidden="true">
-        <span class="brandBar"></span>
-        <span class="brandPlate brandPlateLeft"></span>
-        <span class="brandPlate brandPlateRight"></span>
-        <span class="brandPulse"></span>
-      </div>
+      <img class="brandMark" src="./mark.svg" width="40" height="40" alt="">
       <div>
         <div class="eyebrow">POWERLIFTING PERFORMANCE</div>
         <h1 data-i18n="app.title">Performance Hub</h1>
@@ -310,17 +306,42 @@
       <section id="tab-account" class="tab panel" hidden>
         <div class="eyebrow">CLOUD ACCOUNT</div>
         <h2 data-i18n="account.title">Keep your Hub on every device</h2>
-        <p class="muted" data-i18n="account.note">No password. We email you a 6-digit sign-in code. Your athlete profile, goals, meet plan and history can then be synced to powerlifting-calculator.com.</p>
+        <p class="muted" data-i18n="account.intro">Sign in to keep your athlete profile, goals and meet plan across devices. Your data on this device stays available without an account.</p>
 
         <div id="accountSignedOut">
-          <div class="accountBox">
-            <label><span data-i18n="account.email">Email</span><input id="accountEmail" type="email" placeholder="you@example.com" autocomplete="email"></label>
-            <button id="requestCode" class="primary" data-i18n="account.send_code">Email me a code</button>
-            <div id="codeStep" hidden>
-              <label><span data-i18n="account.code">6-digit code</span><input id="accountCode" inputmode="numeric" maxlength="6" placeholder="123456"></label>
-              <button id="verifyCode" class="primary" data-i18n="account.sign_in">Sign in</button>
+          <div id="firebasePanel" class="accountBox authCard" hidden>
+            <h3 data-i18n="auth.welcome">Welcome back</h3>
+            <p class="muted" data-i18n="auth.subtitle">Choose how you want to continue.</p>
+            <div class="socialStack">
+              <button id="authGoogle" class="socialButton" type="button" data-i18n="auth.google">Continue with Google</button>
+              <button id="authFacebook" class="socialButton" type="button" data-i18n="auth.facebook" hidden>Continue with Facebook</button>
+              <button id="authTwitter" class="socialButton" type="button" data-i18n="auth.twitter" hidden>Continue with X</button>
             </div>
-            <div id="accountStatus" class="muted small"></div>
+            <div class="orDivider"><span data-i18n="auth.or">or</span></div>
+            <div class="authModes" role="group" aria-label="Email account mode">
+              <button id="authModeSignIn" class="active" type="button" data-i18n="auth.sign_in">Sign in</button>
+              <button id="authModeSignUp" type="button" data-i18n="auth.create">Create account</button>
+            </div>
+            <form id="firebaseEmailForm" class="authForm">
+              <label><span data-i18n="account.email">Email</span><input id="firebaseEmail" type="email" autocomplete="email" required placeholder="you@example.com"></label>
+              <label><span data-i18n="auth.password">Password</span><input id="firebasePassword" type="password" autocomplete="current-password" minlength="6" required></label>
+              <button id="firebaseSubmit" class="primary authCta" type="submit" data-i18n="auth.sign_in">Sign in</button>
+            </form>
+            <button id="firebaseReset" class="textButton" type="button" data-i18n="auth.forgot">Forgot password?</button>
+            <div id="firebaseStatus" class="authStatus" role="status" aria-live="polite"></div>
+          </div>
+          <div class="accountBox authCard" id="legacyAccount">
+            <h3 data-i18n="auth.code_title">Sign in with an email code</h3>
+            <p class="muted" data-i18n="auth.code_note">Existing cloud account? We'll email a six-digit code. No password needed.</p>
+            <form id="legacyEmailForm" class="authForm">
+              <label><span data-i18n="account.email">Email</span><input id="accountEmail" type="email" placeholder="you@example.com" autocomplete="email" required></label>
+              <button id="requestCode" class="primary authCta" type="submit" data-i18n="account.send_code">Email me a code</button>
+            </form>
+            <form id="codeStep" class="authForm codeForm" hidden>
+              <label><span data-i18n="account.code">6-digit code</span><input id="accountCode" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" autocomplete="one-time-code" placeholder="123456" required></label>
+              <button id="verifyCode" class="primary authCta" type="submit" data-i18n="account.sign_in">Sign in</button>
+            </form>
+            <div id="accountStatus" class="authStatus" role="status" aria-live="polite"></div>
           </div>
         </div>
 
@@ -389,5 +410,7 @@
 
   <footer>Prototype MVP · Powerlifting Performance Hub</footer>
   <script src="./app.js"></script>
+  <script src="./firebase-config.js"></script>
+  <script type="module" src="./firebase-auth.js"></script>
 </body>
 </html>

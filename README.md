@@ -151,3 +151,32 @@ Location is optional:
 - users can explicitly grant browser geolocation;
 - without coordinates, the app can still filter by home country and use neighboring-country fallback for nearby discovery;
 - Worldwide search is always available.
+# Account and preview setup
+
+The app is a static PWA served from GitHub Pages. It has no build step. The existing email-code account uses the Powerlifting Trend Radar WordPress REST API at `powerlifting-calculator.com`; its sessions and cloud profiles are not Firebase accounts. Local athlete data remains in browser storage.
+
+The optional Firebase Auth path is implemented in `firebase-auth.js`. With the default `firebase-config.js` set to `null`, the new controls are hidden and existing email-code accounts continue to work. To activate Firebase:
+
+1. Create a Firebase web app and a Cloud Firestore database. Set the public web fields `apiKey`, `authDomain`, `projectId`, `appId` in `firebase-config.js`. Firebase web config is an identifier, not a secret. Keep service account keys and OAuth client secrets out of this repository.
+2. Enable Google and Email/Password in Authentication. Add `joeart84.github.io` to Authorized domains. Set `enabledProviders: ["google", "password"]` in the config.
+3. Publish Firestore rules that allow a user to read and write only their own Hub document:
+
+   ```text
+   rules_version = '2';
+   service cloud.firestore {
+     match /databases/{database}/documents {
+       match /hubProfiles/{userId} {
+         allow read, write: if request.auth != null && request.auth.uid == userId;
+       }
+     }
+   }
+   ```
+
+4. Optionally enable Facebook and X/Twitter in Firebase Authentication, configure their OAuth application IDs, secrets and callback URLs in those providers' dashboards, then include `"facebook"` and/or `"twitter"` in `enabledProviders`. These credentials belong in the Firebase/provider consoles, never in this repo.
+5. A WordPress cloud account does not automatically become a Firebase account. To move data, sign in with the old email code, load cloud data onto this device, sign out, create/sign in to the Firebase account, then upload this device. Do not upload an empty local profile over valuable cloud data.
+
+`feature/auth-brand-refresh` deploys a test copy to `/preview/auth-brand-refresh/` on GitHub Pages while copying `main` into the production root. A later `main` deployment replaces the Pages artifact and removes the preview path. Merge the PR to publish the approved changes to the normal root URL; the production workflow deploys `main`.
+
+If the WordPress email-code form reports a network error, check that the WordPress REST endpoint responds to cross-origin `OPTIONS` and `POST` from the GitHub Pages origin with the right `Access-Control-Allow-Origin`, `Access-Control-Allow-Methods` and `Access-Control-Allow-Headers` (especially `Content-Type` and `Authorization`). The frontend cannot override a server CORS policy or site firewall.
+
+Brand colors: background `#101417`, off-white `#edf2f0`, warm gold `#d9ad54`. `logo.svg` is the horizontal lockup, `mark.svg` is the small header mark, and `icon.svg` plus the PNG sizes serve favicon and PWA icons.

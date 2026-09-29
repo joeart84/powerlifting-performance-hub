@@ -1,11 +1,9 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Powerlifting Performance Hub">
-  <rect width="512" height="512" rx="118" fill="#0b0d0f"/>
-  <rect x="82" y="239" width="348" height="34" rx="17" fill="#f4f5f3"/>
-  <rect x="104" y="184" width="34" height="144" rx="12" fill="#d8a94a"/>
-  <rect x="145" y="205" width="24" height="102" rx="10" fill="#d8a94a" opacity=".72"/>
-  <rect x="374" y="184" width="34" height="144" rx="12" fill="#d8a94a"/>
-  <rect x="343" y="205" width="24" height="102" rx="10" fill="#d8a94a" opacity=".72"/>
-  <path d="M205 315V197h61c48 0 77 23 77 61 0 39-29 61-77 61h-27v-34h27c25 0 39-9 39-27 0-17-14-27-39-27h-23v84z" fill="#f4f5f3"/>
-  <path d="M270 298l29-29 18 18 49-54" fill="none" stroke="#d8a94a" stroke-width="18" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M348 229h24v24" fill="none" stroke="#d8a94a" stroke-width="18" stroke-linecap="round" stroke-linejoin="round"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Powerlifting Performance Hub icon">
+  <rect width="512" height="512" rx="112" fill="#101417"/>
+  <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M68 256h376" stroke="#edf2f0" stroke-width="22"/>
+    <path d="M107 192v128M145 211v90M405 192v128M367 211v90" stroke="#d9ad54" stroke-width="27"/>
+    <path d="M183 288l49-50 39 33 58-67" stroke="#edf2f0" stroke-width="25"/>
+    <path d="M299 204h30v30" stroke="#edf2f0" stroke-width="25"/>
+  </g>
 </svg>
