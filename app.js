@@ -65,7 +65,7 @@ async function setLanguage(preference,announce=false){
   const select=$("languageSelect");
   if(select)select.value=preference;
   render();
-  renderCompetitionPicker();
+  renderCompetitionFinder();
   renderAccount();
   if(announce&&$("settingsStatus"))$("settingsStatus").textContent=t("settings.saved");
 }
@@ -445,7 +445,7 @@ function render(){
   $("countdown").textContent=p.meetDate?(d>=0?t("dynamic.days_until",{days:d}):t("dynamic.meet_passed")):t("dynamic.add_meet_date");
   $("meetSnapshot").innerHTML="<div><strong>"+esc(t("dynamic.meet_label"))+":</strong> "+esc(p.meetName||t("common.not_set"))+"</div><div><strong>"+esc(t("dynamic.date_label"))+":</strong> "+esc(p.meetDate||t("common.not_set"))+"</div><div><strong>"+esc(t("planner.projected_total"))+":</strong> "+totalFromPlan()+" kg</div><div><strong>"+esc(t("dynamic.current_best"))+":</strong> "+currentBestTotal()+" kg</div><div><strong>"+esc(t("dynamic.current_dots"))+":</strong> "+(currentDots?currentDots.toFixed(2):"—")+"</div>";
   renderGoalSnapshot();
-  renderPlanner();renderMeetDay();renderProgress();renderTools();renderReport();renderAccount();
+  renderPlanner();renderMeetDay();renderProgress();renderTools();renderReport();renderAccount();populateLocationSettings();renderCompetitionFinder();
 }
 
 function renderGoalSnapshot(){
@@ -898,7 +898,17 @@ $("oplCsv").addEventListener("change",async e=>{
   e.target.value="";
 });
 $("clearHistory").addEventListener("click",()=>{if(confirm(t("dynamic.confirm_clear"))){state.meets=[];save();renderProgress()}});
-$("useCompetition").addEventListener("click",chooseCompetition);
+$("competitionSearch").addEventListener("input",renderCompetitionFinder);
+$("competitionDateRange").addEventListener("change",renderCompetitionFinder);
+$("competitionRadius").addEventListener("change",renderCompetitionFinder);
+$("competitionFederation").addEventListener("change",renderCompetitionFinder);
+document.querySelectorAll("#competitionScopes button").forEach(btn=>btn.addEventListener("click",()=>{
+  competitionScope=btn.dataset.scope||"nearby";
+  renderCompetitionFinder();
+}));
+$("useCurrentLocation").addEventListener("click",useBrowserLocation);
+$("settingsUseLocation").addEventListener("click",useBrowserLocation);
+$("saveHomeLocation").addEventListener("click",saveHomeLocation);
 $("runSimulator").addEventListener("click",()=>{
   const p=state.profile||{},bw=num($("simBodyweight").value),total=num($("simTotal").value);
   const currentDots=dotsScore(p.sex,p.bodyweight,currentBestTotal()),simDots=dotsScore(p.sex,bw,total);
