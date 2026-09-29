@@ -1014,7 +1014,7 @@ $("useCurrentLocation").addEventListener("click",()=>useBrowserLocation("competi
 $("settingsUseLocation").addEventListener("click",()=>useBrowserLocation("locationStatus"));
 $("saveAthleteProfile").addEventListener("click",saveAthleteProfileSettings);
 $("birthDate").addEventListener("change",()=>{$("profileAge").value=ageFromBirthDate($("birthDate").value)||""});
-$("mccullochSetup").addEventListener("click",openAthleteProfileSettings);
+if($("mccullochSetup"))$("mccullochSetup").addEventListener("click",openAthleteProfileSettings);
 $("saveHomeLocation").addEventListener("click",saveHomeLocation);
 $("runSimulator").addEventListener("click",()=>{
   const p=state.profile||{},bw=num($("simBodyweight").value),total=num($("simTotal").value);
