@@ -4,8 +4,8 @@
   "start_url":"./",
   "scope":"./",
   "display":"standalone",
-  "background_color":"#0e1012",
-  "theme_color":"#101214",
+  "background_color":"#0b0d0f",
+  "theme_color":"#0b0d0f",
   "description":"Athlete dashboard, meet planner, meet-day mode and post-meet report for powerlifters.",
   "icons":[{"src":"./icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}]
 }
