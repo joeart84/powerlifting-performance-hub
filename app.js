@@ -1058,6 +1058,13 @@ document.querySelectorAll("#competitionScopes button").forEach(btn=>btn.addEvent
 $("useCurrentLocation").addEventListener("click",()=>useBrowserLocation("competitionStatus"));
 $("settingsUseLocation").addEventListener("click",()=>useBrowserLocation("locationStatus"));
 $("saveAthleteProfile").addEventListener("click",saveAthleteProfileSettings);
+$("birthDate").addEventListener("input",()=>{
+  const birthDate=parseBirthDateInput($("birthDate").value);
+  $("athleteProfileStatus").textContent="";
+  if(!birthDate)return;
+  $("profileAge").value=ageFromBirthDate(birthDate)||"";
+  $("ageInputHint").textContent=t("settings.age_from_date");
+});
 $("birthDate").addEventListener("change",()=>{
   const raw=$("birthDate").value.trim();
   if(!raw)return;
