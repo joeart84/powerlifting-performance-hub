@@ -790,9 +790,15 @@ function populateAthleteProfileSettings(){
 }
 function saveAthleteProfileSettings(){
   const p=state.profile||{};
-  const birthDate=$("birthDate").value;
+  const ageInput=$("profileAge"),birthDate=$("birthDate").value;
+  if(!ageInput.checkValidity()){ageInput.reportValidity();return}
+  const age=birthDate?ageFromBirthDate(birthDate):parseAge(ageInput.value);
+  if(birthDate&&(age<13||age>100)){
+    $("athleteProfileStatus").textContent=t("settings.invalid_birth_date");
+    $("birthDate").focus();return;
+  }
   p.birthDate=birthDate;
-  p.age=ageFromBirthDate(birthDate)||parseAge(p.age);
+  p.age=age;
   state.profile=p;
   save();
   render();
@@ -1029,7 +1035,16 @@ document.querySelectorAll("#competitionScopes button").forEach(btn=>btn.addEvent
 $("useCurrentLocation").addEventListener("click",()=>useBrowserLocation("competitionStatus"));
 $("settingsUseLocation").addEventListener("click",()=>useBrowserLocation("locationStatus"));
 $("saveAthleteProfile").addEventListener("click",saveAthleteProfileSettings);
-$("birthDate").addEventListener("change",()=>{$("profileAge").value=ageFromBirthDate($("birthDate").value)||""});
+$("birthDate").addEventListener("change",()=>{
+  if(!$("birthDate").value)return;
+  $("profileAge").value=ageFromBirthDate($("birthDate").value)||"";
+  $("ageInputHint").textContent=t("settings.age_from_date");
+});
+$("profileAge").addEventListener("input",()=>{
+  if(!$("birthDate").value)return;
+  $("birthDate").value="";
+  $("ageInputHint").textContent=t("settings.age_manual");
+});
 if($("mccullochSetup"))$("mccullochSetup").addEventListener("click",openAthleteProfileSettings);
 $("saveHomeLocation").addEventListener("click",saveHomeLocation);
 $("runSimulator").addEventListener("click",()=>{
