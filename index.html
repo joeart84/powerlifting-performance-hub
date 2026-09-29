@@ -14,46 +14,46 @@
   <header class="topbar">
     <div>
       <div class="eyebrow">POWERLIFTING-CALCULATOR.COM</div>
-      <h1>Performance Hub</h1>
+      <h1 data-i18n="app.title">Performance Hub</h1>
     </div>
     <div class="topActions">
-      <span id="cloudBadge" class="cloudBadge">Local only</span>
-      <button id="installBtn" class="ghost" hidden>Install app</button>
+      <span id="cloudBadge" class="cloudBadge" data-i18n="cloud.local_only">Local only</span>
+      <button id="installBtn" class="ghost" data-i18n="install" hidden>Install app</button>
     </div>
   </header>
 
   <main class="shell">
     <section id="onboarding" class="panel">
       <div class="eyebrow">MVP · LOCAL-FIRST</div>
-      <h2>Build your athlete dashboard</h2>
+      <h2 data-i18n="onboarding.title">Build your athlete dashboard</h2>
       <p class="muted">For this first test, your data stays only in this browser on your device.</p>
 
       <div class="oplLookup heroImport">
         <div>
-          <strong>Already compete?</strong>
-          <p class="muted">Import your OpenPowerlifting history in one tap.</p>
+          <strong data-i18n="onboarding.compete">Already compete?</strong>
+          <p class="muted" data-i18n="onboarding.import_note">Import your OpenPowerlifting history in one tap.</p>
         </div>
         <div class="lookupRow">
-          <input id="onboardingLifter" placeholder="Name or OpenPowerlifting profile URL" autocomplete="off">
-          <button id="onboardingImport" class="primary compact">Import athlete</button>
+          <input id="onboardingLifter" placeholder="Name or OpenPowerlifting profile URL" data-i18n-placeholder="onboarding.input" autocomplete="off">
+          <button id="onboardingImport" class="primary compact" data-i18n="onboarding.import">Import athlete</button>
         </div>
         <div id="onboardingImportStatus" class="muted small"></div>
         <div id="onboardingCandidates" class="candidateList"></div>
       </div>
 
-      <div class="orDivider"><span>or enter your details manually</span></div>
+      <div class="orDivider"><span data-i18n="onboarding.or">or enter your details manually</span></div>
 
       <div class="grid two">
-        <label>Name<input id="name" placeholder="Joe Lifter"></label>
-        <label>Sex<select id="sex"><option value="M">Male</option><option value="F">Female</option></select></label>
-        <label>Bodyweight (kg)<input id="bodyweight" type="number" step="0.1" placeholder="83"></label>
-        <label>Next meet date<input id="meetDate" type="date"></label>
-        <label>Squat best (kg)<input id="squatBest" type="number" step="0.5" placeholder="180"></label>
-        <label>Bench best (kg)<input id="benchBest" type="number" step="0.5" placeholder="120"></label>
-        <label>Deadlift best (kg)<input id="deadliftBest" type="number" step="0.5" placeholder="220"></label>
+        <label><span data-i18n="profile.name">Name</span><input id="name" placeholder="Joe Lifter"></label>
+        <label><span data-i18n="profile.sex">Sex</span><select id="sex"><option value="M" data-i18n="profile.male">Male</option><option value="F" data-i18n="profile.female">Female</option></select></label>
+        <label><span data-i18n="profile.bodyweight">Bodyweight (kg)</span><input id="bodyweight" type="number" step="0.1" placeholder="83"></label>
+        <label><span data-i18n="profile.next_meet_date">Next meet date</span><input id="meetDate" type="date"></label>
+        <label><span data-i18n="profile.squat_best">Squat best (kg)</span><input id="squatBest" type="number" step="0.5" placeholder="180"></label>
+        <label><span data-i18n="profile.bench_best">Bench best (kg)</span><input id="benchBest" type="number" step="0.5" placeholder="120"></label>
+        <label><span data-i18n="profile.deadlift_best">Deadlift best (kg)</span><input id="deadliftBest" type="number" step="0.5" placeholder="220"></label>
       </div>
 
-      <button id="saveProfile" class="primary">Create dashboard</button>
+      <button id="saveProfile" class="primary" data-i18n="profile.create">Create dashboard</button>
     </section>
 
     <section id="app" hidden>
@@ -65,12 +65,12 @@
         </div>
         <div class="heroScores">
           <div class="heroScore">
-            <span>Current total</span>
+            <span data-i18n="dashboard.current_total">Current total</span>
             <strong id="currentTotal">0</strong>
             <small>kg</small>
           </div>
           <div class="heroScore">
-            <span>Current DOTS</span>
+            <span data-i18n="dashboard.current_dots">Current DOTS</span>
             <strong id="currentDots">—</strong>
             <small>score</small>
           </div>
@@ -78,13 +78,14 @@
       </section>
 
       <nav class="tabs" aria-label="Performance Hub">
-        <button data-tab="dashboard" class="active">Dashboard</button>
-        <button data-tab="planner">Meet Planner</button>
-        <button data-tab="meetday">Meet Day</button>
-        <button data-tab="progress">Progress</button>
-        <button data-tab="tools">Tools</button>
-        <button data-tab="report">Report</button>
-        <button data-tab="account">Account</button>
+        <button data-tab="dashboard" class="active" data-i18n="nav.dashboard">Dashboard</button>
+        <button data-tab="planner" data-i18n="nav.planner">Meet Planner</button>
+        <button data-tab="meetday" data-i18n="nav.meetday">Meet Day</button>
+        <button data-tab="progress" data-i18n="nav.progress">Progress</button>
+        <button data-tab="tools" data-i18n="nav.tools">Tools</button>
+        <button data-tab="report" data-i18n="nav.report">Report</button>
+        <button data-tab="account" data-i18n="nav.account">Account</button>
+        <button data-tab="settings" data-i18n="nav.settings">Settings</button>
       </nav>
 
       <section id="tab-dashboard" class="tab panel">
@@ -97,52 +98,52 @@
 
         <div class="dashboardGrid">
           <div class="subpanel">
-            <h3>Next meet snapshot</h3>
+            <h3 data-i18n="dashboard.next_meet">Next meet snapshot</h3>
             <div id="meetSnapshot" class="snapshot"></div>
           </div>
           <div class="subpanel">
-            <h3>Next goal</h3>
+            <h3 data-i18n="dashboard.next_goal">Next goal</h3>
             <div id="goalSnapshot" class="snapshot"></div>
           </div>
         </div>
 
-        <button id="editProfile" class="ghost">Edit athlete profile</button>
+        <button id="editProfile" class="ghost" data-i18n="profile.edit">Edit athlete profile</button>
       </section>
 
       <section id="tab-planner" class="tab panel" hidden>
-        <h2>Meet Planner</h2>
-        <p class="muted">A simple starting plan is suggested from your current best lifts. Adjust every attempt as you like.</p>
+        <h2 data-i18n="planner.title">Meet Planner</h2>
+        <p class="muted" data-i18n="planner.note">A simple starting plan is suggested from your current best lifts. Adjust every attempt as you like.</p>
 
         <div class="subpanel meetPicker">
-          <h3>Choose your next meet</h3>
+          <h3 data-i18n="planner.choose_meet">Choose your next meet</h3>
           <div class="lookupRow">
-            <select id="competitionSelect"><option value="">Loading upcoming competitions…</option></select>
-            <button id="useCompetition" class="ghost">Use this meet</button>
+            <select id="competitionSelect"><option value="" data-i18n="planner.loading_competitions">Loading upcoming competitions…</option></select>
+            <button id="useCompetition" class="ghost" data-i18n="planner.use_meet">Use this meet</button>
           </div>
           <div id="competitionStatus" class="muted small"></div>
         </div>
 
         <div id="plannerRows"></div>
         <div class="plannerSummary">
-          <span>Projected total</span>
+          <span data-i18n="planner.projected_total">Projected total</span>
           <strong id="projectedTotal">0 kg</strong>
         </div>
-        <button id="savePlan" class="primary">Save attempt plan</button>
+        <button id="savePlan" class="primary" data-i18n="planner.save">Save attempt plan</button>
       </section>
 
       <section id="tab-meetday" class="tab panel" hidden>
         <div class="meetHeader">
           <div>
             <div class="eyebrow">MEET DAY MODE</div>
-            <h2>Tap Good or Miss after each attempt</h2>
+            <h2 data-i18n="meetday.title">Tap Good or Miss after each attempt</h2>
           </div>
-          <button id="resetMeet" class="ghost danger">Reset</button>
+          <button id="resetMeet" class="ghost danger" data-i18n="meetday.reset">Reset</button>
         </div>
         <div id="meetDayRows"></div>
         <div class="meetStats">
-          <article><span>Made</span><strong id="madeCount">0</strong></article>
-          <article><span>Missed</span><strong id="missCount">0</strong></article>
-          <article><span>Best total so far</span><strong id="liveTotal">0 kg</strong></article>
+          <article><span data-i18n="meetday.made">Made</span><strong id="madeCount">0</strong></article>
+          <article><span data-i18n="meetday.missed">Missed</span><strong id="missCount">0</strong></article>
+          <article><span data-i18n="meetday.best_total">Best total so far</span><strong id="liveTotal">0 kg</strong></article>
         </div>
       </section>
 
@@ -150,24 +151,24 @@
         <div class="progressHead">
           <div>
             <div class="eyebrow">ATHLETE PROGRESS</div>
-            <h2>Competition history</h2>
-            <p class="muted">Import directly from OpenPowerlifting. CSV is kept only as an advanced fallback.</p>
+            <h2 data-i18n="progress.title">Competition history</h2>
+            <p class="muted" data-i18n="progress.note">Import directly from OpenPowerlifting. CSV is kept only as an advanced fallback.</p>
           </div>
-          <button id="clearHistory" class="ghost danger">Clear history</button>
+          <button id="clearHistory" class="ghost danger" data-i18n="progress.clear">Clear history</button>
         </div>
 
         <div class="importBox">
-          <h3>Import athlete from OpenPowerlifting</h3>
+          <h3 data-i18n="progress.import_title">Import athlete from OpenPowerlifting</h3>
           <div class="lookupRow">
-            <input id="progressLifter" placeholder="Name, username or profile URL" autocomplete="off">
-            <button id="progressImport" class="primary compact">Import / refresh</button>
+            <input id="progressLifter" placeholder="Name, username or profile URL" data-i18n-placeholder="progress.input" autocomplete="off">
+            <button id="progressImport" class="primary compact" data-i18n="progress.import_refresh">Import / refresh</button>
           </div>
-          <div id="importStatus" class="muted">No competition history imported yet.</div>
+          <div id="importStatus" class="muted" data-i18n="progress.empty">No competition history imported yet.</div>
           <div id="progressCandidates" class="candidateList"></div>
 
           <details class="advancedImport">
-            <summary>Advanced fallback: import CSV file</summary>
-            <label class="fileLabel">OpenPowerlifting CSV
+            <summary data-i18n="progress.advanced">Advanced fallback: import CSV file</summary>
+            <label class="fileLabel"><span data-i18n="progress.csv">OpenPowerlifting CSV</span>
               <input id="oplCsv" type="file" accept=".csv,text/csv">
             </label>
           </details>
@@ -177,20 +178,20 @@
 
         <div class="chartGrid">
           <div class="subpanel">
-            <h3>Total progress</h3>
+            <h3 data-i18n="progress.total_chart">Total progress</h3>
             <div id="totalChart" class="chartBox"></div>
           </div>
           <div class="subpanel">
-            <h3>DOTS progress</h3>
+            <h3 data-i18n="progress.dots_chart">DOTS progress</h3>
             <div id="dotsChart" class="chartBox"></div>
           </div>
         </div>
 
         <div class="subpanel">
-          <h3>Meet history</h3>
+          <h3 data-i18n="progress.meet_history">Meet history</h3>
           <div class="historyWrap">
             <table class="historyTable">
-              <thead><tr><th>Date</th><th>Meet</th><th>BW</th><th>Squat</th><th>Bench</th><th>Deadlift</th><th>Total</th><th>DOTS</th></tr></thead>
+              <thead><tr><th data-i18n="progress.date">Date</th><th data-i18n="progress.meet">Meet</th><th data-i18n="progress.bw">BW</th><th data-i18n="progress.squat">Squat</th><th data-i18n="progress.bench">Bench</th><th data-i18n="progress.deadlift">Deadlift</th><th data-i18n="progress.total">Total</th><th data-i18n="progress.dots">DOTS</th></tr></thead>
               <tbody id="historyRows"></tbody>
             </table>
           </div>
@@ -199,35 +200,35 @@
 
       <section id="tab-tools" class="tab panel" hidden>
         <div class="eyebrow">PERFORMANCE TOOLS</div>
-        <h2>Strength context, weight class and goals</h2>
-        <p class="muted">Reference context is based on recent Raw full-power OpenPowerlifting performances. It is descriptive, not a prediction.</p>
+        <h2 data-i18n="tools.title">Strength context, weight class and goals</h2>
+        <p class="muted" data-i18n="tools.note">Reference context is based on recent Raw full-power OpenPowerlifting performances. It is descriptive, not a prediction.</p>
 
         <div class="toolGrid">
           <section class="toolCard">
-            <h3>Strength Context</h3>
-            <div id="strengthContext" class="contextResult">Loading reference data…</div>
+            <h3 data-i18n="tools.context">Strength Context</h3>
+            <div id="strengthContext" class="contextResult" data-i18n="tools.loading_reference">Loading reference data…</div>
           </section>
 
           <section class="toolCard">
-            <h3>Weight Class Simulator</h3>
+            <h3 data-i18n="tools.simulator">Weight Class Simulator</h3>
             <div class="grid two">
-              <label>Target bodyweight (kg)<input id="simBodyweight" type="number" step="0.1"></label>
-              <label>Projected total (kg)<input id="simTotal" type="number" step="0.5"></label>
+              <label><span data-i18n="tools.target_bw">Target bodyweight (kg)</span><input id="simBodyweight" type="number" step="0.1"></label>
+              <label><span data-i18n="tools.projected_total">Projected total (kg)</span><input id="simTotal" type="number" step="0.5"></label>
             </div>
-            <button id="runSimulator" class="primary">Simulate</button>
+            <button id="runSimulator" class="primary" data-i18n="tools.simulate">Simulate</button>
             <div id="simResult" class="toolResult"></div>
           </section>
 
           <section class="toolCard">
-            <h3>Goal Planner</h3>
+            <h3 data-i18n="tools.goal">Goal Planner</h3>
             <div class="grid two">
-              <label>Target DOTS<input id="goalDots" type="number" step="1" placeholder="400"></label>
-              <label>Target bodyweight (kg)<input id="goalBodyweight" type="number" step="0.1"></label>
+              <label><span data-i18n="tools.target_dots">Target DOTS</span><input id="goalDots" type="number" step="1" placeholder="400"></label>
+              <label><span data-i18n="tools.target_bw">Target bodyweight (kg)</span><input id="goalBodyweight" type="number" step="0.1"></label>
             </div>
-            <label>Target date<input id="goalDate" type="date"></label>
+            <label><span data-i18n="tools.target_date">Target date</span><input id="goalDate" type="date"></label>
             <div class="buttonRow">
-              <button id="runGoal" class="primary">Calculate target total</button>
-              <button id="saveGoal" class="ghost">Save goal</button>
+              <button id="runGoal" class="primary" data-i18n="tools.calculate">Calculate target total</button>
+              <button id="saveGoal" class="ghost" data-i18n="tools.save_goal">Save goal</button>
             </div>
             <div id="goalResult" class="toolResult"></div>
           </section>
@@ -236,28 +237,28 @@
 
       <section id="tab-report" class="tab panel" hidden>
         <div class="eyebrow">POST-MEET REPORT</div>
-        <h2 id="reportTitle">Complete the meet to build your report</h2>
+        <h2 id="reportTitle" data-i18n="report.empty">Complete the meet to build your report</h2>
         <div id="reportBody"></div>
         <div class="buttonRow">
-          <button id="saveMeetResult" class="ghost">Save result to history</button>
-          <button id="shareReport" class="primary">Share text</button>
-          <button id="shareCard" class="primary">Share result card</button>
+          <button id="saveMeetResult" class="ghost" data-i18n="report.save_history">Save result to history</button>
+          <button id="shareReport" class="primary" data-i18n="report.share_text">Share text</button>
+          <button id="shareCard" class="primary" data-i18n="report.share_card">Share result card</button>
         </div>
         <div id="reportStatus" class="muted small"></div>
       </section>
 
       <section id="tab-account" class="tab panel" hidden>
         <div class="eyebrow">CLOUD ACCOUNT</div>
-        <h2>Keep your Hub on every device</h2>
-        <p class="muted">No password. We email you a 6-digit sign-in code. Your athlete profile, goals, meet plan and history can then be synced to powerlifting-calculator.com.</p>
+        <h2 data-i18n="account.title">Keep your Hub on every device</h2>
+        <p class="muted" data-i18n="account.note">No password. We email you a 6-digit sign-in code. Your athlete profile, goals, meet plan and history can then be synced to powerlifting-calculator.com.</p>
 
         <div id="accountSignedOut">
           <div class="accountBox">
-            <label>Email<input id="accountEmail" type="email" placeholder="you@example.com" autocomplete="email"></label>
-            <button id="requestCode" class="primary">Email me a code</button>
+            <label><span data-i18n="account.email">Email</span><input id="accountEmail" type="email" placeholder="you@example.com" autocomplete="email"></label>
+            <button id="requestCode" class="primary" data-i18n="account.send_code">Email me a code</button>
             <div id="codeStep" hidden>
-              <label>6-digit code<input id="accountCode" inputmode="numeric" maxlength="6" placeholder="123456"></label>
-              <button id="verifyCode" class="primary">Sign in</button>
+              <label><span data-i18n="account.code">6-digit code</span><input id="accountCode" inputmode="numeric" maxlength="6" placeholder="123456"></label>
+              <button id="verifyCode" class="primary" data-i18n="account.sign_in">Sign in</button>
             </div>
             <div id="accountStatus" class="muted small"></div>
           </div>
@@ -265,14 +266,35 @@
 
         <div id="accountSignedIn" hidden>
           <div class="accountBox">
-            <p>Signed in as <strong id="accountIdentity"></strong></p>
+            <p><span data-i18n="account.signed_in">Signed in as</span> <strong id="accountIdentity"></strong></p>
             <div class="buttonRow">
-              <button id="uploadCloud" class="primary">Upload this device</button>
-              <button id="downloadCloud" class="ghost">Load cloud data</button>
-              <button id="signOut" class="ghost danger">Sign out</button>
+              <button id="uploadCloud" class="primary" data-i18n="account.upload">Upload this device</button>
+              <button id="downloadCloud" class="ghost" data-i18n="account.load">Load cloud data</button>
+              <button id="signOut" class="ghost danger" data-i18n="account.sign_out">Sign out</button>
             </div>
             <div id="cloudStatus" class="muted small"></div>
           </div>
+        </div>
+      </section>
+
+      <section id="tab-settings" class="tab panel" hidden>
+        <div class="eyebrow" data-i18n="settings.eyebrow">SETTINGS</div>
+        <h2 data-i18n="settings.title">App settings</h2>
+        <div class="settingsCard">
+          <label>
+            <span data-i18n="settings.language">Language</span>
+            <select id="languageSelect">
+              <option value="system" data-i18n="settings.system">System language</option>
+              <option value="en">English</option>
+              <option value="sk">Slovenčina</option>
+              <option value="cs">Čeština</option>
+              <option value="de">Deutsch</option>
+              <option value="es">Español</option>
+              <option value="pl">Polski</option>
+            </select>
+          </label>
+          <p class="muted" data-i18n="settings.language_note">Choose the app language. “System language” follows your phone or browser.</p>
+          <div id="settingsStatus" class="muted small"></div>
         </div>
       </section>
     </section>

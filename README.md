@@ -2,7 +2,7 @@
 
 Mobile-first PWA for powerlifting athlete tracking, meet planning, attempt strategy and meet-day analytics.
 
-## MVP v0.6
+## MVP v0.7
 
 Current prototype includes:
 
@@ -35,6 +35,9 @@ Current prototype includes:
 - shareable square PNG result card
 - passwordless email magic-code account
 - cloud sync for athlete profile, meet plan, results, goals and history
+- internationalization with external JSON locale files
+- Settings language selector with system-language auto detection
+- English, Slovak, Czech, German, Spanish and Polish UI
 
 ## Test on a phone
 
@@ -97,3 +100,18 @@ Performance Hub v0.6 requires Powerlifting Trend Radar v1.12.0 on powerlifting-c
 - logout/session revocation
 
 Email delivery uses WordPress `wp_mail()`, so production testing should confirm that transactional mail reaches real inboxes reliably.
+
+
+## Internationalization
+
+UI strings live in `locales/*.json` and are referenced by stable translation keys. The selected language is stored locally.
+
+Supported languages:
+- English (`en`)
+- Slovak (`sk`)
+- Czech (`cs`)
+- German (`de`)
+- Spanish (`es`)
+- Polish (`pl`)
+
+The **System language** option follows the browser/device locale when it matches a supported language and falls back to English otherwise. Locale files are included in the PWA offline cache.
