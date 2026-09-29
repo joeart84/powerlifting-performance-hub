@@ -14,6 +14,7 @@ const HUB_API="https://powerlifting-calculator.com/wp-json/plc-radar/v1/hub";
 let performanceReference=null;
 let upcomingCompetitions=[];
 let suppressCloud=false;
+let competitionScope="nearby";
 const LANGUAGE_KEY="plc-performance-hub-language";
 const SUPPORTED_LANGUAGES=["en","sk","cs","de","es","pl"];
 let messages={};
@@ -82,6 +83,13 @@ function ensureState(){
   state.results=state.results||blankResults();
   state.meets=Array.isArray(state.meets)?state.meets:[];
   state.goal=state.goal||null;
+  state.preferences=state.preferences||{
+    homeCountry:"",
+    homeCity:"",
+    homeLat:null,
+    homeLon:null,
+    locationSource:""
+  };
 }
 function totalFromPlan(){return lifts.reduce((sum,l)=>sum+Math.max.apply(null,state.plan[l].map(num)),0)}
 function currentBestTotal(){const p=state.profile||{};return num(p.squatBest)+num(p.benchBest)+num(p.deadliftBest)}
@@ -111,6 +119,7 @@ function cloudPayload(){
     results:state.results||blankResults(),
     meets:state.meets||[],
     goal:state.goal||null,
+    preferences:state.preferences||{},
     saved_at:new Date().toISOString()
   };
 }
@@ -122,6 +131,7 @@ function applyCloudPayload(payload){
   state.results=payload.results||blankResults();
   state.meets=Array.isArray(payload.meets)?payload.meets:[];
   state.goal=payload.goal||null;
+  state.preferences=payload.preferences||state.preferences||{};
   save();
   suppressCloud=false;
   render();
