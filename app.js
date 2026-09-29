@@ -151,6 +151,46 @@ function dotsScore(sex,bodyweight,total){
   return round(t*500/denom,2);
 }
 
+function parseAge(value){
+  const m=String(value??"").match(/\d{1,3}/);
+  return m?Math.max(0,Math.min(120,Number(m[0]))):0;
+}
+
+// Smooth approximation of the published WUAP Reshel tables.
+// The WUAP source tables themselves are rounded to 0.001 at 0.25 kg steps.
+function reshelCoefficient(sex,bodyweight){
+  let bw=num(bodyweight);
+  if(!bw)return null;
+  if(sex==="F"){
+    const A=239.894659799145,B=-20.5105859285582,C=1.16052601684125,D=-1.61417872668708;
+    bw=Math.max(40,Math.min(119.75,bw));
+    return A*(bw+B)**D+C;
+  }
+  const A=23740.8329088123,B=-9.75618720662844,C=0.787990994925928,D=-2.68445158813578;
+  bw=Math.max(50,Math.min(180.75,bw));
+  return A*(bw+B)**D+C;
+}
+function reshelScore(sex,bodyweight,total){
+  const c=reshelCoefficient(sex,bodyweight),t=num(total);
+  return c&&t?round(t*c,3):null;
+}
+const MCCULLOCH_WUAP={
+  40:1.000,41:1.005,42:1.014,43:1.028,44:1.044,45:1.060,46:1.078,47:1.096,48:1.114,49:1.132,
+  50:1.150,51:1.168,52:1.187,53:1.207,54:1.228,55:1.250,56:1.273,57:1.297,58:1.322,59:1.350,
+  60:1.380,61:1.410,62:1.440,63:1.470,64:1.501,65:1.533,66:1.565,67:1.597,68:1.630,69:1.664,
+  70:1.700,71:1.740,72:1.780,73:1.820,74:1.860,75:1.900,76:1.940,77:1.980,78:2.020,79:2.060,
+  80:2.100
+};
+function mccullochMultiplier(age){
+  const a=parseAge(age);
+  if(a<40)return null;
+  return MCCULLOCH_WUAP[Math.min(80,a)]||null;
+}
+function mccullochScore(sex,bodyweight,total,age){
+  const reshel=reshelScore(sex,bodyweight,total),m=mccullochMultiplier(age);
+  return reshel&&m?round(reshel*m,3):null;
+}
+
 function parseCsv(text){
   const rows=[];let row=[],field="",quoted=false;
   for(let i=0;i<text.length;i++){
@@ -190,6 +230,7 @@ function parseMeetRows(text){
     const equipment=pick(obj,["Equipment","Equip"]);
     const athleteName=String(pick(obj,["Name","Lifter","LifterName"])||"").trim();
     const athleteSex=String(pick(obj,["Sex","Gender"])||"").trim().toUpperCase();
+    const athleteAge=parseAge(pick(obj,["Age"]));
     const weightClass=String(pick(obj,["WeightClassKg","WeightClass","Class"])||"").trim();
     const bw=num(pick(obj,["BodyweightKg","Bodyweight","Weight","BW"]));
     const squat=bestPositive(
@@ -214,6 +255,7 @@ function parseMeetRows(text){
       meet:String(meet||"Competition"),
       athleteName,
       athleteSex,
+      athleteAge,
       weightClass,
       federation:String(pick(obj,["Federation","Fed"])||""),
       equipment:String(equipment||""),
@@ -249,6 +291,7 @@ function inferAthlete(meets){
   return {
     name:firstNamed.athleteName||"",
     sex:firstSex.athleteSex||"",
+    age:parseAge(latest.athleteAge),
     bodyweight:num(latest.bodyweight)
   };
 }
@@ -263,6 +306,7 @@ function applyImportedAthlete(imported,profileUrl,slug){
     name:inferred.name||existing.name||slug||"Athlete",
     sex:(inferred.sex==="M"||inferred.sex==="F")?inferred.sex:(existing.sex||"M"),
     bodyweight:num(existing.bodyweight)||inferred.bodyweight||0,
+    age:parseAge(existing.age)||inferred.age||0,
     meetDate:existing.meetDate||"",
     squatBest:Math.max(num(existing.squatBest),pr.squat),
     benchBest:Math.max(num(existing.benchBest),pr.bench),
@@ -443,7 +487,12 @@ function render(){
   $("metricBw").textContent=p.bodyweight||"—";$("metricSq").textContent=p.squatBest||"—";$("metricBp").textContent=p.benchBest||"—";$("metricDl").textContent=p.deadliftBest||"—";
   $("currentTotal").textContent=currentBestTotal();
   const currentDots=dotsScore(p.sex,p.bodyweight,currentBestTotal());
+  const currentReshel=reshelScore(p.sex,p.bodyweight,currentBestTotal());
+  const currentMcculloch=mccullochScore(p.sex,p.bodyweight,currentBestTotal(),p.age);
   $("currentDots").textContent=currentDots?currentDots.toFixed(2):"—";
+  $("currentReshel").textContent=currentReshel?currentReshel.toFixed(3):"—";
+  $("currentMcculloch").textContent=currentMcculloch?currentMcculloch.toFixed(3):"—";
+  $("mccullochNote").textContent=parseAge(p.age)>=40?"Age "+parseAge(p.age):"Masters 40+";
   const d=daysUntil(p.meetDate);
   $("countdown").textContent=p.meetDate?(d>=0?t("dynamic.days_until",{days:d}):t("dynamic.meet_passed")):t("dynamic.add_meet_date");
   $("meetSnapshot").innerHTML="<div><strong>"+esc(t("dynamic.meet_label"))+":</strong> "+esc(p.meetName||t("common.not_set"))+"</div><div><strong>"+esc(t("dynamic.date_label"))+":</strong> "+esc(p.meetDate||t("common.not_set"))+"</div><div><strong>"+esc(t("planner.projected_total"))+":</strong> "+totalFromPlan()+" kg</div><div><strong>"+esc(t("dynamic.current_best"))+":</strong> "+currentBestTotal()+" kg</div><div><strong>"+esc(t("dynamic.current_dots"))+":</strong> "+(currentDots?currentDots.toFixed(2):"—")+"</div>";
@@ -871,10 +920,10 @@ function renderReport(){
 }
 
 $("saveProfile").addEventListener("click",()=>{
-  state.profile={name:$("name").value.trim()||"Athlete",sex:$("sex").value,bodyweight:num($("bodyweight").value),meetDate:$("meetDate").value,meetName:(state.profile&&state.profile.meetName)||"",squatBest:num($("squatBest").value),benchBest:num($("benchBest").value),deadliftBest:num($("deadliftBest").value)};
+  state.profile={name:$("name").value.trim()||"Athlete",sex:$("sex").value,bodyweight:num($("bodyweight").value),age:parseAge($("age").value),meetDate:$("meetDate").value,meetName:(state.profile&&state.profile.meetName)||"",squatBest:num($("squatBest").value),benchBest:num($("benchBest").value),deadliftBest:num($("deadliftBest").value)};
   state.plan=blankPlan();state.results=blankResults();suggestPlan();save();render();
 });
-$("editProfile").addEventListener("click",()=>{const p=state.profile||{};$("name").value=p.name||"";$("sex").value=p.sex||"M";$("bodyweight").value=p.bodyweight||"";$("meetDate").value=p.meetDate||"";$("squatBest").value=p.squatBest||"";$("benchBest").value=p.benchBest||"";$("deadliftBest").value=p.deadliftBest||"";delete state.profile;save();render();window.scrollTo({top:0,behavior:"smooth"})});
+$("editProfile").addEventListener("click",()=>{const p=state.profile||{};$("name").value=p.name||"";$("sex").value=p.sex||"M";$("bodyweight").value=p.bodyweight||"";$("age").value=p.age||"";$("meetDate").value=p.meetDate||"";$("squatBest").value=p.squatBest||"";$("benchBest").value=p.benchBest||"";$("deadliftBest").value=p.deadliftBest||"";delete state.profile;save();render();window.scrollTo({top:0,behavior:"smooth"})});
 $("savePlan").addEventListener("click",()=>{save();alert(t("dynamic.plan_saved"))});
 $("onboardingImport").addEventListener("click",()=>importAthlete($("onboardingLifter").value,$("onboardingImportStatus"),$("onboardingCandidates")));
 $("progressImport").addEventListener("click",()=>importAthlete($("progressLifter").value,$("importStatus"),$("progressCandidates")));
@@ -892,6 +941,7 @@ $("oplCsv").addEventListener("change",async e=>{
     if(!p.name&&inferred.name)p.name=inferred.name;
     if((inferred.sex==="M"||inferred.sex==="F")&&!p.sex)p.sex=inferred.sex;
     if(!num(p.bodyweight)&&inferred.bodyweight)p.bodyweight=inferred.bodyweight;
+    if(!parseAge(p.age)&&inferred.age)p.age=inferred.age;
     if(pr.squat>num(p.squatBest))p.squatBest=pr.squat;
     if(pr.bench>num(p.benchBest))p.benchBest=pr.bench;
     if(pr.deadlift>num(p.deadliftBest))p.deadliftBest=pr.deadlift;
@@ -936,7 +986,12 @@ $("downloadCloud").addEventListener("click",downloadCloud);
 $("signOut").addEventListener("click",logoutCloud);
 $("accountCode").addEventListener("keydown",e=>{if(e.key==="Enter")verifyLoginCode()});
 $("languageSelect").addEventListener("change",e=>setLanguage(e.target.value,true));
-document.querySelectorAll(".tabs button").forEach(b=>b.addEventListener("click",()=>{document.querySelectorAll(".tabs button").forEach(x=>x.classList.toggle("active",x===b));document.querySelectorAll(".tab").forEach(x=>x.hidden=x.id!=="tab-"+b.dataset.tab)}));
+document.querySelectorAll("[data-tab]").forEach(b=>b.addEventListener("click",()=>{
+  const target=b.dataset.tab;
+  document.querySelectorAll("[data-tab]").forEach(x=>x.classList.toggle("active",x===b));
+  document.querySelectorAll(".tab").forEach(x=>x.hidden=x.id!=="tab-"+target);
+  window.scrollTo({top:0,behavior:"smooth"});
+}));
 $("shareReport").addEventListener("click",async()=>{const mm=madeMiss(),p=state.profile||{},total=liveTotal(),dots=total?dotsScore(p.sex,p.bodyweight,total):null,text=(p.name?p.name+"'s":"My")+" powerlifting meet: "+mm.made+"/"+(mm.made+mm.miss)+" attempts made, "+total+" kg total"+(dots?", "+dots.toFixed(2)+" DOTS":"")+". Built with Powerlifting Performance Hub.";if(navigator.share){await navigator.share({title:"Powerlifting Meet Report",text})}else if(navigator.clipboard){await navigator.clipboard.writeText(text);alert(t("dynamic.report_copied"))}});
 let deferredPrompt;window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();deferredPrompt=e;$("installBtn").hidden=false});
 $("installBtn").addEventListener("click",async()=>{if(!deferredPrompt)return;deferredPrompt.prompt();await deferredPrompt.userChoice;deferredPrompt=null;$("installBtn").hidden=true});

@@ -2,9 +2,18 @@
 
 Mobile-first PWA for powerlifting athlete tracking, meet planning, attempt strategy and meet-day analytics.
 
-## MVP v0.9
+## MVP v0.10
 
 Current prototype includes:
+
+### v0.10 scoring + navigation fix
+- fixed secondary Report / Account / Settings navigation on desktop and mobile
+- WUAP Reshel score shown beside DOTS
+- WUAP McCulloch Masters score using the official age multiplier table (40–80)
+- athlete age field with OpenPowerlifting Age import fallback
+- McCulloch stays blank below age 40 because it is a Masters adjustment
+- Reshel currently uses a smooth approximation of the published WUAP coefficient table; the UI should be treated as beta until exact table lookup is embedded
+
 
 ### v0.9 UI/UX refresh
 - simplified 5-destination primary navigation
