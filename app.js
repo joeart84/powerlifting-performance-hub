@@ -14,10 +14,11 @@ const HUB_API="https://powerlifting-calculator.com/wp-json/plc-radar/v1/hub";
 let performanceReference=null;
 let upcomingCompetitions=[];
 let cloudTimer=null;
+let suppressCloud=false;
 
 function save(){
   localStorage.setItem(KEY,JSON.stringify(state));
-  if(session.token)queueCloudSync();
+  if(session.token&&!suppressCloud)queueCloudSync();
 }
 function saveSession(){localStorage.setItem(SESSION_KEY,JSON.stringify(session))}
 function queueCloudSync(){
@@ -66,12 +67,15 @@ function cloudPayload(){
 }
 function applyCloudPayload(payload){
   if(!payload||typeof payload!=="object")throw new Error("Cloud profile is empty.");
+  suppressCloud=true;
   state.profile=payload.profile||state.profile||null;
   state.plan=payload.plan||blankPlan();
   state.results=payload.results||blankResults();
   state.meets=Array.isArray(payload.meets)?payload.meets:[];
   state.goal=payload.goal||null;
-  save();render();
+  save();
+  suppressCloud=false;
+  render();
 }
 
 function dotsScore(sex,bodyweight,total){
@@ -464,6 +468,202 @@ function renderProgress(){
   if(!meets.length)rows.innerHTML='<tr><td colspan="8" class="muted">No meet history yet.</td></tr>';
 }
 function fmt(v,d=1){const n=num(v);return n?n.toFixed(d).replace(/\.0$/,""):"—"}
+
+async function loadCompetitions(){
+  try{
+    const res=await fetch(HUB_API+"/competitions",{headers:{"Accept":"application/json"}});
+    if(!res.ok)throw new Error("Competition feed unavailable");
+    const data=await res.json();
+    upcomingCompetitions=Array.isArray(data.competitions)?data.competitions:[];
+  }catch(e){upcomingCompetitions=[]}
+  renderCompetitionPicker();
+}
+function renderCompetitionPicker(){
+  const sel=$("competitionSelect"),status=$("competitionStatus");
+  if(!sel)return;
+  const p=state.profile||{};
+  const options=['<option value="">Select an upcoming meet</option>'];
+  upcomingCompetitions.forEach((m,i)=>{
+    const label=[m.start_date,m.event,m.country].filter(Boolean).join(" · ");
+    options.push('<option value="'+i+'">'+esc(label)+'</option>');
+  });
+  sel.innerHTML=options.join("");
+  status.textContent=upcomingCompetitions.length
+    ? upcomingCompetitions.length+" upcoming meet"+(upcomingCompetitions.length===1?"":"s")+" available."
+    : "No upcoming crawler events are available right now. You can still enter a meet date manually.";
+  if(p.meetName){
+    const idx=upcomingCompetitions.findIndex(m=>m.event===p.meetName&&m.start_date===p.meetDate);
+    if(idx>=0)sel.value=String(idx);
+  }
+}
+function chooseCompetition(){
+  const idx=Number($("competitionSelect").value);
+  if(!Number.isInteger(idx)||idx<0||!upcomingCompetitions[idx]){
+    $("competitionStatus").textContent="Choose a competition first.";return;
+  }
+  const m=upcomingCompetitions[idx],p=state.profile||{};
+  p.meetName=m.event||"Powerlifting meet";
+  p.meetDate=m.start_date||"";
+  p.meetCountry=m.country||"";
+  p.meetFederation=m.federation||"";
+  p.meetUrl=m.url||"";
+  state.profile=p;save();render();
+  $("competitionStatus").textContent="Next meet saved: "+p.meetName+".";
+}
+function saveCurrentGoal(){
+  const p=state.profile||{},targetDots=num($("goalDots").value),bw=num($("goalBodyweight").value);
+  const targetTotal=totalForDots(p.sex,bw,targetDots);
+  if(!targetDots||!bw||!targetTotal){$("goalResult").textContent="Calculate a valid target first.";return}
+  state.goal={targetDots,targetBodyweight:bw,targetTotal,targetDate:$("goalDate").value||""};
+  save();renderGoalSnapshot();
+  $("goalResult").innerHTML='<strong class="big">Goal saved</strong><p>'+targetDots+' DOTS at '+bw+' kg requires about '+targetTotal+' kg total.</p>';
+}
+function buildMeetRecord(){
+  const p=state.profile||{},total=liveTotal();
+  if(!total)return null;
+  return {
+    date:p.meetDate||todayIso(),
+    meet:p.meetName||"Performance Hub Meet",
+    athleteName:p.name||"",
+    athleteSex:p.sex||"",
+    weightClass:"",
+    federation:p.meetFederation||"",
+    equipment:"Raw",
+    bodyweight:num(p.bodyweight),
+    squat:bestMade("squat"),
+    bench:bestMade("bench"),
+    deadlift:bestMade("deadlift"),
+    total,
+    dots:dotsScore(p.sex,p.bodyweight,total)||0,
+    source:"Performance Hub",
+    attempts:JSON.parse(JSON.stringify(state.results||{}))
+  };
+}
+function saveMeetToHistory(){
+  const record=buildMeetRecord();
+  if(!record){$("reportStatus").textContent="Record at least one successful lift before saving the meet.";return}
+  state.meets=dedupeMeets([...(state.meets||[]),record]);
+  const p=state.profile||{};
+  p.squatBest=Math.max(num(p.squatBest),record.squat);
+  p.benchBest=Math.max(num(p.benchBest),record.bench);
+  p.deadliftBest=Math.max(num(p.deadliftBest),record.deadlift);
+  state.profile=p;save();render();
+  $("reportStatus").textContent="Meet result saved to your Progress history.";
+}
+function roundedRect(ctx,x,y,w,h,r){
+  ctx.beginPath();ctx.roundRect(x,y,w,h,r);ctx.fill();
+}
+async function makeResultCardBlob(){
+  const record=buildMeetRecord(),p=state.profile||{};
+  if(!record)throw new Error("Complete some successful attempts first.");
+  const canvas=document.createElement("canvas");canvas.width=1080;canvas.height=1080;
+  const ctx=canvas.getContext("2d");
+  ctx.fillStyle="#101214";ctx.fillRect(0,0,1080,1080);
+  ctx.fillStyle="#f0b54b";ctx.fillRect(0,0,1080,18);
+  ctx.fillStyle="#a0a7af";ctx.font="700 30px system-ui";ctx.fillText("POWERLIFTING PERFORMANCE HUB",70,95);
+  ctx.fillStyle="#ffffff";ctx.font="800 64px system-ui";ctx.fillText((p.name||"Athlete").slice(0,24),70,180);
+  ctx.fillStyle="#a0a7af";ctx.font="500 30px system-ui";ctx.fillText((record.meet||"Meet Day").slice(0,42),70,230);
+  const boxes=[
+    ["SQUAT",record.squat+" kg"],["BENCH",record.bench+" kg"],["DEADLIFT",record.deadlift+" kg"],
+    ["TOTAL",record.total+" kg"],["DOTS",record.dots?Number(record.dots).toFixed(2):"—"],["ATTEMPTS",madeMiss().made+"/"+(madeMiss().made+madeMiss().miss)]
+  ];
+  boxes.forEach((b,i)=>{
+    const col=i%3,row=Math.floor(i/3),x=70+col*320,y=320+row*230;
+    ctx.fillStyle="#191d21";roundedRect(ctx,x,y,285,185,24);
+    ctx.fillStyle="#9ca3ab";ctx.font="700 24px system-ui";ctx.fillText(b[0],x+28,y+48);
+    ctx.fillStyle=i>=3?"#f0b54b":"#ffffff";ctx.font="800 46px system-ui";ctx.fillText(String(b[1]),x+28,y+118);
+  });
+  ctx.fillStyle="#a0a7af";ctx.font="500 26px system-ui";ctx.fillText("powerlifting-calculator.com",70,1010);
+  return await new Promise((resolve,reject)=>canvas.toBlob(blob=>blob?resolve(blob):reject(new Error("Could not create image.")),"image/png",0.95));
+}
+async function shareResultCard(){
+  try{
+    const blob=await makeResultCardBlob();
+    const file=new File([blob],"powerlifting-meet-report.png",{type:"image/png"});
+    const record=buildMeetRecord(),p=state.profile||{};
+    const text=(p.name||"Athlete")+" · "+record.total+" kg total · "+(record.dots?Number(record.dots).toFixed(2)+" DOTS":"Powerlifting meet");
+    if(navigator.share&&navigator.canShare&&navigator.canShare({files:[file]})){
+      await navigator.share({title:"Powerlifting Meet Report",text,files:[file]});
+    }else{
+      const url=URL.createObjectURL(blob),a=document.createElement("a");
+      a.href=url;a.download=file.name;document.body.appendChild(a);a.click();a.remove();
+      setTimeout(()=>URL.revokeObjectURL(url),1000);
+      $("reportStatus").textContent="Result card saved as a PNG image.";
+    }
+  }catch(err){$("reportStatus").textContent=err.message}
+}
+function authHeaders(){
+  return session.token?{"Accept":"application/json","Content-Type":"application/json","Authorization":"Bearer "+session.token}:{"Accept":"application/json","Content-Type":"application/json"};
+}
+async function requestLoginCode(){
+  const email=$("accountEmail").value.trim(),status=$("accountStatus");
+  status.textContent="Sending code…";
+  try{
+    const res=await fetch(HUB_API+"/auth/request-code",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email})});
+    const data=await res.json();
+    if(!res.ok)throw new Error(data.message||"Could not send code.");
+    session.pendingEmail=email;saveSession();$("codeStep").hidden=false;
+    status.textContent="Code sent. Check your email; it expires in 10 minutes.";
+  }catch(err){status.textContent=err.message}
+}
+async function verifyLoginCode(){
+  const email=(session.pendingEmail||$("accountEmail").value).trim(),code=$("accountCode").value.trim(),status=$("accountStatus");
+  status.textContent="Signing in…";
+  try{
+    const res=await fetch(HUB_API+"/auth/verify-code",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email,code})});
+    const data=await res.json();
+    if(!res.ok)throw new Error(data.message||"Could not sign in.");
+    session.token=data.token;session.email=data.email;session.expiresAt=data.expires_at;delete session.pendingEmail;saveSession();
+    renderAccount();
+    if(data.profile&&Object.keys(data.profile).length){
+      $("cloudStatus").textContent="Cloud data found. Choose Load cloud data to replace this device, or Upload this device to keep your local version.";
+    }else{
+      await uploadCloud(false);
+    }
+  }catch(err){status.textContent=err.message}
+}
+function renderAccount(){
+  const signed=!!session.token;
+  $("accountSignedOut").hidden=signed;$("accountSignedIn").hidden=!signed;
+  $("cloudBadge").textContent=signed?"Cloud on":"Local only";
+  $("cloudBadge").classList.toggle("active",signed);
+  if(signed){
+    $("accountIdentity").textContent=session.email||"signed-in account";
+    if(!$("cloudStatus").textContent)$("cloudStatus").textContent="Changes on this device will auto-sync after you edit them.";
+  }else if(session.pendingEmail){
+    $("accountEmail").value=session.pendingEmail;$("codeStep").hidden=false;
+  }
+}
+async function uploadCloud(silent=false){
+  if(!session.token)return;
+  const status=$("cloudStatus");if(!silent)status.textContent="Uploading…";
+  try{
+    const res=await fetch(HUB_API+"/profile",{method:"POST",headers:authHeaders(),body:JSON.stringify({profile:cloudPayload()})});
+    const data=await res.json();
+    if(res.status===401){clearSession();throw new Error("Session expired. Sign in again.")}
+    if(!res.ok)throw new Error(data.message||"Cloud sync failed.");
+    if(!silent)status.textContent="Cloud sync complete.";
+    $("cloudBadge").textContent="Synced";
+  }catch(err){if(!silent&&status)status.textContent=err.message}
+}
+async function downloadCloud(){
+  const status=$("cloudStatus");status.textContent="Loading cloud data…";
+  try{
+    const res=await fetch(HUB_API+"/profile",{headers:authHeaders()});
+    const data=await res.json();
+    if(res.status===401){clearSession();throw new Error("Session expired. Sign in again.")}
+    if(!res.ok)throw new Error(data.message||"Could not load cloud data.");
+    if(!data.profile||!Object.keys(data.profile).length)throw new Error("No cloud profile has been saved yet.");
+    applyCloudPayload(data.profile);status.textContent="Cloud data loaded onto this device.";
+  }catch(err){status.textContent=err.message}
+}
+function clearSession(){
+  delete session.token;delete session.email;delete session.expiresAt;delete session.pendingEmail;saveSession();renderAccount();
+}
+async function logoutCloud(){
+  try{if(session.token)await fetch(HUB_API+"/session",{method:"DELETE",headers:authHeaders()})}catch(e){}
+  clearSession();
+}
 
 function renderReport(){
   const mm=madeMiss(),attempts=mm.made+mm.miss,body=$("reportBody");
