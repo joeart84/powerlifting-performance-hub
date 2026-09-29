@@ -227,5 +227,14 @@
   "dynamic.below_25": "Below 25th percentile",
   "dynamic.percentile_value": "{{pct}}th",
   "dynamic.raw_full_power": "Raw full-power",
-  "dynamic.last_3_years": "Last 3 years"
+  "dynamic.last_3_years": "Last 3 years",
+  "profile.birth_date": "Date of birth",
+  "profile.age": "Age",
+  "settings.profile_title": "Athlete profile",
+  "settings.profile_note": "Keep athlete details here. Date of birth is used to calculate the WUAP McCulloch Masters score.",
+  "settings.save_profile": "Save athlete profile",
+  "settings.profile_saved": "Athlete profile saved.",
+  "dynamic.age_value": "Age {{age}}",
+  "dynamic.masters_40": "Masters 40+",
+  "dynamic.add_birth_date": "Add date of birth"
 }
