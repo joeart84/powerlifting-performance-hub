@@ -218,6 +218,9 @@
   "dynamic.percentile_25_50": "25.–50. percentyl",
   "dynamic.below_25": "Poniżej 25. percentyla",
   "dynamic.percentile_value": "{{pct}}. percentyl",
+  "dynamic.percentile_explain": "Wynik DOTS jest obliczany z sumy zapisanych rekordów w przysiadzie, wyciskaniu leżąc i martwym ciągu oraz masy ciała z profilu. {{pct}}. percentyl oznacza, że ten wynik szacunkowo przewyższa około {{pct}}% zarejestrowanych wyników w grupie odniesienia.",
+  "dynamic.context_explain": "Około {{above}}% wyników odniesienia jest powyżej tego wyniku. Etykieta kontekstu ({{label}}) oznacza zaokrąglony przedział, a pasek wskazuje {{pct}}. percentyl w skali 0–100.",
+  "dynamic.reference_explain": "Jako punkt odniesienia używana jest kategoria wagowa z ostatnich zapisanych zawodów, jeśli jest dostępna; w przeciwnym razie kategoria najbliższa masie ciała z profilu. n to liczba wyników, a nie indywidualnych zawodników.",
   "dynamic.raw_full_power": "Raw trójbój",
   "dynamic.last_3_years": "Ostatnie 3 lata"
 }

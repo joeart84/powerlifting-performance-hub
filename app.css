@@ -322,3 +322,11 @@ input:focus,select:focus{outline:none;border-color:#6a5730;box-shadow:0 0 0 3px 
 }
 .scoreSetup:hover{text-decoration:underline}
 #athleteProfileSettings{scroll-margin-top:90px}
+
+/* Performance reference: keep labels separate from values and explain the estimate. */
+.contextHero{align-items:start}
+.contextHero>div{display:flex;flex-direction:column;gap:4px;min-width:0}
+.contextHero strong{line-height:1.15;overflow-wrap:anywhere}
+.contextExplanation{border-top:1px solid var(--line);margin-top:14px;padding-top:10px;color:#c1c9ce;font-size:13px;line-height:1.55}
+.contextExplanation p{margin:6px 0}
+@media(max-width:520px){.contextHero{display:grid;grid-template-columns:1fr 1fr;gap:12px}.contextHero strong{font-size:clamp(20px,5vw,28px)}}
