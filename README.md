@@ -35,7 +35,6 @@ Current prototype includes:
 - shareable square PNG result card
 - passwordless email magic-code account
 - cloud sync for athlete profile, meet plan, results, goals and history
-- automatic cloud sync after local changes while signed in
 
 ## Test on a phone
 
@@ -57,7 +56,7 @@ Open the test URL, tap **Share**, then **Add to Home Screen**.
 
 The app remains local-first. Athlete data is stored in the current browser using localStorage.
 
-Cloud sync is optional. When a user signs in with an email magic code, the current Hub state can be synced to powerlifting-calculator.com and restored on another device. Passwords are not used by the Hub. Login sessions expire after 30 days.
+Cloud sync is optional and explicit. When a user signs in with an email magic code, they can upload the current device state to powerlifting-calculator.com or load the cloud copy onto another device. Passwords are not used by the Hub. Login sessions expire after 30 days.
 
 ## Next steps
 
