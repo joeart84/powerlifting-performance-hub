@@ -218,6 +218,9 @@
   "dynamic.percentile_25_50": "Percentil 25–50",
   "dynamic.below_25": "Por debajo del percentil 25",
   "dynamic.percentile_value": "Percentil {{pct}}",
+  "dynamic.percentile_explain": "La puntuación DOTS se calcula con la suma de tus mejores marcas guardadas en sentadilla, press de banca y peso muerto, y con el peso corporal de tu perfil. El percentil {{pct}} indica que se estima que esta puntuación supera aproximadamente el {{pct}} % de los resultados registrados en el grupo de referencia.",
+  "dynamic.context_explain": "Alrededor del {{above}} % de los resultados de referencia están por encima de esta puntuación. La etiqueta de contexto ({{label}}) es una franja redondeada; la barra marca el percentil {{pct}} en una escala de 0 a 100.",
+  "dynamic.reference_explain": "Se usa la categoría de peso de tu última competición guardada si está disponible; en caso contrario, la categoría más cercana al peso corporal de tu perfil. n cuenta resultados, no deportistas individuales.",
   "dynamic.raw_full_power": "Powerlifting raw completo",
   "dynamic.last_3_years": "Últimos 3 años"
 }

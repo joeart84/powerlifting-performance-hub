@@ -218,6 +218,9 @@
   "dynamic.percentile_25_50": "25.–50. Perzentil",
   "dynamic.below_25": "Unter dem 25. Perzentil",
   "dynamic.percentile_value": "{{pct}}. Perzentil",
+  "dynamic.percentile_explain": "Der DOTS-Wert wird aus der Summe deiner gespeicherten Bestleistungen in Kniebeuge, Bankdrücken und Kreuzheben sowie deinem Körpergewicht im Profil berechnet. Das {{pct}}. Perzentil bedeutet: Dieser Wert liegt geschätzt über etwa {{pct}} % der erfassten Ergebnisse in der Referenzgruppe.",
+  "dynamic.context_explain": "Etwa {{above}} % der Referenzergebnisse liegen über diesem Wert. Die Einordnung ({{label}}) ist eine gerundete Gruppe; der Balken zeigt das {{pct}}. Perzentil auf einer Skala von 0 bis 100.",
+  "dynamic.reference_explain": "Als Referenz dient die Gewichtsklasse deines letzten gespeicherten Wettkampfs, falls vorhanden; sonst die Klasse, die deinem Körpergewicht im Profil am nächsten liegt. n zählt Ergebnisse, nicht einzelne Athletinnen und Athleten.",
   "dynamic.raw_full_power": "Raw Dreikampf",
   "dynamic.last_3_years": "Letzte 3 Jahre"
 }

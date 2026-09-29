@@ -218,6 +218,9 @@
   "dynamic.percentile_25_50": "25.–50. percentil",
   "dynamic.below_25": "Pod 25. percentilem",
   "dynamic.percentile_value": "{{pct}}. percentil",
+  "dynamic.percentile_explain": "Skóre DOTS se počítá ze součtu tvých uložených nejlepších výkonů ve dřepu, benči a mrtvém tahu a z tělesné hmotnosti v profilu. {{pct}}. percentil znamená, že toto skóre je podle odhadu vyšší než přibližně {{pct}} % zaznamenaných výkonů v referenční skupině.",
+  "dynamic.context_explain": "Přibližně {{above}} % referenčních výkonů je nad tímto skóre. Označení kontextu ({{label}}) je zaokrouhlené pásmo; pruh ukazuje {{pct}}. percentil na stupnici 0–100.",
+  "dynamic.reference_explain": "Jako reference se použije váhová kategorie z poslední uložené soutěže, pokud je dostupná; jinak nejbližší kategorie podle hmotnosti v profilu. n je počet výkonů, ne jednotlivých závodníků.",
   "dynamic.raw_full_power": "Raw trojboj",
   "dynamic.last_3_years": "Poslední 3 roky"
 }
