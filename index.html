@@ -12,13 +12,21 @@
 </head>
 <body>
   <header class="topbar">
-    <div>
-      <div class="eyebrow">POWERLIFTING-CALCULATOR.COM</div>
-      <h1 data-i18n="app.title">Performance Hub</h1>
+    <div class="brandLockup">
+      <div class="brandMark" aria-hidden="true">
+        <span class="brandBar"></span>
+        <span class="brandPlate brandPlateLeft"></span>
+        <span class="brandPlate brandPlateRight"></span>
+        <span class="brandPulse"></span>
+      </div>
+      <div>
+        <div class="eyebrow">POWERLIFTING PERFORMANCE</div>
+        <h1 data-i18n="app.title">Performance Hub</h1>
+      </div>
     </div>
     <div class="topActions">
       <span id="cloudBadge" class="cloudBadge" data-i18n="cloud.local_only">Local only</span>
-      <button id="installBtn" class="ghost" data-i18n="install" hidden>Install app</button>
+      <button id="installBtn" class="ghost compactTop" data-i18n="install" hidden>Install</button>
     </div>
   </header>
 
@@ -57,9 +65,9 @@
     </section>
 
     <section id="app" hidden>
-      <section class="hero panel">
-        <div>
-          <div class="eyebrow">ATHLETE DASHBOARD</div>
+      <section class="hero panel heroPanel">
+        <div class="heroIntro">
+          <div class="eyebrow">ATHLETE OVERVIEW</div>
           <h2 id="athleteName">Your dashboard</h2>
           <p id="countdown" class="muted"></p>
         </div>
@@ -77,19 +85,25 @@
         </div>
       </section>
 
-      <nav class="tabs" aria-label="Performance Hub">
-        <button data-tab="dashboard" class="active" data-i18n="nav.dashboard">Dashboard</button>
-        <button data-tab="planner" data-i18n="nav.planner">Meet Planner</button>
-        <button data-tab="meetday" data-i18n="nav.meetday">Meet Day</button>
-        <button data-tab="progress" data-i18n="nav.progress">Progress</button>
-        <button data-tab="tools" data-i18n="nav.tools">Tools</button>
+      <nav class="tabs primaryNav" aria-label="Performance Hub">
+        <button data-tab="dashboard" class="active"><span class="navIcon">⌂</span><span data-i18n="nav.dashboard">Dashboard</span></button>
+        <button data-tab="progress"><span class="navIcon">↗</span><span data-i18n="nav.progress">Progress</span></button>
+        <button data-tab="planner"><span class="navIcon">◎</span><span data-i18n="nav.planner">Meet Planner</span></button>
+        <button data-tab="meetday"><span class="navIcon">●</span><span data-i18n="nav.meetday">Meet Day</span></button>
+        <button data-tab="tools"><span class="navIcon">＋</span><span data-i18n="nav.tools">Tools</span></button>
+      </nav>
+
+      <nav class="utilityNav" aria-label="Performance Hub secondary navigation">
         <button data-tab="report" data-i18n="nav.report">Report</button>
         <button data-tab="account" data-i18n="nav.account">Account</button>
         <button data-tab="settings" data-i18n="nav.settings">Settings</button>
       </nav>
 
-      <section id="tab-dashboard" class="tab panel">
-        <div class="cards">
+      <section id="tab-dashboard" class="tab panel dashboardPanel">
+        <div class="sectionLead">
+          <div class="eyebrow">CURRENT FORM</div>
+        </div>
+        <div class="cards metricStrip">
           <article class="metric"><span>Bodyweight</span><strong id="metricBw">—</strong><small>kg</small></article>
           <article class="metric"><span>Squat</span><strong id="metricSq">—</strong><small>kg</small></article>
           <article class="metric"><span>Bench</span><strong id="metricBp">—</strong><small>kg</small></article>

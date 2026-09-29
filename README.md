@@ -2,9 +2,20 @@
 
 Mobile-first PWA for powerlifting athlete tracking, meet planning, attempt strategy and meet-day analytics.
 
-## MVP v0.8
+## MVP v0.9
 
 Current prototype includes:
+
+### v0.9 UI/UX refresh
+- simplified 5-destination primary navigation
+- mobile bottom navigation optimized for thumb reach
+- secondary Report / Account / Settings navigation
+- redesigned athlete dashboard hierarchy
+- refined dark performance-oriented design system
+- cleaner competition discovery cards and filters
+- more compact meet-planning surfaces
+- new minimalist Performance Hub app mark
+
 
 - athlete onboarding
 - current S/B/D and total dashboard
