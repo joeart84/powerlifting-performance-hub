@@ -2,7 +2,7 @@ name: Deploy feature preview
 
 on:
   push:
-    branches: [feature/auth-brand-refresh]
+    branches: [fix/manual-athlete-age]
   workflow_dispatch:
 
 permissions:
@@ -18,7 +18,7 @@ jobs:
   preview:
     environment:
       name: hub-preview
-      url: https://joeart84.github.io/powerlifting-performance-hub/preview/auth-brand-refresh/
+      url: https://joeart84.github.io/powerlifting-performance-hub/preview/manual-athlete-age/
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -30,8 +30,8 @@ jobs:
           path: feature
       - name: Place feature under preview path
         run: |
-          mkdir -p site/preview/auth-brand-refresh
-          rsync -a --exclude='.git' --exclude='.github' feature/ site/preview/auth-brand-refresh/
+          mkdir -p site/preview/manual-athlete-age
+          rsync -a --exclude='.git' --exclude='.github' feature/ site/preview/manual-athlete-age/
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
