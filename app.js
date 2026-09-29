@@ -263,7 +263,7 @@ function applyImportedAthlete(imported,profileUrl,slug){
 }
 
 async function fetchAthleteBySlug(slug,statusEl){
-  statusEl.textContent="Importing "+slug+" from OpenPowerlifting…";
+  statusEl.textContent=t("dynamic.importing",{name:slug});
   const res=await fetch(LIFTER_API+"?slug="+encodeURIComponent(slug),{headers:{"Accept":"application/json"}});
   let payload={};
   try{payload=await res.json()}catch(e){}
@@ -271,13 +271,13 @@ async function fetchAthleteBySlug(slug,statusEl){
   if(!payload.csv)throw new Error("No competition data was returned.");
   const imported=parseMeetRows(payload.csv);
   applyImportedAthlete(imported,payload.profile_url||"",payload.slug||slug);
-  statusEl.textContent="Imported "+imported.length+" competition result"+(imported.length===1?"":"s")+" from OpenPowerlifting.";
+  statusEl.textContent=t("dynamic.imported_results",{count:imported.length});
 }
 
 function renderCandidates(results,statusEl,candidateEl){
   candidateEl.innerHTML="";
   if(!results.length)return;
-  statusEl.textContent=results.length+" matching OpenPowerlifting profiles found. Choose yours:";
+  statusEl.textContent=t("dynamic.matches",{count:results.length});
   results.forEach(item=>{
     const card=document.createElement("div");card.className="candidateCard";
     card.innerHTML="<div><strong>"+esc(item.name||item.slug)+"</strong><small>"+esc(item.profile_url||"")+"</small></div><button class=\"primary compact\" data-slug=\""+esc(item.slug)+"\">Import</button>";
@@ -294,7 +294,7 @@ async function importAthlete(input,statusEl,candidateEl){
   const raw=String(input||"").trim();
   candidateEl.innerHTML="";
   if(!raw){
-    statusEl.textContent="Enter a lifter name, username, or paste an OpenPowerlifting profile URL.";
+    statusEl.textContent=t("dynamic.search_prompt");
     return;
   }
   const exactSlug=extractLifterSlug(raw);
@@ -304,7 +304,7 @@ async function importAthlete(input,statusEl,candidateEl){
       await fetchAthleteBySlug(exactSlug,statusEl);
       return;
     }
-    statusEl.textContent="Searching OpenPowerlifting for "+raw+"…";
+    statusEl.textContent=t("dynamic.searching",{name:raw});
     const res=await fetch(LIFTER_SEARCH_API+"?q="+encodeURIComponent(raw),{headers:{"Accept":"application/json"}});
     let payload={};
     try{payload=await res.json()}catch(e){}
@@ -315,10 +315,10 @@ async function importAthlete(input,statusEl,candidateEl){
     }else if(results.length>1){
       renderCandidates(results,statusEl,candidateEl);
     }else{
-      statusEl.innerHTML="No matching profile found. <span class=\"muted\">Try the exact OpenPowerlifting profile URL.</span>";
+      statusEl.textContent=t("dynamic.no_match");
     }
   }catch(err){
-    statusEl.innerHTML="Import failed: "+esc(err.message)+" <br><span class=\"muted\">Try the exact OpenPowerlifting profile URL.</span>";
+    statusEl.textContent=t("dynamic.import_failed",{message:err.message});
   }
 }
 
@@ -646,18 +646,18 @@ function authHeaders(){
 }
 async function requestLoginCode(){
   const email=$("accountEmail").value.trim(),status=$("accountStatus");
-  status.textContent="Sending code…";
+  status.textContent=t("dynamic.sending_code");
   try{
     const res=await fetch(HUB_API+"/auth/request-code",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email})});
     const data=await res.json();
     if(!res.ok)throw new Error(data.message||"Could not send code.");
     session.pendingEmail=email;saveSession();$("codeStep").hidden=false;
-    status.textContent="Code sent. Check your email; it expires in 10 minutes.";
+    status.textContent=t("dynamic.code_sent");
   }catch(err){status.textContent=err.message}
 }
 async function verifyLoginCode(){
   const email=(session.pendingEmail||$("accountEmail").value).trim(),code=$("accountCode").value.trim(),status=$("accountStatus");
-  status.textContent="Signing in…";
+  status.textContent=t("dynamic.signing_in");
   try{
     const res=await fetch(HUB_API+"/auth/verify-code",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email,code})});
     const data=await res.json();
@@ -665,7 +665,7 @@ async function verifyLoginCode(){
     session.token=data.token;session.email=data.email;session.expiresAt=data.expires_at;delete session.pendingEmail;saveSession();
     renderAccount();
     if(data.profile&&Object.keys(data.profile).length){
-      $("cloudStatus").textContent="Cloud data found. Choose Load cloud data to replace this device, or Upload this device to keep your local version.";
+      $("cloudStatus").textContent=t("dynamic.cloud_found");
     }else{
       await uploadCloud(false);
     }
@@ -678,32 +678,32 @@ function renderAccount(){
   $("cloudBadge").classList.toggle("active",signed);
   if(signed){
     $("accountIdentity").textContent=session.email||"signed-in account";
-    if(!$("cloudStatus").textContent)$("cloudStatus").textContent="Cloud account linked. Use Upload this device or Load cloud data when you want to sync.";
+    if(!$("cloudStatus").textContent)$("cloudStatus").textContent=t("dynamic.cloud_linked");
   }else if(session.pendingEmail){
     $("accountEmail").value=session.pendingEmail;$("codeStep").hidden=false;
   }
 }
 async function uploadCloud(silent=false){
   if(!session.token)return;
-  const status=$("cloudStatus");if(!silent)status.textContent="Uploading…";
+  const status=$("cloudStatus");if(!silent)status.textContent=t("dynamic.uploading");
   try{
     const res=await fetch(HUB_API+"/profile",{method:"POST",headers:authHeaders(),body:JSON.stringify({profile:cloudPayload()})});
     const data=await res.json();
-    if(res.status===401){clearSession();throw new Error("Session expired. Sign in again.")}
+    if(res.status===401){clearSession();throw new Error(t("dynamic.session_expired"))}
     if(!res.ok)throw new Error(data.message||"Cloud sync failed.");
-    if(!silent)status.textContent="Cloud upload complete.";
+    if(!silent)status.textContent=t("dynamic.upload_complete");
     $("cloudBadge").textContent="Cloud linked";
   }catch(err){if(!silent&&status)status.textContent=err.message}
 }
 async function downloadCloud(){
-  const status=$("cloudStatus");status.textContent="Loading cloud data…";
+  const status=$("cloudStatus");status.textContent=t("dynamic.loading_cloud");
   try{
     const res=await fetch(HUB_API+"/profile",{headers:authHeaders()});
     const data=await res.json();
-    if(res.status===401){clearSession();throw new Error("Session expired. Sign in again.")}
+    if(res.status===401){clearSession();throw new Error(t("dynamic.session_expired"))}
     if(!res.ok)throw new Error(data.message||"Could not load cloud data.");
-    if(!data.profile||!Object.keys(data.profile).length)throw new Error("No cloud profile has been saved yet.");
-    applyCloudPayload(data.profile);status.textContent="Cloud data loaded onto this device.";
+    if(!data.profile||!Object.keys(data.profile).length)throw new Error(t("dynamic.no_cloud"));
+    applyCloudPayload(data.profile);status.textContent=t("dynamic.cloud_loaded");
   }catch(err){status.textContent=err.message}
 }
 function clearSession(){
@@ -727,12 +727,12 @@ $("saveProfile").addEventListener("click",()=>{
   state.plan=blankPlan();state.results=blankResults();suggestPlan();save();render();
 });
 $("editProfile").addEventListener("click",()=>{const p=state.profile||{};$("name").value=p.name||"";$("sex").value=p.sex||"M";$("bodyweight").value=p.bodyweight||"";$("meetDate").value=p.meetDate||"";$("squatBest").value=p.squatBest||"";$("benchBest").value=p.benchBest||"";$("deadliftBest").value=p.deadliftBest||"";delete state.profile;save();render();window.scrollTo({top:0,behavior:"smooth"})});
-$("savePlan").addEventListener("click",()=>{save();alert("Attempt plan saved on this device.")});
+$("savePlan").addEventListener("click",()=>{save();alert(t("dynamic.plan_saved"))});
 $("onboardingImport").addEventListener("click",()=>importAthlete($("onboardingLifter").value,$("onboardingImportStatus"),$("onboardingCandidates")));
 $("progressImport").addEventListener("click",()=>importAthlete($("progressLifter").value,$("importStatus"),$("progressCandidates")));
 $("onboardingLifter").addEventListener("keydown",e=>{if(e.key==="Enter")$("onboardingImport").click()});
 $("progressLifter").addEventListener("keydown",e=>{if(e.key==="Enter")$("progressImport").click()});
-$("resetMeet").addEventListener("click",()=>{if(confirm("Reset all meet-day results?")){state.results=blankResults();save();renderMeetDay();renderReport()}});
+$("resetMeet").addEventListener("click",()=>{if(confirm(t("dynamic.confirm_reset"))){state.results=blankResults();save();renderMeetDay();renderReport()}});
 $("oplCsv").addEventListener("change",async e=>{
   const file=e.target.files&&e.target.files[0];if(!file)return;
   $("importStatus").textContent="Reading "+file.name+"…";
@@ -752,19 +752,19 @@ $("oplCsv").addEventListener("change",async e=>{
   }catch(err){$("importStatus").textContent="Import failed: "+err.message}
   e.target.value="";
 });
-$("clearHistory").addEventListener("click",()=>{if(confirm("Remove all imported competition history from this device?")){state.meets=[];save();renderProgress()}});
+$("clearHistory").addEventListener("click",()=>{if(confirm(t("dynamic.confirm_clear"))){state.meets=[];save();renderProgress()}});
 $("useCompetition").addEventListener("click",chooseCompetition);
 $("runSimulator").addEventListener("click",()=>{
   const p=state.profile||{},bw=num($("simBodyweight").value),total=num($("simTotal").value);
   const currentDots=dotsScore(p.sex,p.bodyweight,currentBestTotal()),simDots=dotsScore(p.sex,bw,total);
-  if(!bw||!total||!simDots){$("simResult").textContent="Enter a valid bodyweight and projected total.";return}
+  if(!bw||!total||!simDots){$("simResult").textContent=t("dynamic.valid_sim");return}
   const ctx=performanceReference?contextFor(p.sex,bw,simDots):null;
   $("simResult").innerHTML='<strong class="big">'+simDots.toFixed(2)+' DOTS</strong><div class="toolCompare"><div><span>Current</span><strong>'+(currentDots?currentDots.toFixed(2):"—")+' DOTS</strong></div><div><span>Scenario</span><strong>'+simDots.toFixed(2)+' DOTS</strong></div></div>'+(ctx?'<p class="contextMeta">'+esc(ctx.label)+' in nearest '+esc(ctx.row.weight_class_kg)+' kg reference class.</p>':'');
 });
 $("runGoal").addEventListener("click",()=>{
   const p=state.profile||{},target=num($("goalDots").value),bw=num($("goalBodyweight").value);
   const required=totalForDots(p.sex,bw,target);
-  if(!target||!bw||!required){$("goalResult").textContent="Enter a valid target DOTS and bodyweight.";return}
+  if(!target||!bw||!required){$("goalResult").textContent=t("dynamic.valid_goal");return}
   const gap=round(required-currentBestTotal(),1);
   $("goalResult").innerHTML='<span class="muted">Required total at '+bw+' kg</span><strong class="big">'+required+' kg</strong><p>'+(gap>0?gap+' kg above your current best total.':Math.abs(gap)+' kg below your current best total.')+'</p>';
 });
@@ -777,11 +777,16 @@ $("uploadCloud").addEventListener("click",()=>uploadCloud(false));
 $("downloadCloud").addEventListener("click",downloadCloud);
 $("signOut").addEventListener("click",logoutCloud);
 $("accountCode").addEventListener("keydown",e=>{if(e.key==="Enter")verifyLoginCode()});
+$("languageSelect").addEventListener("change",e=>setLanguage(e.target.value,true));
 document.querySelectorAll(".tabs button").forEach(b=>b.addEventListener("click",()=>{document.querySelectorAll(".tabs button").forEach(x=>x.classList.toggle("active",x===b));document.querySelectorAll(".tab").forEach(x=>x.hidden=x.id!=="tab-"+b.dataset.tab)}));
-$("shareReport").addEventListener("click",async()=>{const mm=madeMiss(),p=state.profile||{},total=liveTotal(),dots=total?dotsScore(p.sex,p.bodyweight,total):null,text=(p.name?p.name+"'s":"My")+" powerlifting meet: "+mm.made+"/"+(mm.made+mm.miss)+" attempts made, "+total+" kg total"+(dots?", "+dots.toFixed(2)+" DOTS":"")+". Built with Powerlifting Performance Hub.";if(navigator.share){await navigator.share({title:"Powerlifting Meet Report",text})}else if(navigator.clipboard){await navigator.clipboard.writeText(text);alert("Report copied to clipboard.")}});
+$("shareReport").addEventListener("click",async()=>{const mm=madeMiss(),p=state.profile||{},total=liveTotal(),dots=total?dotsScore(p.sex,p.bodyweight,total):null,text=(p.name?p.name+"'s":"My")+" powerlifting meet: "+mm.made+"/"+(mm.made+mm.miss)+" attempts made, "+total+" kg total"+(dots?", "+dots.toFixed(2)+" DOTS":"")+". Built with Powerlifting Performance Hub.";if(navigator.share){await navigator.share({title:"Powerlifting Meet Report",text})}else if(navigator.clipboard){await navigator.clipboard.writeText(text);alert(t("dynamic.report_copied"))}});
 let deferredPrompt;window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();deferredPrompt=e;$("installBtn").hidden=false});
 $("installBtn").addEventListener("click",async()=>{if(!deferredPrompt)return;deferredPrompt.prompt();await deferredPrompt.userChoice;deferredPrompt=null;$("installBtn").hidden=true});
 if("serviceWorker" in navigator)window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js"));
-ensureState();
-if(session.expiresAt&&Date.parse(session.expiresAt)<=Date.now())clearSession();
-save();render();renderAccount();loadReference();loadCompetitions();
+async function initApp(){
+  ensureState();
+  if(session.expiresAt&&Date.parse(session.expiresAt)<=Date.now())clearSession();
+  await initI18n();
+  save();render();renderAccount();loadReference();loadCompetitions();
+}
+initApp();
