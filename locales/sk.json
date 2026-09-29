@@ -227,5 +227,14 @@
   "dynamic.below_25": "Pod 25. percentilom",
   "dynamic.percentile_value": "{{pct}}. percentil",
   "dynamic.raw_full_power": "Raw trojboj",
-  "dynamic.last_3_years": "Posledné 3 roky"
+  "dynamic.last_3_years": "Posledné 3 roky",
+  "profile.birth_date": "Dátum narodenia",
+  "profile.age": "Vek",
+  "settings.profile_title": "Profil športovca",
+  "settings.profile_note": "Tu môžeš doplniť údaje športovca. Dátum narodenia sa používa na výpočet WUAP McCulloch bodov pre Masters.",
+  "settings.save_profile": "Uložiť profil športovca",
+  "settings.profile_saved": "Profil športovca bol uložený.",
+  "dynamic.age_value": "Vek {{age}}",
+  "dynamic.masters_40": "Masters 40+",
+  "dynamic.add_birth_date": "Doplniť dátum narodenia"
 }

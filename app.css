@@ -305,3 +305,10 @@ input:focus,select:focus{outline:none;border-color:#6a5730;box-shadow:0 0 0 3px 
 .heroScores{flex-wrap:wrap;justify-content:flex-end}
 .heroScores .heroScore{min-width:116px}
 @media(max-width:760px){.heroScores{grid-template-columns:repeat(2,1fr)}}
+
+.scoreSetup{
+  margin-top:7px;padding:0;background:transparent;border:0;color:var(--accent);
+  font-size:10px;font-weight:800;cursor:pointer;text-align:left
+}
+.scoreSetup:hover{text-decoration:underline}
+#athleteProfileSettings{scroll-margin-top:90px}
