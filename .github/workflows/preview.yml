@@ -17,7 +17,7 @@ concurrency:
 jobs:
   preview:
     environment:
-      name: github-pages
+      name: hub-preview
       url: https://joeart84.github.io/powerlifting-performance-hub/preview/auth-brand-refresh/
     runs-on: ubuntu-latest
     steps:
