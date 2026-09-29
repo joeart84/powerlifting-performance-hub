@@ -2,7 +2,7 @@ name: Deploy feature preview
 
 on:
   push:
-    branches: [fix/manual-athlete-age]
+    branches: [fix/birth-date-entry]
   workflow_dispatch:
 
 permissions:
@@ -18,7 +18,7 @@ jobs:
   preview:
     environment:
       name: hub-preview
-      url: https://joeart84.github.io/powerlifting-performance-hub/preview/manual-athlete-age/
+      url: https://joeart84.github.io/powerlifting-performance-hub/preview/birth-date-entry/
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -30,8 +30,8 @@ jobs:
           path: feature
       - name: Place feature under preview path
         run: |
-          mkdir -p site/preview/manual-athlete-age
-          rsync -a --exclude='.git' --exclude='.github' feature/ site/preview/manual-athlete-age/
+          mkdir -p site/preview/birth-date-entry
+          rsync -a --exclude='.git' --exclude='.github' feature/ site/preview/birth-date-entry/
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:

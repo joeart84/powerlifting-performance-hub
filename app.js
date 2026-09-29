@@ -166,6 +166,24 @@ function ageFromBirthDate(birthDate,referenceDate=""){
   if(md<0||(md===0&&ref.getDate()<birth.getDate()))age--;
   return Math.max(0,age);
 }
+function parseBirthDateInput(value){
+  const raw=String(value||"").trim();
+  if(!raw)return "";
+  let day,month,year;
+  let parts=raw.match(/^(\d{1,2})[.\/\-\s](\d{1,2})[.\/\-\s](\d{4})$/);
+  if(parts){[,day,month,year]=parts}
+  else if((parts=raw.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/))){[,year,month,day]=parts}
+  else if((parts=raw.match(/^(\d{2})(\d{2})(\d{4})$/))){[,day,month,year]=parts}
+  else return null;
+  const d=Number(day),m=Number(month),y=Number(year);
+  const date=new Date(y,m-1,d,12);
+  if(date.getFullYear()!==y||date.getMonth()!==m-1||date.getDate()!==d)return null;
+  return `${year}-${String(m).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
+}
+function formatBirthDate(iso){
+  const parts=String(iso||"").match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  return parts?`${parts[3]}.${parts[2]}.${parts[1]}`:"";
+}
 function profileAge(profile){
   const p=profile||{};
   return p.birthDate?ageFromBirthDate(p.birthDate):parseAge(p.age);
@@ -785,18 +803,23 @@ function populateLocationSettings(){
 }
 function populateAthleteProfileSettings(){
   const p=state.profile||{};
-  if($("birthDate"))$("birthDate").value=p.birthDate||"";
+  if($("birthDate"))$("birthDate").value=formatBirthDate(p.birthDate);
   if($("profileAge"))$("profileAge").value=profileAge(p)||"";
 }
 function saveAthleteProfileSettings(){
   const p=state.profile||{};
-  const ageInput=$("profileAge"),birthDate=$("birthDate").value;
-  if(!ageInput.checkValidity()){ageInput.reportValidity();return}
+  const ageInput=$("profileAge"),rawDate=$("birthDate").value.trim();
+  const birthDate=parseBirthDateInput(rawDate);
+  if(birthDate===null){
+    $("athleteProfileStatus").textContent=t("settings.invalid_birth_format");
+    $("birthDate").focus();return;
+  }
   const age=birthDate?ageFromBirthDate(birthDate):parseAge(ageInput.value);
   if(birthDate&&(age<13||age>100)){
     $("athleteProfileStatus").textContent=t("settings.invalid_birth_date");
     $("birthDate").focus();return;
   }
+  if(!ageInput.checkValidity()){ageInput.reportValidity();return}
   p.birthDate=birthDate;
   p.age=age;
   state.profile=p;
@@ -1035,9 +1058,21 @@ document.querySelectorAll("#competitionScopes button").forEach(btn=>btn.addEvent
 $("useCurrentLocation").addEventListener("click",()=>useBrowserLocation("competitionStatus"));
 $("settingsUseLocation").addEventListener("click",()=>useBrowserLocation("locationStatus"));
 $("saveAthleteProfile").addEventListener("click",saveAthleteProfileSettings);
+$("birthDate").addEventListener("input",()=>{
+  const birthDate=parseBirthDateInput($("birthDate").value);
+  $("athleteProfileStatus").textContent="";
+  if(!birthDate)return;
+  $("profileAge").value=ageFromBirthDate(birthDate)||"";
+  $("ageInputHint").textContent=t("settings.age_from_date");
+});
 $("birthDate").addEventListener("change",()=>{
-  if(!$("birthDate").value)return;
-  $("profileAge").value=ageFromBirthDate($("birthDate").value)||"";
+  const raw=$("birthDate").value.trim();
+  if(!raw)return;
+  const birthDate=parseBirthDateInput(raw);
+  if(!birthDate){$("athleteProfileStatus").textContent=t("settings.invalid_birth_format");return}
+  $("birthDate").value=formatBirthDate(birthDate);
+  $("profileAge").value=ageFromBirthDate(birthDate)||"";
+  $("athleteProfileStatus").textContent="";
   $("ageInputHint").textContent=t("settings.age_from_date");
 });
 $("profileAge").addEventListener("input",()=>{
