@@ -13,18 +13,12 @@ const REFERENCE_API="https://powerlifting-calculator.com/wp-json/plc-radar/v1/pe
 const HUB_API="https://powerlifting-calculator.com/wp-json/plc-radar/v1/hub";
 let performanceReference=null;
 let upcomingCompetitions=[];
-let cloudTimer=null;
 let suppressCloud=false;
 
 function save(){
   localStorage.setItem(KEY,JSON.stringify(state));
-  if(session.token&&!suppressCloud)queueCloudSync();
 }
 function saveSession(){localStorage.setItem(SESSION_KEY,JSON.stringify(session))}
-function queueCloudSync(){
-  clearTimeout(cloudTimer);
-  cloudTimer=setTimeout(()=>uploadCloud(true),1200);
-}
 function num(v){const n=Number(String(v??"").replace(",",".").trim());return Number.isFinite(n)?n:0}
 function blankPlan(){return {squat:[0,0,0],bench:[0,0,0],deadlift:[0,0,0]}}
 function blankResults(){return {squat:["","",""],bench:["","",""],deadlift:["","",""]}}
@@ -625,11 +619,11 @@ async function verifyLoginCode(){
 function renderAccount(){
   const signed=!!session.token;
   $("accountSignedOut").hidden=signed;$("accountSignedIn").hidden=!signed;
-  $("cloudBadge").textContent=signed?"Cloud on":"Local only";
+  $("cloudBadge").textContent=signed?"Cloud linked":"Local only";
   $("cloudBadge").classList.toggle("active",signed);
   if(signed){
     $("accountIdentity").textContent=session.email||"signed-in account";
-    if(!$("cloudStatus").textContent)$("cloudStatus").textContent="Changes on this device will auto-sync after you edit them.";
+    if(!$("cloudStatus").textContent)$("cloudStatus").textContent="Cloud account linked. Use Upload this device or Load cloud data when you want to sync.";
   }else if(session.pendingEmail){
     $("accountEmail").value=session.pendingEmail;$("codeStep").hidden=false;
   }
@@ -642,8 +636,8 @@ async function uploadCloud(silent=false){
     const data=await res.json();
     if(res.status===401){clearSession();throw new Error("Session expired. Sign in again.")}
     if(!res.ok)throw new Error(data.message||"Cloud sync failed.");
-    if(!silent)status.textContent="Cloud sync complete.";
-    $("cloudBadge").textContent="Synced";
+    if(!silent)status.textContent="Cloud upload complete.";
+    $("cloudBadge").textContent="Cloud linked";
   }catch(err){if(!silent&&status)status.textContent=err.message}
 }
 async function downloadCloud(){
