@@ -2,7 +2,7 @@
 
 Mobile-first PWA for powerlifting athlete tracking, meet planning, attempt strategy and meet-day analytics.
 
-## MVP v0.4
+## MVP v0.6
 
 Current prototype includes:
 
@@ -29,6 +29,12 @@ Current prototype includes:
 - strength context using OpenPowerlifting percentile references
 - weight-class/bodyweight DOTS simulator
 - target-DOTS goal planner
+- saved goal + target date with progress-to-goal on dashboard
+- upcoming competition picker from the Powerlifting Calculator competition feed
+- save Meet Day results into Progress history
+- shareable square PNG result card
+- passwordless email magic-code account
+- cloud sync for athlete profile, meet plan, results, goals and history
 
 ## Test on a phone
 
@@ -46,21 +52,19 @@ Open the test URL and use **Install app** or **Add to Home screen**.
 
 Open the test URL, tap **Share**, then **Add to Home Screen**.
 
-## MVP privacy
+## Data and cloud sync
 
-The first prototype intentionally has no account and no backend.
+The app remains local-first. Athlete data is stored in the current browser using localStorage.
 
-Athlete data, meet plan and meet-day results are stored only in the current browser/device using localStorage.
+Cloud sync is optional and explicit. When a user signs in with an email magic code, they can upload the current device state to powerlifting-calculator.com or load the cloud copy onto another device. Passwords are not used by the Hub. Login sessions expire after 30 days.
 
 ## Next steps
 
-- shareable visual result cards
-- competition crawler integration
-- saved goals and target-date progress
-- federation / age-specific reference filters
-- competition crawler integration
-- account + cloud sync
+- federation / age-specific strength reference filters
+- richer competition discovery and filtering
+- saved multiple goals
 - optional Capacitor wrapper for Android/iOS stores
+- production onboarding, analytics and account recovery polish
 
 ## OpenPowerlifting import
 
@@ -82,3 +86,14 @@ The intended loop is:
 The Strength Context tool uses a server-generated reference dataset built from recent OpenPowerlifting Raw full-power SBD performances. The reference stores P10, P25, P50, P75, P90, P95 and P99 DOTS thresholds by sex and weight class.
 
 Displayed percentiles are estimates interpolated between these reference thresholds and should be treated as descriptive context rather than a prediction or ranking of an athlete's future performance.
+
+
+## Cloud backend requirement
+
+Performance Hub v0.6 requires Powerlifting Trend Radar v1.12.0 on powerlifting-calculator.com for:
+- upcoming competitions
+- email magic-code authentication
+- cloud profile GET/POST
+- logout/session revocation
+
+Email delivery uses WordPress `wp_mail()`, so production testing should confirm that transactional mail reaches real inboxes reliably.
