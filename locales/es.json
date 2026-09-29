@@ -209,5 +209,15 @@
   "settings.home_location_note": "Se usa solo para filtrar y ordenar competiciones cercanas.",
   "settings.home_country": "País",
   "settings.home_city": "Ciudad",
-  "settings.save_location": "Guardar ubicación"
+  "settings.save_location": "Guardar ubicación",
+  "dynamic.top_1": "Top ~1 %",
+  "dynamic.top_5": "Top ~5 %",
+  "dynamic.top_10": "Top ~10 %",
+  "dynamic.top_25": "Top ~25 %",
+  "dynamic.above_median": "Por encima de la mediana",
+  "dynamic.percentile_25_50": "Percentil 25–50",
+  "dynamic.below_25": "Por debajo del percentil 25",
+  "dynamic.percentile_value": "Percentil {{pct}}",
+  "dynamic.raw_full_power": "Powerlifting raw completo",
+  "dynamic.last_3_years": "Últimos 3 años"
 }
