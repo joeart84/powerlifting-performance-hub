@@ -25,6 +25,20 @@
       <h2>Build your athlete dashboard</h2>
       <p class="muted">For this first test, your data stays only in this browser on your device.</p>
 
+      <div class="oplLookup heroImport">
+        <div>
+          <strong>Already compete?</strong>
+          <p class="muted">Import your OpenPowerlifting history in one tap.</p>
+        </div>
+        <div class="lookupRow">
+          <input id="onboardingLifter" placeholder="Name or OpenPowerlifting profile URL" autocomplete="off">
+          <button id="onboardingImport" class="primary compact">Import athlete</button>
+        </div>
+        <div id="onboardingImportStatus" class="muted small"></div>
+      </div>
+
+      <div class="orDivider"><span>or enter your details manually</span></div>
+
       <div class="grid two">
         <label>Name<input id="name" placeholder="Joe Lifter"></label>
         <label>Sex<select id="sex"><option value="M">Male</option><option value="F">Female</option></select></label>
@@ -115,16 +129,25 @@
           <div>
             <div class="eyebrow">ATHLETE PROGRESS</div>
             <h2>Competition history</h2>
-            <p class="muted">Import your OpenPowerlifting CSV. The file is processed only in this browser and is not uploaded anywhere.</p>
+            <p class="muted">Import directly from OpenPowerlifting. CSV is kept only as an advanced fallback.</p>
           </div>
           <button id="clearHistory" class="ghost danger">Clear history</button>
         </div>
 
         <div class="importBox">
-          <label class="fileLabel">OpenPowerlifting CSV
-            <input id="oplCsv" type="file" accept=".csv,text/csv">
-          </label>
+          <h3>Import athlete from OpenPowerlifting</h3>
+          <div class="lookupRow">
+            <input id="progressLifter" placeholder="Name, username or profile URL" autocomplete="off">
+            <button id="progressImport" class="primary compact">Import / refresh</button>
+          </div>
           <div id="importStatus" class="muted">No competition history imported yet.</div>
+
+          <details class="advancedImport">
+            <summary>Advanced fallback: import CSV file</summary>
+            <label class="fileLabel">OpenPowerlifting CSV
+              <input id="oplCsv" type="file" accept=".csv,text/csv">
+            </label>
+          </details>
         </div>
 
         <div id="progressSummary" class="cards progressCards"></div>
