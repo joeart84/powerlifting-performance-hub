@@ -2,7 +2,7 @@
 
 Mobile-first PWA for powerlifting athlete tracking, meet planning, attempt strategy and meet-day analytics.
 
-## MVP v0.3
+## MVP v0.4
 
 Current prototype includes:
 
@@ -25,6 +25,10 @@ Current prototype includes:
 - automatic PR extraction from imported meets
 - total progress chart
 - DOTS progress chart
+- multi-result athlete search for ambiguous OpenPowerlifting names
+- strength context using OpenPowerlifting percentile references
+- weight-class/bodyweight DOTS simulator
+- target-DOTS goal planner
 
 ## Test on a phone
 
@@ -50,11 +54,10 @@ Athlete data, meet plan and meet-day results are stored only in the current brow
 
 ## Next steps
 
-- true multi-result athlete search for ambiguous names
-- percentile/context against similar lifters
-- weight-class scenario tool
-- goal planning
-- shareable result graphics
+- shareable visual result cards
+- competition crawler integration
+- saved goals and target-date progress
+- federation / age-specific reference filters
 - competition crawler integration
 - account + cloud sync
 - optional Capacitor wrapper for Android/iOS stores
@@ -72,3 +75,10 @@ CSV file import remains available under **Advanced fallback**.
 The intended loop is:
 
 **Athlete → Progress → Goal → Meet → Attempts → Results → Analysis**
+
+
+## Performance reference
+
+The Strength Context tool uses a server-generated reference dataset built from recent OpenPowerlifting Raw full-power SBD performances. The reference stores P10, P25, P50, P75, P90, P95 and P99 DOTS thresholds by sex and weight class.
+
+Displayed percentiles are estimates interpolated between these reference thresholds and should be treated as descriptive context rather than a prediction or ranking of an athlete's future performance.
