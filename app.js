@@ -155,6 +155,20 @@ function parseAge(value){
   const m=String(value??"").match(/\d{1,3}/);
   return m?Math.max(0,Math.min(120,Number(m[0]))):0;
 }
+function ageFromBirthDate(birthDate,referenceDate=""){
+  if(!birthDate)return 0;
+  const birth=new Date(String(birthDate)+"T12:00:00");
+  const ref=referenceDate?new Date(String(referenceDate)+"T12:00:00"):new Date();
+  if(Number.isNaN(birth.getTime())||Number.isNaN(ref.getTime()))return 0;
+  let age=ref.getFullYear()-birth.getFullYear();
+  const md=ref.getMonth()-birth.getMonth();
+  if(md<0||(md===0&&ref.getDate()<birth.getDate()))age--;
+  return Math.max(0,age);
+}
+function profileAge(profile){
+  const p=profile||{};
+  return p.birthDate?ageFromBirthDate(p.birthDate):parseAge(p.age);
+}
 
 // Smooth approximation of the published WUAP Reshel tables.
 // The WUAP source tables themselves are rounded to 0.001 at 0.25 kg steps.
@@ -497,16 +511,19 @@ function render(){
   $("currentTotal").textContent=currentBestTotal();
   const currentDots=dotsScore(p.sex,p.bodyweight,currentBestTotal());
   const currentReshel=reshelScore(p.sex,p.bodyweight,currentBestTotal());
-  const currentMcculloch=mccullochScore(p.sex,p.bodyweight,currentBestTotal(),p.age);
+  const currentAge=profileAge(p);
+  const currentMcculloch=mccullochScore(p.sex,p.bodyweight,currentBestTotal(),currentAge);
   $("currentDots").textContent=currentDots?currentDots.toFixed(2):"—";
   $("currentReshel").textContent=currentReshel?currentReshel.toFixed(3):"—";
   $("currentMcculloch").textContent=currentMcculloch?currentMcculloch.toFixed(3):"—";
-  $("mccullochNote").textContent=parseAge(p.age)>=40?"Age "+parseAge(p.age):"Masters 40+";
+  $("mccullochNote").textContent=currentAge>=40?t("dynamic.age_value",{age:currentAge}):t("dynamic.masters_40");
+  $("mccullochSetup").hidden=!!p.birthDate;
+  $("mccullochSetup").textContent=t("dynamic.add_birth_date");
   const d=daysUntil(p.meetDate);
   $("countdown").textContent=p.meetDate?(d>=0?t("dynamic.days_until",{days:d}):t("dynamic.meet_passed")):t("dynamic.add_meet_date");
   $("meetSnapshot").innerHTML="<div><strong>"+esc(t("dynamic.meet_label"))+":</strong> "+esc(p.meetName||t("common.not_set"))+"</div><div><strong>"+esc(t("dynamic.date_label"))+":</strong> "+esc(p.meetDate||t("common.not_set"))+"</div><div><strong>"+esc(t("planner.projected_total"))+":</strong> "+totalFromPlan()+" kg</div><div><strong>"+esc(t("dynamic.current_best"))+":</strong> "+currentBestTotal()+" kg</div><div><strong>"+esc(t("dynamic.current_dots"))+":</strong> "+(currentDots?currentDots.toFixed(2):"—")+"</div>";
   renderGoalSnapshot();
-  renderPlanner();renderMeetDay();renderProgress();renderTools();renderReport();renderAccount();populateLocationSettings();renderCompetitionFinder();
+  renderPlanner();renderMeetDay();renderProgress();renderTools();renderReport();renderAccount();populateLocationSettings();populateAthleteProfileSettings();renderCompetitionFinder();
 }
 
 function renderGoalSnapshot(){
@@ -765,6 +782,31 @@ function populateLocationSettings(){
   if($("homeCountry")&&!$("homeCountry").value)$("homeCountry").value=p.homeCountry||"";
   if($("homeCity")&&!$("homeCity").value)$("homeCity").value=p.homeCity||"";
 }
+function populateAthleteProfileSettings(){
+  const p=state.profile||{};
+  if($("birthDate"))$("birthDate").value=p.birthDate||"";
+  if($("profileAge"))$("profileAge").value=profileAge(p)||"";
+}
+function saveAthleteProfileSettings(){
+  const p=state.profile||{};
+  const birthDate=$("birthDate").value;
+  p.birthDate=birthDate;
+  p.age=ageFromBirthDate(birthDate)||parseAge(p.age);
+  state.profile=p;
+  save();
+  render();
+  if($("athleteProfileStatus"))$("athleteProfileStatus").textContent=t("settings.profile_saved");
+}
+function openAthleteProfileSettings(){
+  const target=document.querySelector('[data-tab="settings"]');
+  if(target)target.click();
+  requestAnimationFrame(()=>{
+    const card=$("athleteProfileSettings");
+    if(card)card.scrollIntoView({behavior:"smooth",block:"start"});
+    if($("birthDate"))$("birthDate").focus();
+  });
+}
+
 function saveCurrentGoal(){
   const p=state.profile||{},targetDots=num($("goalDots").value),bw=num($("goalBodyweight").value);
   const targetTotal=totalForDots(p.sex,bw,targetDots);
@@ -970,6 +1012,9 @@ document.querySelectorAll("#competitionScopes button").forEach(btn=>btn.addEvent
 }));
 $("useCurrentLocation").addEventListener("click",()=>useBrowserLocation("competitionStatus"));
 $("settingsUseLocation").addEventListener("click",()=>useBrowserLocation("locationStatus"));
+$("saveAthleteProfile").addEventListener("click",saveAthleteProfileSettings);
+$("birthDate").addEventListener("change",()=>{$("profileAge").value=ageFromBirthDate($("birthDate").value)||""});
+$("mccullochSetup").addEventListener("click",openAthleteProfileSettings);
 $("saveHomeLocation").addEventListener("click",saveHomeLocation);
 $("runSimulator").addEventListener("click",()=>{
   const p=state.profile||{},bw=num($("simBodyweight").value),total=num($("simTotal").value);
