@@ -45,10 +45,17 @@
           <h2 id="athleteName">Your dashboard</h2>
           <p id="countdown" class="muted"></p>
         </div>
-        <div class="heroScore">
-          <span>Current total</span>
-          <strong id="currentTotal">0</strong>
-          <small>kg</small>
+        <div class="heroScores">
+          <div class="heroScore">
+            <span>Current total</span>
+            <strong id="currentTotal">0</strong>
+            <small>kg</small>
+          </div>
+          <div class="heroScore">
+            <span>Current DOTS</span>
+            <strong id="currentDots">—</strong>
+            <small>score</small>
+          </div>
         </div>
       </section>
 
@@ -56,6 +63,7 @@
         <button data-tab="dashboard" class="active">Dashboard</button>
         <button data-tab="planner">Meet Planner</button>
         <button data-tab="meetday">Meet Day</button>
+        <button data-tab="progress">Progress</button>
         <button data-tab="report">Report</button>
       </nav>
 
@@ -99,6 +107,47 @@
           <article><span>Made</span><strong id="madeCount">0</strong></article>
           <article><span>Missed</span><strong id="missCount">0</strong></article>
           <article><span>Best total so far</span><strong id="liveTotal">0 kg</strong></article>
+        </div>
+      </section>
+
+      <section id="tab-progress" class="tab panel" hidden>
+        <div class="progressHead">
+          <div>
+            <div class="eyebrow">ATHLETE PROGRESS</div>
+            <h2>Competition history</h2>
+            <p class="muted">Import your OpenPowerlifting CSV. The file is processed only in this browser and is not uploaded anywhere.</p>
+          </div>
+          <button id="clearHistory" class="ghost danger">Clear history</button>
+        </div>
+
+        <div class="importBox">
+          <label class="fileLabel">OpenPowerlifting CSV
+            <input id="oplCsv" type="file" accept=".csv,text/csv">
+          </label>
+          <div id="importStatus" class="muted">No competition history imported yet.</div>
+        </div>
+
+        <div id="progressSummary" class="cards progressCards"></div>
+
+        <div class="chartGrid">
+          <div class="subpanel">
+            <h3>Total progress</h3>
+            <div id="totalChart" class="chartBox"></div>
+          </div>
+          <div class="subpanel">
+            <h3>DOTS progress</h3>
+            <div id="dotsChart" class="chartBox"></div>
+          </div>
+        </div>
+
+        <div class="subpanel">
+          <h3>Meet history</h3>
+          <div class="historyWrap">
+            <table class="historyTable">
+              <thead><tr><th>Date</th><th>Meet</th><th>BW</th><th>Squat</th><th>Bench</th><th>Deadlift</th><th>Total</th><th>DOTS</th></tr></thead>
+              <tbody id="historyRows"></tbody>
+            </table>
+          </div>
         </div>
       </section>
 
