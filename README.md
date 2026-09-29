@@ -2,7 +2,7 @@
 
 Mobile-first PWA for powerlifting athlete tracking, meet planning, attempt strategy and meet-day analytics.
 
-## MVP v0.2
+## MVP v0.3
 
 Current prototype includes:
 
@@ -19,7 +19,8 @@ Current prototype includes:
 - installable PWA shell
 - offline caching
 - current DOTS calculation
-- OpenPowerlifting CSV import processed entirely in-browser
+- one-tap OpenPowerlifting athlete import from name/slug/profile URL
+- OpenPowerlifting CSV import retained as an advanced fallback
 - saved competition history
 - automatic PR extraction from imported meets
 - total progress chart
@@ -49,7 +50,7 @@ Athlete data, meet plan and meet-day results are stored only in the current brow
 
 ## Next steps
 
-- direct OpenPowerlifting athlete lookup by name/profile
+- true multi-result athlete search for ambiguous names
 - percentile/context against similar lifters
 - weight-class scenario tool
 - goal planning
@@ -60,9 +61,11 @@ Athlete data, meet plan and meet-day results are stored only in the current brow
 
 ## OpenPowerlifting import
 
-Open an athlete page on OpenPowerlifting, download the competition results as CSV, then import that file in the **Progress** tab.
+The primary mobile flow accepts a lifter name, OpenPowerlifting username/slug, or full profile URL. Performance Hub requests the athlete's public OpenPowerlifting competition CSV through a small read-only proxy on powerlifting-calculator.com, then stores the resulting history locally in the browser.
 
-The CSV is parsed locally in the browser. It is not uploaded to this app or a third-party backend.
+For ambiguous names, paste the exact OpenPowerlifting profile URL.
+
+CSV file import remains available under **Advanced fallback**.
 
 ## Product direction
 

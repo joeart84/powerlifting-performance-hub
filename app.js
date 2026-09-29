@@ -4,6 +4,7 @@ const legacy=JSON.parse(localStorage.getItem(LEGACY_KEY)||"{}");
 const state=JSON.parse(localStorage.getItem(KEY)||"null")||legacy||{};
 const $=id=>document.getElementById(id);
 const lifts=["squat","bench","deadlift"];
+const LIFTER_API="https://powerlifting-calculator.com/wp-json/plc-radar/v1/lifter";
 
 function save(){localStorage.setItem(KEY,JSON.stringify(state))}
 function num(v){const n=Number(String(v??"").replace(",",".").trim());return Number.isFinite(n)?n:0}
@@ -68,6 +69,8 @@ function parseMeetRows(text){
     const date=pick(obj,["Date"]);
     const meet=pick(obj,["MeetName","Competition","Meet"]);
     const equipment=pick(obj,["Equipment","Equip"]);
+    const athleteName=String(pick(obj,["Name","Lifter","LifterName"])||"").trim();
+    const athleteSex=String(pick(obj,["Sex","Gender"])||"").trim().toUpperCase();
     const bw=num(pick(obj,["BodyweightKg","Bodyweight","Weight","BW"]));
     const squat=bestPositive(
       pick(obj,["Best3SquatKg","Squat"]),
@@ -89,6 +92,8 @@ function parseMeetRows(text){
     out.push({
       date:String(date||"").slice(0,10),
       meet:String(meet||"Competition"),
+      athleteName,
+      athleteSex,
       federation:String(pick(obj,["Federation","Fed"])||""),
       equipment:String(equipment||""),
       bodyweight:bw,
@@ -103,6 +108,76 @@ function dedupeMeets(meets){
   meets.forEach(m=>map.set([m.date,m.meet,m.total,m.bodyweight].join("|").toLowerCase(),m));
   return [...map.values()].sort((a,b)=>String(a.date).localeCompare(String(b.date)));
 }
+function extractLifterSlug(input){
+  const raw=String(input||"").trim();
+  if(!raw)return "";
+  try{
+    const url=new URL(raw);
+    const m=url.pathname.match(/\/u\/([^/?#]+)/i);
+    if(m&&m[1])return m[1].toLowerCase().replace(/[^a-z0-9_-]/g,"");
+  }catch(e){}
+  if(/^https?:/i.test(raw))return "";
+  return raw.toLowerCase().replace(/[^a-z0-9_-]/g,"");
+}
+
+function inferAthlete(meets){
+  const rows=(meets||[]).filter(Boolean);
+  const latest=rows.slice().sort((a,b)=>String(a.date).localeCompare(String(b.date))).pop()||{};
+  const firstNamed=rows.find(r=>r.athleteName)||{};
+  const firstSex=rows.find(r=>r.athleteSex==="M"||r.athleteSex==="F")||{};
+  return {
+    name:firstNamed.athleteName||"",
+    sex:firstSex.athleteSex||"",
+    bodyweight:num(latest.bodyweight)
+  };
+}
+
+function applyImportedAthlete(imported,profileUrl,slug){
+  if(!imported.length)throw new Error("No valid competition results were returned.");
+  state.meets=dedupeMeets(imported);
+  const inferred=inferAthlete(imported);
+  const pr=meetPrs();
+  const existing=state.profile||{};
+  state.profile={
+    name:inferred.name||existing.name||slug||"Athlete",
+    sex:(inferred.sex==="M"||inferred.sex==="F")?inferred.sex:(existing.sex||"M"),
+    bodyweight:num(existing.bodyweight)||inferred.bodyweight||0,
+    meetDate:existing.meetDate||"",
+    squatBest:Math.max(num(existing.squatBest),pr.squat),
+    benchBest:Math.max(num(existing.benchBest),pr.bench),
+    deadliftBest:Math.max(num(existing.deadliftBest),pr.deadlift),
+    oplSlug:slug||existing.oplSlug||"",
+    oplProfileUrl:profileUrl||existing.oplProfileUrl||""
+  };
+  state.plan=state.plan||blankPlan();
+  state.results=state.results||blankResults();
+  suggestPlan();save();render();
+}
+
+async function importAthlete(input,statusEl){
+  const slug=extractLifterSlug(input);
+  if(!slug){
+    statusEl.textContent="Enter a lifter name, username, or paste an OpenPowerlifting profile URL.";
+    return;
+  }
+  statusEl.textContent="Looking up "+slug+" on OpenPowerlifting…";
+  try{
+    const res=await fetch(LIFTER_API+"?slug="+encodeURIComponent(slug),{headers:{"Accept":"application/json"}});
+    let payload={};
+    try{payload=await res.json()}catch(e){}
+    if(!res.ok){
+      const message=payload&&payload.message?payload.message:"Athlete profile was not found.";
+      throw new Error(message);
+    }
+    if(!payload.csv)throw new Error("No competition data was returned.");
+    const imported=parseMeetRows(payload.csv);
+    applyImportedAthlete(imported,payload.profile_url||"",payload.slug||slug);
+    statusEl.textContent="Imported "+imported.length+" competition result"+(imported.length===1?"":"s")+" from OpenPowerlifting.";
+  }catch(err){
+    statusEl.innerHTML="Import failed: "+esc(err.message)+" <br><span class=\"muted\">Tip: if the name is ambiguous, paste the exact OpenPowerlifting profile URL.</span>";
+  }
+}
+
 function meetPrs(){
   const meets=state.meets||[];
   const max=k=>meets.reduce((m,r)=>Math.max(m,num(r[k])),0);
@@ -208,6 +283,10 @@ $("saveProfile").addEventListener("click",()=>{
 });
 $("editProfile").addEventListener("click",()=>{const p=state.profile||{};$("name").value=p.name||"";$("sex").value=p.sex||"M";$("bodyweight").value=p.bodyweight||"";$("meetDate").value=p.meetDate||"";$("squatBest").value=p.squatBest||"";$("benchBest").value=p.benchBest||"";$("deadliftBest").value=p.deadliftBest||"";delete state.profile;save();render();window.scrollTo({top:0,behavior:"smooth"})});
 $("savePlan").addEventListener("click",()=>{save();alert("Attempt plan saved on this device.")});
+$("onboardingImport").addEventListener("click",()=>importAthlete($("onboardingLifter").value,$("onboardingImportStatus")));
+$("progressImport").addEventListener("click",()=>importAthlete($("progressLifter").value,$("importStatus")));
+$("onboardingLifter").addEventListener("keydown",e=>{if(e.key==="Enter")$("onboardingImport").click()});
+$("progressLifter").addEventListener("keydown",e=>{if(e.key==="Enter")$("progressImport").click()});
 $("resetMeet").addEventListener("click",()=>{if(confirm("Reset all meet-day results?")){state.results=blankResults();save();renderMeetDay();renderReport()}});
 $("oplCsv").addEventListener("change",async e=>{
   const file=e.target.files&&e.target.files[0];if(!file)return;
@@ -216,7 +295,10 @@ $("oplCsv").addEventListener("change",async e=>{
     const text=await file.text(),imported=parseMeetRows(text);
     if(!imported.length)throw new Error("No valid powerlifting meet rows were found.");
     state.meets=dedupeMeets([...(state.meets||[]),...imported]);
-    const pr=meetPrs(),p=state.profile||{};
+    const pr=meetPrs(),p=state.profile||{},inferred=inferAthlete(state.meets);
+    if(!p.name&&inferred.name)p.name=inferred.name;
+    if((inferred.sex==="M"||inferred.sex==="F")&&!p.sex)p.sex=inferred.sex;
+    if(!num(p.bodyweight)&&inferred.bodyweight)p.bodyweight=inferred.bodyweight;
     if(pr.squat>num(p.squatBest))p.squatBest=pr.squat;
     if(pr.bench>num(p.benchBest))p.benchBest=pr.bench;
     if(pr.deadlift>num(p.deadliftBest))p.deadliftBest=pr.deadlift;
