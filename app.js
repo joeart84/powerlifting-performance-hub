@@ -33,16 +33,19 @@ function t(key,vars={}){
   return interpolate(value,vars);
 }
 async function loadMessages(lang){
+  let base={};
+  try{
+    const enRes=await fetch("./locales/en.json",{cache:"no-cache"});
+    if(enRes.ok)base=await enRes.json();
+  }catch(e){}
+  if(lang==="en")return base;
   try{
     const res=await fetch("./locales/"+lang+".json",{cache:"no-cache"});
     if(!res.ok)throw new Error("locale");
-    return await res.json();
+    const local=await res.json();
+    return {...base,...local};
   }catch(e){
-    if(lang!=="en"){
-      const res=await fetch("./locales/en.json",{cache:"no-cache"});
-      return await res.json();
-    }
-    return {};
+    return base;
   }
 }
 function applyTranslations(){
@@ -575,7 +578,7 @@ function competitionMatchesScope(m,scope,radius){
   const p=state.preferences||{},distance=eventDistance(m);
   if(scope==="world")return true;
   if(scope==="europe")return EUROPE_COUNTRIES.has(normText(m.country));
-  if(scope==="country")return p.homeCountry?countryMatches(m.country,p.homeCountry):true;
+  if(scope==="country")return p.homeCountry?countryMatches(m.country,p.homeCountry):false;
   if(scope==="nearby"){
     if(distance!==null)return distance<=radius;
     return nearbyCountryFallback(m.country);
@@ -626,7 +629,7 @@ function renderCompetitionFinder(){
   document.querySelectorAll("#competitionScopes button").forEach(btn=>btn.classList.toggle("active",btn.dataset.scope===competitionScope));
   const rows=filteredCompetitions();
   const hasLocation=num(p.homeLat)&&num(p.homeLon);
-  if(competitionScope==="nearby"&&!hasLocation&&!p.homeCountry){
+  if((competitionScope==="nearby"&&!hasLocation&&!p.homeCountry)||(competitionScope==="country"&&!p.homeCountry)){
     status.textContent=t("finder.location_needed");
   }else{
     status.textContent=t("finder.results_count",{count:rows.length});
@@ -687,8 +690,8 @@ async function saveHomeLocation(){
     renderCompetitionFinder();
   }catch(err){status.textContent=t("finder.location_error",{message:err.message})}
 }
-function useBrowserLocation(){
-  const status=$("locationStatus")||$("competitionStatus");
+function useBrowserLocation(statusId="competitionStatus"){
+  const status=$(statusId)||$("competitionStatus");
   if(!navigator.geolocation){status.textContent=t("finder.location_unsupported");return}
   status.textContent=t("finder.getting_location");
   navigator.geolocation.getCurrentPosition(pos=>{
@@ -906,8 +909,8 @@ document.querySelectorAll("#competitionScopes button").forEach(btn=>btn.addEvent
   competitionScope=btn.dataset.scope||"nearby";
   renderCompetitionFinder();
 }));
-$("useCurrentLocation").addEventListener("click",useBrowserLocation);
-$("settingsUseLocation").addEventListener("click",useBrowserLocation);
+$("useCurrentLocation").addEventListener("click",()=>useBrowserLocation("competitionStatus"));
+$("settingsUseLocation").addEventListener("click",()=>useBrowserLocation("locationStatus"));
 $("saveHomeLocation").addEventListener("click",saveHomeLocation);
 $("runSimulator").addEventListener("click",()=>{
   const p=state.profile||{},bw=num($("simBodyweight").value),total=num($("simTotal").value);
