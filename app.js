@@ -704,6 +704,7 @@ $("oplCsv").addEventListener("change",async e=>{
   e.target.value="";
 });
 $("clearHistory").addEventListener("click",()=>{if(confirm("Remove all imported competition history from this device?")){state.meets=[];save();renderProgress()}});
+$("useCompetition").addEventListener("click",chooseCompetition);
 $("runSimulator").addEventListener("click",()=>{
   const p=state.profile||{},bw=num($("simBodyweight").value),total=num($("simTotal").value);
   const currentDots=dotsScore(p.sex,p.bodyweight,currentBestTotal()),simDots=dotsScore(p.sex,bw,total);
@@ -718,9 +719,20 @@ $("runGoal").addEventListener("click",()=>{
   const gap=round(required-currentBestTotal(),1);
   $("goalResult").innerHTML='<span class="muted">Required total at '+bw+' kg</span><strong class="big">'+required+' kg</strong><p>'+(gap>0?gap+' kg above your current best total.':Math.abs(gap)+' kg below your current best total.')+'</p>';
 });
+$("saveGoal").addEventListener("click",saveCurrentGoal);
+$("saveMeetResult").addEventListener("click",saveMeetToHistory);
+$("shareCard").addEventListener("click",shareResultCard);
+$("requestCode").addEventListener("click",requestLoginCode);
+$("verifyCode").addEventListener("click",verifyLoginCode);
+$("uploadCloud").addEventListener("click",()=>uploadCloud(false));
+$("downloadCloud").addEventListener("click",downloadCloud);
+$("signOut").addEventListener("click",logoutCloud);
+$("accountCode").addEventListener("keydown",e=>{if(e.key==="Enter")verifyLoginCode()});
 document.querySelectorAll(".tabs button").forEach(b=>b.addEventListener("click",()=>{document.querySelectorAll(".tabs button").forEach(x=>x.classList.toggle("active",x===b));document.querySelectorAll(".tab").forEach(x=>x.hidden=x.id!=="tab-"+b.dataset.tab)}));
 $("shareReport").addEventListener("click",async()=>{const mm=madeMiss(),p=state.profile||{},total=liveTotal(),dots=total?dotsScore(p.sex,p.bodyweight,total):null,text=(p.name?p.name+"'s":"My")+" powerlifting meet: "+mm.made+"/"+(mm.made+mm.miss)+" attempts made, "+total+" kg total"+(dots?", "+dots.toFixed(2)+" DOTS":"")+". Built with Powerlifting Performance Hub.";if(navigator.share){await navigator.share({title:"Powerlifting Meet Report",text})}else if(navigator.clipboard){await navigator.clipboard.writeText(text);alert("Report copied to clipboard.")}});
 let deferredPrompt;window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();deferredPrompt=e;$("installBtn").hidden=false});
 $("installBtn").addEventListener("click",async()=>{if(!deferredPrompt)return;deferredPrompt.prompt();await deferredPrompt.userChoice;deferredPrompt=null;$("installBtn").hidden=true});
 if("serviceWorker" in navigator)window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js"));
-ensureState();save();render();loadReference();
+ensureState();
+if(session.expiresAt&&Date.parse(session.expiresAt)<=Date.now())clearSession();
+save();render();renderAccount();loadReference();loadCompetitions();
