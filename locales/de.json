@@ -209,5 +209,15 @@
   "settings.home_location_note": "Wird nur zum Filtern und Sortieren naher Wettkämpfe verwendet.",
   "settings.home_country": "Land",
   "settings.home_city": "Stadt",
-  "settings.save_location": "Heimatort speichern"
+  "settings.save_location": "Heimatort speichern",
+  "dynamic.top_1": "Top ~1 %",
+  "dynamic.top_5": "Top ~5 %",
+  "dynamic.top_10": "Top ~10 %",
+  "dynamic.top_25": "Top ~25 %",
+  "dynamic.above_median": "Über dem Median",
+  "dynamic.percentile_25_50": "25.–50. Perzentil",
+  "dynamic.below_25": "Unter dem 25. Perzentil",
+  "dynamic.percentile_value": "{{pct}}. Perzentil",
+  "dynamic.raw_full_power": "Raw Dreikampf",
+  "dynamic.last_3_years": "Letzte 3 Jahre"
 }
