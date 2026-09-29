@@ -14,6 +14,61 @@ const HUB_API="https://powerlifting-calculator.com/wp-json/plc-radar/v1/hub";
 let performanceReference=null;
 let upcomingCompetitions=[];
 let suppressCloud=false;
+const LANGUAGE_KEY="plc-performance-hub-language";
+const SUPPORTED_LANGUAGES=["en","sk","cs","de","es","pl"];
+let messages={};
+let currentLanguage="en";
+
+function systemLanguage(){
+  const raw=String(navigator.language||"en").toLowerCase().split("-")[0];
+  return SUPPORTED_LANGUAGES.includes(raw)?raw:"en";
+}
+function languagePreference(){return localStorage.getItem(LANGUAGE_KEY)||"system"}
+function interpolate(value,vars={}){
+  return String(value).replace(/\{\{(\w+)\}\}/g,(m,k)=>Object.prototype.hasOwnProperty.call(vars,k)?vars[k]:m);
+}
+function t(key,vars={}){
+  const value=messages[key]!==undefined?messages[key]:key;
+  return interpolate(value,vars);
+}
+async function loadMessages(lang){
+  try{
+    const res=await fetch("./locales/"+lang+".json",{cache:"no-cache"});
+    if(!res.ok)throw new Error("locale");
+    return await res.json();
+  }catch(e){
+    if(lang!=="en"){
+      const res=await fetch("./locales/en.json",{cache:"no-cache"});
+      return await res.json();
+    }
+    return {};
+  }
+}
+function applyTranslations(){
+  document.documentElement.lang=currentLanguage;
+  document.querySelectorAll("[data-i18n]").forEach(el=>{
+    const key=el.dataset.i18n;
+    if(messages[key]!==undefined)el.textContent=t(key);
+  });
+  document.querySelectorAll("[data-i18n-placeholder]").forEach(el=>{
+    const key=el.dataset.i18nPlaceholder;
+    if(messages[key]!==undefined)el.placeholder=t(key);
+  });
+}
+async function setLanguage(preference,announce=false){
+  localStorage.setItem(LANGUAGE_KEY,preference);
+  currentLanguage=preference==="system"?systemLanguage():preference;
+  if(!SUPPORTED_LANGUAGES.includes(currentLanguage))currentLanguage="en";
+  messages=await loadMessages(currentLanguage);
+  applyTranslations();
+  const select=$("languageSelect");
+  if(select)select.value=preference;
+  render();
+  renderCompetitionPicker();
+  renderAccount();
+  if(announce&&$("settingsStatus"))$("settingsStatus").textContent=t("settings.saved");
+}
+async function initI18n(){await setLanguage(languagePreference(),false)}
 
 function save(){
   localStorage.setItem(KEY,JSON.stringify(state));
