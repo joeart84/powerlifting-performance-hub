@@ -349,4 +349,5 @@ input:focus,select:focus{outline:none;border-color:#6a5730;box-shadow:0 0 0 3px 
 @media(prefers-reduced-motion:reduce){
   .tab:not([hidden]) .metric,.tab:not([hidden]) .subpanel,.tab:not([hidden]) .toolCard,.tab:not([hidden]) .reportCard,.goalProgress span,.contextScale span{animation:none}
   .metric,.subpanel,.toolCard,.reportCard,.primary,.ghost{transition:none}
+  .metric:hover,.subpanel:hover,.toolCard:hover,.reportCard:hover,.primary:hover,.ghost:hover,.primary:active,.ghost:active{transform:none}
 }
