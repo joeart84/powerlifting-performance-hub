@@ -2,7 +2,7 @@
 
 Mobile-first PWA for powerlifting athlete tracking, meet planning, attempt strategy and meet-day analytics.
 
-## MVP v0.1
+## MVP v0.2
 
 Current prototype includes:
 
@@ -18,6 +18,12 @@ Current prototype includes:
 - localStorage persistence
 - installable PWA shell
 - offline caching
+- current DOTS calculation
+- OpenPowerlifting CSV import processed entirely in-browser
+- saved competition history
+- automatic PR extraction from imported meets
+- total progress chart
+- DOTS progress chart
 
 ## Test on a phone
 
@@ -41,18 +47,22 @@ The first prototype intentionally has no account and no backend.
 
 Athlete data, meet plan and meet-day results are stored only in the current browser/device using localStorage.
 
-## Planned Phase 2
+## Next steps
 
-- account + cloud sync
-- OpenPowerlifting athlete lookup/import
-- DOTS calculation and historical progress
+- direct OpenPowerlifting athlete lookup by name/profile
 - percentile/context against similar lifters
-- saved meet history
-- shareable result graphics
-- competition crawler integration
 - weight-class scenario tool
 - goal planning
+- shareable result graphics
+- competition crawler integration
+- account + cloud sync
 - optional Capacitor wrapper for Android/iOS stores
+
+## OpenPowerlifting import
+
+Open an athlete page on OpenPowerlifting, download the competition results as CSV, then import that file in the **Progress** tab.
+
+The CSV is parsed locally in the browser. It is not uploaded to this app or a third-party backend.
 
 ## Product direction
 
