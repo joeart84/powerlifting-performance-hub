@@ -331,3 +331,22 @@ input:focus,select:focus{outline:none;border-color:#6a5730;box-shadow:0 0 0 3px 
 .contextExplanation{border-top:1px solid var(--line);margin-top:14px;padding-top:10px;color:#c1c9ce;font-size:13px;line-height:1.55}
 .contextExplanation p{margin:6px 0}
 @media(max-width:520px){.contextHero{display:grid;grid-template-columns:1fr 1fr;gap:12px}.contextHero strong{font-size:clamp(20px,5vw,28px)}}
+
+/* Motion is brief and only runs when content appears or values change. */
+@keyframes cardEnter{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@keyframes barReveal{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+.tab:not([hidden]) .metric,.tab:not([hidden]) .subpanel,.tab:not([hidden]) .toolCard,.tab:not([hidden]) .reportCard{animation:cardEnter .28s ease-out backwards}
+.tab:not([hidden]) .metric:nth-child(2),.tab:not([hidden]) .toolCard:nth-child(2){animation-delay:.045s}
+.tab:not([hidden]) .metric:nth-child(3),.tab:not([hidden]) .toolCard:nth-child(3){animation-delay:.09s}
+.tab:not([hidden]) .metric:nth-child(4){animation-delay:.135s}
+.goalProgress span,.contextScale span{transform-origin:left center;animation:barReveal .55s cubic-bezier(.2,.75,.25,1) both}
+@media(hover:hover){
+  .metric,.subpanel,.toolCard,.reportCard{transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease}
+  .metric:hover,.subpanel:hover,.toolCard:hover,.reportCard:hover{transform:translateY(-2px);border-color:#485159;box-shadow:0 10px 24px rgba(0,0,0,.16)}
+  .primary:hover,.ghost:hover{transform:translateY(-1px)}
+  .primary:active,.ghost:active{transform:translateY(0)}
+}
+@media(prefers-reduced-motion:reduce){
+  .tab:not([hidden]) .metric,.tab:not([hidden]) .subpanel,.tab:not([hidden]) .toolCard,.tab:not([hidden]) .reportCard,.goalProgress span,.contextScale span{animation:none}
+  .metric,.subpanel,.toolCard,.reportCard,.primary,.ghost{transition:none}
+}

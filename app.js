@@ -105,6 +105,29 @@ function daysUntil(date){if(!date)return null;const d=new Date(date+"T12:00:00")
 function esc(v){return String(v==null?"":v).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c]))}
 function round(v,d=2){const p=10**d;return Math.round(v*p)/p}
 
+const reducedMotion=()=>window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+const metricFrames=new Map();
+function setAnimatedMetric(id,value){
+  const el=$(id),target=String(value??"—");
+  if(el.dataset.metricTarget===target)return;
+  if(metricFrames.has(id))cancelAnimationFrame(metricFrames.get(id));
+  el.dataset.metricTarget=target;
+  const parsed=Number(target.replace(",","."));
+  if(target==="—"||!Number.isFinite(parsed)||reducedMotion()||document.hidden){el.textContent=target;return}
+  const previous=Number(el.textContent.replace(",","."));
+  const from=Number.isFinite(previous)?previous:0;
+  const decimals=(target.split(/[.,]/)[1]||"").length;
+  const started=performance.now(),duration=550;
+  function step(now){
+    if(el.dataset.metricTarget!==target)return;
+    const t=Math.min(1,(now-started)/duration),eased=1-(1-t)**3;
+    el.textContent=(from+(parsed-from)*eased).toFixed(decimals);
+    if(t<1)metricFrames.set(id,requestAnimationFrame(step));
+    else{el.textContent=target;metricFrames.delete(id)}
+  }
+  metricFrames.set(id,requestAnimationFrame(step));
+}
+
 function todayIso(){return new Date().toISOString().slice(0,10)}
 function goalProgress(){
   const g=state.goal,p=state.profile||{};
@@ -526,7 +549,7 @@ function render(){
   if(!p)return;
   ensureState();suggestPlan();
   $("athleteName").textContent=p.name||"Your dashboard";
-  $("metricBw").textContent=p.bodyweight||"—";$("metricSq").textContent=p.squatBest||"—";$("metricBp").textContent=p.benchBest||"—";$("metricDl").textContent=p.deadliftBest||"—";
+  setAnimatedMetric("metricBw",p.bodyweight||"—");setAnimatedMetric("metricSq",p.squatBest||"—");setAnimatedMetric("metricBp",p.benchBest||"—");setAnimatedMetric("metricDl",p.deadliftBest||"—");
   $("currentTotal").textContent=currentBestTotal();
   const currentDots=dotsScore(p.sex,p.bodyweight,currentBestTotal());
   const currentReshel=reshelScore(p.sex,p.bodyweight,currentBestTotal());
@@ -1110,7 +1133,7 @@ document.querySelectorAll("[data-tab]").forEach(b=>b.addEventListener("click",()
   const target=b.dataset.tab;
   document.querySelectorAll("[data-tab]").forEach(x=>x.classList.toggle("active",x===b));
   document.querySelectorAll(".tab").forEach(x=>x.hidden=x.id!=="tab-"+target);
-  window.scrollTo({top:0,behavior:"smooth"});
+  window.scrollTo({top:0,behavior:reducedMotion()?"auto":"smooth"});
 }));
 $("shareReport").addEventListener("click",async()=>{const mm=madeMiss(),p=state.profile||{},total=liveTotal(),dots=total?dotsScore(p.sex,p.bodyweight,total):null,text=(p.name?p.name+"'s":"My")+" powerlifting meet: "+mm.made+"/"+(mm.made+mm.miss)+" attempts made, "+total+" kg total"+(dots?", "+dots.toFixed(2)+" DOTS":"")+". Built with Powerlifting Performance Hub.";if(navigator.share){await navigator.share({title:"Powerlifting Meet Report",text})}else if(navigator.clipboard){await navigator.clipboard.writeText(text);alert(t("dynamic.report_copied"))}});
 let deferredPrompt;window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();deferredPrompt=e;$("installBtn").hidden=false});
