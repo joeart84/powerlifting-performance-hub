@@ -1,19 +1,38 @@
-const KEY="plc-performance-hub-v2";
-const LEGACY_KEY="plc-performance-hub-v1";
-const legacy=JSON.parse(localStorage.getItem(LEGACY_KEY)||"{}");
+const KEY="plc-performance-hub-v6";
+const LEGACY_KEYS=["plc-performance-hub-v2","plc-performance-hub-v1"];
+let legacy={};
+for(const k of LEGACY_KEYS){try{const v=JSON.parse(localStorage.getItem(k)||"null");if(v&&Object.keys(v).length){legacy=v;break}}catch(e){}}
 const state=JSON.parse(localStorage.getItem(KEY)||"null")||legacy||{};
+const SESSION_KEY="plc-performance-hub-session-v1";
+const session=JSON.parse(localStorage.getItem(SESSION_KEY)||"{}");
 const $=id=>document.getElementById(id);
 const lifts=["squat","bench","deadlift"];
 const LIFTER_API="https://powerlifting-calculator.com/wp-json/plc-radar/v1/lifter";
 const LIFTER_SEARCH_API="https://powerlifting-calculator.com/wp-json/plc-radar/v1/lifter-search";
 const REFERENCE_API="https://powerlifting-calculator.com/wp-json/plc-radar/v1/performance-reference";
+const HUB_API="https://powerlifting-calculator.com/wp-json/plc-radar/v1/hub";
 let performanceReference=null;
+let upcomingCompetitions=[];
+let cloudTimer=null;
 
-function save(){localStorage.setItem(KEY,JSON.stringify(state))}
+function save(){
+  localStorage.setItem(KEY,JSON.stringify(state));
+  if(session.token)queueCloudSync();
+}
+function saveSession(){localStorage.setItem(SESSION_KEY,JSON.stringify(session))}
+function queueCloudSync(){
+  clearTimeout(cloudTimer);
+  cloudTimer=setTimeout(()=>uploadCloud(true),1200);
+}
 function num(v){const n=Number(String(v??"").replace(",",".").trim());return Number.isFinite(n)?n:0}
 function blankPlan(){return {squat:[0,0,0],bench:[0,0,0],deadlift:[0,0,0]}}
 function blankResults(){return {squat:["","",""],bench:["","",""],deadlift:["","",""]}}
-function ensureState(){state.plan=state.plan||blankPlan();state.results=state.results||blankResults();state.meets=Array.isArray(state.meets)?state.meets:[]}
+function ensureState(){
+  state.plan=state.plan||blankPlan();
+  state.results=state.results||blankResults();
+  state.meets=Array.isArray(state.meets)?state.meets:[];
+  state.goal=state.goal||null;
+}
 function totalFromPlan(){return lifts.reduce((sum,l)=>sum+Math.max.apply(null,state.plan[l].map(num)),0)}
 function currentBestTotal(){const p=state.profile||{};return num(p.squatBest)+num(p.benchBest)+num(p.deadliftBest)}
 function bestMade(lift){let best=0;(state.results[lift]||[]).forEach((r,i)=>{if(r==="good")best=Math.max(best,num(state.plan[lift][i]))});return best}
@@ -23,6 +42,37 @@ function suggestPlan(){ensureState();const p=state.profile||{};const ratios=[.90
 function daysUntil(date){if(!date)return null;const d=new Date(date+"T12:00:00"),now=new Date();return Math.ceil((d-now)/86400000)}
 function esc(v){return String(v==null?"":v).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c]))}
 function round(v,d=2){const p=10**d;return Math.round(v*p)/p}
+
+function todayIso(){return new Date().toISOString().slice(0,10)}
+function goalProgress(){
+  const g=state.goal,p=state.profile||{};
+  if(!g)return null;
+  const current=currentBestTotal(),target=num(g.targetTotal);
+  if(!target)return null;
+  const gap=round(target-current,1);
+  const pct=Math.max(0,Math.min(100,round(current/target*100,0)));
+  return {current,target,gap,pct,targetDots:num(g.targetDots),targetBodyweight:num(g.targetBodyweight),targetDate:g.targetDate||""};
+}
+function cloudPayload(){
+  return {
+    schema_version:1,
+    profile:state.profile||null,
+    plan:state.plan||blankPlan(),
+    results:state.results||blankResults(),
+    meets:state.meets||[],
+    goal:state.goal||null,
+    saved_at:new Date().toISOString()
+  };
+}
+function applyCloudPayload(payload){
+  if(!payload||typeof payload!=="object")throw new Error("Cloud profile is empty.");
+  state.profile=payload.profile||state.profile||null;
+  state.plan=payload.plan||blankPlan();
+  state.results=payload.results||blankResults();
+  state.meets=Array.isArray(payload.meets)?payload.meets:[];
+  state.goal=payload.goal||null;
+  save();render();
+}
 
 function dotsScore(sex,bodyweight,total){
   const bw=num(bodyweight),t=num(total);
@@ -311,6 +361,11 @@ function renderTools(){
   if(!$("simBodyweight").value)$("simBodyweight").value=p.bodyweight||"";
   if(!$("simTotal").value)$("simTotal").value=total||"";
   if(!$("goalBodyweight").value)$("goalBodyweight").value=p.bodyweight||"";
+  if(state.goal){
+    if(!$("goalDots").value)$("goalDots").value=state.goal.targetDots||"";
+    if(!$("goalBodyweight").value)$("goalBodyweight").value=state.goal.targetBodyweight||"";
+    if(!$("goalDate").value)$("goalDate").value=state.goal.targetDate||"";
+  }
 }
 
 function render(){
@@ -325,8 +380,20 @@ function render(){
   $("currentDots").textContent=currentDots?currentDots.toFixed(2):"—";
   const d=daysUntil(p.meetDate);
   $("countdown").textContent=p.meetDate?(d>=0?d+" days until your next meet":"Meet date has passed"):"Add a meet date to start the countdown.";
-  $("meetSnapshot").innerHTML="<div><strong>Meet date:</strong> "+esc(p.meetDate||"Not set")+"</div><div><strong>Projected total:</strong> "+totalFromPlan()+" kg</div><div><strong>Current best total:</strong> "+currentBestTotal()+" kg</div><div><strong>Current DOTS:</strong> "+(currentDots?currentDots.toFixed(2):"—")+"</div>";
-  renderPlanner();renderMeetDay();renderProgress();renderTools();renderReport();
+  $("meetSnapshot").innerHTML="<div><strong>Meet:</strong> "+esc(p.meetName||"Not selected")+"</div><div><strong>Date:</strong> "+esc(p.meetDate||"Not set")+"</div><div><strong>Projected total:</strong> "+totalFromPlan()+" kg</div><div><strong>Current best total:</strong> "+currentBestTotal()+" kg</div><div><strong>Current DOTS:</strong> "+(currentDots?currentDots.toFixed(2):"—")+"</div>";
+  renderGoalSnapshot();
+  renderPlanner();renderMeetDay();renderProgress();renderTools();renderReport();renderAccount();
+}
+
+function renderGoalSnapshot(){
+  const root=$("goalSnapshot");if(!root)return;
+  const gp=goalProgress();
+  if(!gp){root.innerHTML='<div class="muted">No saved goal yet. Use Goal Planner to create one.</div>';return}
+  root.innerHTML='<div><strong>Target:</strong> '+(gp.targetDots?gp.targetDots+" DOTS · ":"")+gp.target+' kg total</div>'
+    +'<div><strong>Target bodyweight:</strong> '+(gp.targetBodyweight||"—")+' kg</div>'
+    +(gp.targetDate?'<div><strong>Target date:</strong> '+esc(gp.targetDate)+'</div>':'')
+    +'<div class="goalProgress"><span style="width:'+gp.pct+'%"></span></div>'
+    +'<div><strong>'+gp.pct+'%</strong> of target total · '+(gp.gap>0?gp.gap+' kg to go':'goal reached/exceeded')+'</div>';
 }
 
 function renderPlanner(){
@@ -403,11 +470,11 @@ function renderReport(){
   $("reportTitle").textContent=attempts?mm.made+"/"+attempts+" attempts made":"Complete the meet to build your report";
   const total=liveTotal(),success=attempts?Math.round(mm.made/attempts*1000)/10:0;
   const p=state.profile||{},dots=total?dotsScore(p.sex,p.bodyweight,total):null;
-  body.innerHTML="<div class=\"reportCard\"><div class=\"reportGrid\"><div><span>Success rate</span><strong>"+success+"%</strong></div><div><span>Best total</span><strong>"+total+" kg</strong></div><div><span>DOTS</span><strong>"+(dots?dots.toFixed(2):"—")+"</strong></div></div><p style=\"margin-top:14px\">Squat "+(bestMade("squat")||"—")+" · Bench "+(bestMade("bench")||"—")+" · Deadlift "+(bestMade("deadlift")||"—")+"</p></div>";
+  body.innerHTML="<div class=\"reportCard\"><h3>"+esc(p.meetName||"Meet Day")+"</h3><div class=\"reportGrid\"><div><span>Success rate</span><strong>"+success+"%</strong></div><div><span>Best total</span><strong>"+total+" kg</strong></div><div><span>DOTS</span><strong>"+(dots?dots.toFixed(2):"—")+"</strong></div></div><p style=\"margin-top:14px\">Squat "+(bestMade("squat")||"—")+" · Bench "+(bestMade("bench")||"—")+" · Deadlift "+(bestMade("deadlift")||"—")+"</p></div>";
 }
 
 $("saveProfile").addEventListener("click",()=>{
-  state.profile={name:$("name").value.trim()||"Athlete",sex:$("sex").value,bodyweight:num($("bodyweight").value),meetDate:$("meetDate").value,squatBest:num($("squatBest").value),benchBest:num($("benchBest").value),deadliftBest:num($("deadliftBest").value)};
+  state.profile={name:$("name").value.trim()||"Athlete",sex:$("sex").value,bodyweight:num($("bodyweight").value),meetDate:$("meetDate").value,meetName:(state.profile&&state.profile.meetName)||"",squatBest:num($("squatBest").value),benchBest:num($("benchBest").value),deadliftBest:num($("deadliftBest").value)};
   state.plan=blankPlan();state.results=blankResults();suggestPlan();save();render();
 });
 $("editProfile").addEventListener("click",()=>{const p=state.profile||{};$("name").value=p.name||"";$("sex").value=p.sex||"M";$("bodyweight").value=p.bodyweight||"";$("meetDate").value=p.meetDate||"";$("squatBest").value=p.squatBest||"";$("benchBest").value=p.benchBest||"";$("deadliftBest").value=p.deadliftBest||"";delete state.profile;save();render();window.scrollTo({top:0,behavior:"smooth"})});
