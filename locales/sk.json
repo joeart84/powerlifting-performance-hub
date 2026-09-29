@@ -246,6 +246,7 @@
   "dynamic.raw_full_power": "Raw trojboj",
   "dynamic.last_3_years": "Posledné 3 roky",
   "profile.birth_date": "Dátum narodenia",
+  "profile.birth_date_optional": "Dátum narodenia (nepovinné)",
   "profile.age": "Vek",
   "settings.profile_title": "Profil športovca",
   "settings.profile_note": "Vek môžeš zadať priamo alebo vybrať dátum narodenia, z ktorého sa vypočíta pre WUAP McCulloch Masters skóre.",
