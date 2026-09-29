@@ -936,7 +936,12 @@ $("downloadCloud").addEventListener("click",downloadCloud);
 $("signOut").addEventListener("click",logoutCloud);
 $("accountCode").addEventListener("keydown",e=>{if(e.key==="Enter")verifyLoginCode()});
 $("languageSelect").addEventListener("change",e=>setLanguage(e.target.value,true));
-document.querySelectorAll(".tabs button").forEach(b=>b.addEventListener("click",()=>{document.querySelectorAll(".tabs button").forEach(x=>x.classList.toggle("active",x===b));document.querySelectorAll(".tab").forEach(x=>x.hidden=x.id!=="tab-"+b.dataset.tab)}));
+document.querySelectorAll("[data-tab]").forEach(b=>b.addEventListener("click",()=>{
+  const target=b.dataset.tab;
+  document.querySelectorAll("[data-tab]").forEach(x=>x.classList.toggle("active",x===b));
+  document.querySelectorAll(".tab").forEach(x=>x.hidden=x.id!=="tab-"+target);
+  window.scrollTo({top:0,behavior:"smooth"});
+}));
 $("shareReport").addEventListener("click",async()=>{const mm=madeMiss(),p=state.profile||{},total=liveTotal(),dots=total?dotsScore(p.sex,p.bodyweight,total):null,text=(p.name?p.name+"'s":"My")+" powerlifting meet: "+mm.made+"/"+(mm.made+mm.miss)+" attempts made, "+total+" kg total"+(dots?", "+dots.toFixed(2)+" DOTS":"")+". Built with Powerlifting Performance Hub.";if(navigator.share){await navigator.share({title:"Powerlifting Meet Report",text})}else if(navigator.clipboard){await navigator.clipboard.writeText(text);alert(t("dynamic.report_copied"))}});
 let deferredPrompt;window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();deferredPrompt=e;$("installBtn").hidden=false});
 $("installBtn").addEventListener("click",async()=>{if(!deferredPrompt)return;deferredPrompt.prompt();await deferredPrompt.userChoice;deferredPrompt=null;$("installBtn").hidden=true});
