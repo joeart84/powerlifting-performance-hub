@@ -209,5 +209,15 @@
   "settings.home_location_note": "Używana tylko do filtrowania i sortowania pobliskich zawodów.",
   "settings.home_country": "Kraj",
   "settings.home_city": "Miasto",
-  "settings.save_location": "Zapisz lokalizację"
+  "settings.save_location": "Zapisz lokalizację",
+  "dynamic.top_1": "Top ~1%",
+  "dynamic.top_5": "Top ~5%",
+  "dynamic.top_10": "Top ~10%",
+  "dynamic.top_25": "Top ~25%",
+  "dynamic.above_median": "Powyżej mediany",
+  "dynamic.percentile_25_50": "25.–50. percentyl",
+  "dynamic.below_25": "Poniżej 25. percentyla",
+  "dynamic.percentile_value": "{{pct}}. percentyl",
+  "dynamic.raw_full_power": "Raw trójbój",
+  "dynamic.last_3_years": "Ostatnie 3 lata"
 }

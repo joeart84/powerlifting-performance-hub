@@ -217,5 +217,15 @@
   "settings.home_location_note": "Used only to sort and filter nearby competitions. Enter a city manually or share your current location.",
   "settings.home_country": "Country",
   "settings.home_city": "City",
-  "settings.save_location": "Save home location"
+  "settings.save_location": "Save home location",
+  "dynamic.top_1": "Top ~1%",
+  "dynamic.top_5": "Top ~5%",
+  "dynamic.top_10": "Top ~10%",
+  "dynamic.top_25": "Top ~25%",
+  "dynamic.above_median": "Above median",
+  "dynamic.percentile_25_50": "25th–50th percentile",
+  "dynamic.below_25": "Below 25th percentile",
+  "dynamic.percentile_value": "{{pct}}th",
+  "dynamic.raw_full_power": "Raw full-power",
+  "dynamic.last_3_years": "Last 3 years"
 }

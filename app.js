@@ -424,14 +424,23 @@ function estimatePercentile(dots,row){
   return 99;
 }
 function percentileText(p){
-  if(p==null)return "Reference unavailable";
-  if(p>=99)return "Top ~1%";
-  if(p>=95)return "Top ~5%";
-  if(p>=90)return "Top ~10%";
-  if(p>=75)return "Top ~25%";
-  if(p>=50)return "Above median";
-  if(p>=25)return "25th–50th percentile";
-  return "Below 25th percentile";
+  if(p==null)return t("dynamic.reference_unavailable");
+  if(p>=99)return t("dynamic.top_1");
+  if(p>=95)return t("dynamic.top_5");
+  if(p>=90)return t("dynamic.top_10");
+  if(p>=75)return t("dynamic.top_25");
+  if(p>=50)return t("dynamic.above_median");
+  if(p>=25)return t("dynamic.percentile_25_50");
+  return t("dynamic.below_25");
+}
+function percentileValueText(p){
+  if(p==null)return "—";
+  return t("dynamic.percentile_value",{pct:p});
+}
+function referenceWindowText(value){
+  const raw=String(value||"").trim();
+  if(/^last\s+3\s+years$/i.test(raw))return t("dynamic.last_3_years");
+  return raw;
 }
 async function loadReference(){
   if(performanceReference)return performanceReference;
@@ -464,8 +473,8 @@ function renderTools(){
     const ctx=contextFor(p.sex,p.bodyweight,dots,latestWeightClass());
     if(!ctx)box.innerHTML='<div class="muted">'+esc(t("dynamic.no_reference"))+'</div>';
     else{
-      const pct=ctx.percentile==null?"—":ctx.percentile+"th";
-      box.innerHTML='<div class="contextHero"><div><span class="muted">Estimated percentile</span><strong>'+pct+'</strong></div><div><span class="muted">Context</span><strong>'+esc(ctx.label)+'</strong></div></div><div class="contextScale"><span style="width:'+Math.max(2,ctx.percentile||0)+'%"></span></div><div class="contextMeta">Reference class: '+esc(ctx.row.weight_class_kg)+' kg · n='+Number(ctx.row.n).toLocaleString()+' · Raw full-power · '+esc(performanceReference.analysis_window||"")+'</div>';
+      const pct=percentileValueText(ctx.percentile);
+      box.innerHTML='<div class="contextHero"><div><span class="muted">'+esc(t("dynamic.estimated_percentile"))+'</span><strong>'+esc(pct)+'</strong></div><div><span class="muted">'+esc(t("dynamic.context"))+'</span><strong>'+esc(ctx.label)+'</strong></div></div><div class="contextScale"><span style="width:'+Math.max(2,ctx.percentile||0)+'%"></span></div><div class="contextMeta">'+esc(t("dynamic.reference_class"))+': '+esc(ctx.row.weight_class_kg)+' kg · n='+Number(ctx.row.n).toLocaleString()+' · '+esc(t("dynamic.raw_full_power"))+' · '+esc(referenceWindowText(performanceReference.analysis_window))+'</div>';
     }
   }
   if(!$("simBodyweight").value)$("simBodyweight").value=p.bodyweight||"";
