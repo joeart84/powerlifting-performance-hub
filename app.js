@@ -5,6 +5,9 @@ const state=JSON.parse(localStorage.getItem(KEY)||"null")||legacy||{};
 const $=id=>document.getElementById(id);
 const lifts=["squat","bench","deadlift"];
 const LIFTER_API="https://powerlifting-calculator.com/wp-json/plc-radar/v1/lifter";
+const LIFTER_SEARCH_API="https://powerlifting-calculator.com/wp-json/plc-radar/v1/lifter-search";
+const REFERENCE_API="https://powerlifting-calculator.com/wp-json/plc-radar/v1/performance-reference";
+let performanceReference=null;
 
 function save(){localStorage.setItem(KEY,JSON.stringify(state))}
 function num(v){const n=Number(String(v??"").replace(",",".").trim());return Number.isFinite(n)?n:0}
@@ -71,6 +74,7 @@ function parseMeetRows(text){
     const equipment=pick(obj,["Equipment","Equip"]);
     const athleteName=String(pick(obj,["Name","Lifter","LifterName"])||"").trim();
     const athleteSex=String(pick(obj,["Sex","Gender"])||"").trim().toUpperCase();
+    const weightClass=String(pick(obj,["WeightClassKg","WeightClass","Class"])||"").trim();
     const bw=num(pick(obj,["BodyweightKg","Bodyweight","Weight","BW"]));
     const squat=bestPositive(
       pick(obj,["Best3SquatKg","Squat"]),
@@ -94,6 +98,7 @@ function parseMeetRows(text){
       meet:String(meet||"Competition"),
       athleteName,
       athleteSex,
+      weightClass,
       federation:String(pick(obj,["Federation","Fed"])||""),
       equipment:String(equipment||""),
       bodyweight:bw,
@@ -154,27 +159,63 @@ function applyImportedAthlete(imported,profileUrl,slug){
   suggestPlan();save();render();
 }
 
-async function importAthlete(input,statusEl){
-  const slug=extractLifterSlug(input);
-  if(!slug){
+async function fetchAthleteBySlug(slug,statusEl){
+  statusEl.textContent="Importing "+slug+" from OpenPowerlifting…";
+  const res=await fetch(LIFTER_API+"?slug="+encodeURIComponent(slug),{headers:{"Accept":"application/json"}});
+  let payload={};
+  try{payload=await res.json()}catch(e){}
+  if(!res.ok)throw new Error(payload&&payload.message?payload.message:"Athlete profile was not found.");
+  if(!payload.csv)throw new Error("No competition data was returned.");
+  const imported=parseMeetRows(payload.csv);
+  applyImportedAthlete(imported,payload.profile_url||"",payload.slug||slug);
+  statusEl.textContent="Imported "+imported.length+" competition result"+(imported.length===1?"":"s")+" from OpenPowerlifting.";
+}
+
+function renderCandidates(results,statusEl,candidateEl){
+  candidateEl.innerHTML="";
+  if(!results.length)return;
+  statusEl.textContent=results.length+" matching OpenPowerlifting profiles found. Choose yours:";
+  results.forEach(item=>{
+    const card=document.createElement("div");card.className="candidateCard";
+    card.innerHTML="<div><strong>"+esc(item.name||item.slug)+"</strong><small>"+esc(item.profile_url||"")+"</small></div><button class=\"primary compact\" data-slug=\""+esc(item.slug)+"\">Import</button>";
+    candidateEl.appendChild(card);
+  });
+  candidateEl.querySelectorAll("button[data-slug]").forEach(btn=>btn.addEventListener("click",async()=>{
+    candidateEl.innerHTML="";
+    try{await fetchAthleteBySlug(btn.dataset.slug,statusEl)}
+    catch(err){statusEl.textContent="Import failed: "+err.message}
+  }));
+}
+
+async function importAthlete(input,statusEl,candidateEl){
+  const raw=String(input||"").trim();
+  candidateEl.innerHTML="";
+  if(!raw){
     statusEl.textContent="Enter a lifter name, username, or paste an OpenPowerlifting profile URL.";
     return;
   }
-  statusEl.textContent="Looking up "+slug+" on OpenPowerlifting…";
+  const exactSlug=extractLifterSlug(raw);
+  const isExact=/\/u\//i.test(raw)||(!/\s/.test(raw)&&/^[a-z0-9_-]+$/i.test(raw));
   try{
-    const res=await fetch(LIFTER_API+"?slug="+encodeURIComponent(slug),{headers:{"Accept":"application/json"}});
+    if(isExact&&exactSlug){
+      await fetchAthleteBySlug(exactSlug,statusEl);
+      return;
+    }
+    statusEl.textContent="Searching OpenPowerlifting for "+raw+"…";
+    const res=await fetch(LIFTER_SEARCH_API+"?q="+encodeURIComponent(raw),{headers:{"Accept":"application/json"}});
     let payload={};
     try{payload=await res.json()}catch(e){}
-    if(!res.ok){
-      const message=payload&&payload.message?payload.message:"Athlete profile was not found.";
-      throw new Error(message);
+    if(!res.ok)throw new Error(payload&&payload.message?payload.message:"Search failed.");
+    const results=Array.isArray(payload.results)?payload.results:[];
+    if(results.length===1){
+      await fetchAthleteBySlug(results[0].slug,statusEl);
+    }else if(results.length>1){
+      renderCandidates(results,statusEl,candidateEl);
+    }else{
+      statusEl.innerHTML="No matching profile found. <span class=\"muted\">Try the exact OpenPowerlifting profile URL.</span>";
     }
-    if(!payload.csv)throw new Error("No competition data was returned.");
-    const imported=parseMeetRows(payload.csv);
-    applyImportedAthlete(imported,payload.profile_url||"",payload.slug||slug);
-    statusEl.textContent="Imported "+imported.length+" competition result"+(imported.length===1?"":"s")+" from OpenPowerlifting.";
   }catch(err){
-    statusEl.innerHTML="Import failed: "+esc(err.message)+" <br><span class=\"muted\">Tip: if the name is ambiguous, paste the exact OpenPowerlifting profile URL.</span>";
+    statusEl.innerHTML="Import failed: "+esc(err.message)+" <br><span class=\"muted\">Try the exact OpenPowerlifting profile URL.</span>";
   }
 }
 
@@ -182,6 +223,94 @@ function meetPrs(){
   const meets=state.meets||[];
   const max=k=>meets.reduce((m,r)=>Math.max(m,num(r[k])),0);
   return {squat:max("squat"),bench:max("bench"),deadlift:max("deadlift"),total:max("total"),dots:round(max("dots"),2)};
+}
+function dotsDenominator(sex,bodyweight){
+  const bw=num(bodyweight);if(!bw)return null;
+  const male=[-0.000001093,0.0007391293,-0.1918759221,24.0900756,-307.75076];
+  const female=[-0.0000010706,0.0005158568,-0.1126655495,13.6175032,-57.96288];
+  const k=sex==="F"?female:male;
+  const d=k[0]*bw**4+k[1]*bw**3+k[2]*bw**2+k[3]*bw+k[4];
+  return d>0?d:null;
+}
+function totalForDots(sex,bodyweight,targetDots){
+  const d=dotsDenominator(sex,bodyweight);return d?round(num(targetDots)*d/500,1):null;
+}
+function classNumber(label){return num(String(label||"").replace("+",""))}
+function latestWeightClass(){
+  const meets=(state.meets||[]).filter(m=>m.weightClass);
+  return meets.length?meets[meets.length-1].weightClass:"";
+}
+function referenceRowFor(sex,bodyweight,preferredClass=""){
+  const groups=performanceReference&&performanceReference.groups&&performanceReference.groups[sex];
+  if(!Array.isArray(groups)||!groups.length)return null;
+  if(preferredClass){
+    const exact=groups.find(r=>String(r.weight_class_kg)===String(preferredClass));
+    if(exact)return exact;
+  }
+  const bw=num(bodyweight);
+  return groups.slice().sort((a,b)=>Math.abs(classNumber(a.weight_class_kg)-bw)-Math.abs(classNumber(b.weight_class_kg)-bw))[0]||null;
+}
+function estimatePercentile(dots,row){
+  if(!row||!dots)return null;
+  const pts=[[10,row.p10],[25,row.p25],[50,row.p50],[75,row.p75],[90,row.p90],[95,row.p95],[99,row.p99]].filter(x=>num(x[1])>0);
+  if(!pts.length)return null;
+  if(dots<=pts[0][1])return Math.max(1,round(10*dots/pts[0][1],0));
+  for(let i=1;i<pts.length;i++){
+    if(dots<=pts[i][1]){
+      const p1=pts[i-1][0],v1=pts[i-1][1],p2=pts[i][0],v2=pts[i][1];
+      return round(p1+(dots-v1)/(v2-v1)*(p2-p1),0);
+    }
+  }
+  return 99;
+}
+function percentileText(p){
+  if(p==null)return "Reference unavailable";
+  if(p>=99)return "Top ~1%";
+  if(p>=95)return "Top ~5%";
+  if(p>=90)return "Top ~10%";
+  if(p>=75)return "Top ~25%";
+  if(p>=50)return "Above median";
+  if(p>=25)return "25th–50th percentile";
+  return "Below 25th percentile";
+}
+async function loadReference(){
+  if(performanceReference)return performanceReference;
+  try{
+    const res=await fetch(REFERENCE_API,{headers:{"Accept":"application/json"}});
+    if(!res.ok)throw new Error("Reference unavailable");
+    performanceReference=await res.json();
+    renderTools();
+    return performanceReference;
+  }catch(e){
+    performanceReference=null;
+    renderTools();
+    return null;
+  }
+}
+function contextFor(sex,bw,dots,preferredClass=""){
+  const row=referenceRowFor(sex,bw,preferredClass);
+  if(!row)return null;
+  const percentile=estimatePercentile(dots,row);
+  return {row,percentile,label:percentileText(percentile)};
+}
+function renderTools(){
+  const box=$("strengthContext");if(!box)return;
+  const p=state.profile||{},total=currentBestTotal(),dots=dotsScore(p.sex,p.bodyweight,total);
+  if(!performanceReference){
+    box.innerHTML='<div class="muted">Reference data is loading or not available yet.</div>';
+  }else if(!dots){
+    box.innerHTML='<div class="muted">Add bodyweight and a current total to calculate strength context.</div>';
+  }else{
+    const ctx=contextFor(p.sex,p.bodyweight,dots,latestWeightClass());
+    if(!ctx)box.innerHTML='<div class="muted">No suitable reference class is available.</div>';
+    else{
+      const pct=ctx.percentile==null?"—":ctx.percentile+"th";
+      box.innerHTML='<div class="contextHero"><div><span class="muted">Estimated percentile</span><strong>'+pct+'</strong></div><div><span class="muted">Context</span><strong>'+esc(ctx.label)+'</strong></div></div><div class="contextScale"><span style="width:'+Math.max(2,ctx.percentile||0)+'%"></span></div><div class="contextMeta">Reference class: '+esc(ctx.row.weight_class_kg)+' kg · n='+Number(ctx.row.n).toLocaleString()+' · Raw full-power · '+esc(performanceReference.analysis_window||"")+'</div>';
+    }
+  }
+  if(!$("simBodyweight").value)$("simBodyweight").value=p.bodyweight||"";
+  if(!$("simTotal").value)$("simTotal").value=total||"";
+  if(!$("goalBodyweight").value)$("goalBodyweight").value=p.bodyweight||"";
 }
 
 function render(){
@@ -197,7 +326,7 @@ function render(){
   const d=daysUntil(p.meetDate);
   $("countdown").textContent=p.meetDate?(d>=0?d+" days until your next meet":"Meet date has passed"):"Add a meet date to start the countdown.";
   $("meetSnapshot").innerHTML="<div><strong>Meet date:</strong> "+esc(p.meetDate||"Not set")+"</div><div><strong>Projected total:</strong> "+totalFromPlan()+" kg</div><div><strong>Current best total:</strong> "+currentBestTotal()+" kg</div><div><strong>Current DOTS:</strong> "+(currentDots?currentDots.toFixed(2):"—")+"</div>";
-  renderPlanner();renderMeetDay();renderProgress();renderReport();
+  renderPlanner();renderMeetDay();renderProgress();renderTools();renderReport();
 }
 
 function renderPlanner(){
@@ -283,8 +412,8 @@ $("saveProfile").addEventListener("click",()=>{
 });
 $("editProfile").addEventListener("click",()=>{const p=state.profile||{};$("name").value=p.name||"";$("sex").value=p.sex||"M";$("bodyweight").value=p.bodyweight||"";$("meetDate").value=p.meetDate||"";$("squatBest").value=p.squatBest||"";$("benchBest").value=p.benchBest||"";$("deadliftBest").value=p.deadliftBest||"";delete state.profile;save();render();window.scrollTo({top:0,behavior:"smooth"})});
 $("savePlan").addEventListener("click",()=>{save();alert("Attempt plan saved on this device.")});
-$("onboardingImport").addEventListener("click",()=>importAthlete($("onboardingLifter").value,$("onboardingImportStatus")));
-$("progressImport").addEventListener("click",()=>importAthlete($("progressLifter").value,$("importStatus")));
+$("onboardingImport").addEventListener("click",()=>importAthlete($("onboardingLifter").value,$("onboardingImportStatus"),$("onboardingCandidates")));
+$("progressImport").addEventListener("click",()=>importAthlete($("progressLifter").value,$("importStatus"),$("progressCandidates")));
 $("onboardingLifter").addEventListener("keydown",e=>{if(e.key==="Enter")$("onboardingImport").click()});
 $("progressLifter").addEventListener("keydown",e=>{if(e.key==="Enter")$("progressImport").click()});
 $("resetMeet").addEventListener("click",()=>{if(confirm("Reset all meet-day results?")){state.results=blankResults();save();renderMeetDay();renderReport()}});
@@ -308,9 +437,23 @@ $("oplCsv").addEventListener("change",async e=>{
   e.target.value="";
 });
 $("clearHistory").addEventListener("click",()=>{if(confirm("Remove all imported competition history from this device?")){state.meets=[];save();renderProgress()}});
+$("runSimulator").addEventListener("click",()=>{
+  const p=state.profile||{},bw=num($("simBodyweight").value),total=num($("simTotal").value);
+  const currentDots=dotsScore(p.sex,p.bodyweight,currentBestTotal()),simDots=dotsScore(p.sex,bw,total);
+  if(!bw||!total||!simDots){$("simResult").textContent="Enter a valid bodyweight and projected total.";return}
+  const ctx=performanceReference?contextFor(p.sex,bw,simDots):null;
+  $("simResult").innerHTML='<strong class="big">'+simDots.toFixed(2)+' DOTS</strong><div class="toolCompare"><div><span>Current</span><strong>'+(currentDots?currentDots.toFixed(2):"—")+' DOTS</strong></div><div><span>Scenario</span><strong>'+simDots.toFixed(2)+' DOTS</strong></div></div>'+(ctx?'<p class="contextMeta">'+esc(ctx.label)+' in nearest '+esc(ctx.row.weight_class_kg)+' kg reference class.</p>':'');
+});
+$("runGoal").addEventListener("click",()=>{
+  const p=state.profile||{},target=num($("goalDots").value),bw=num($("goalBodyweight").value);
+  const required=totalForDots(p.sex,bw,target);
+  if(!target||!bw||!required){$("goalResult").textContent="Enter a valid target DOTS and bodyweight.";return}
+  const gap=round(required-currentBestTotal(),1);
+  $("goalResult").innerHTML='<span class="muted">Required total at '+bw+' kg</span><strong class="big">'+required+' kg</strong><p>'+(gap>0?gap+' kg above your current best total.':Math.abs(gap)+' kg below your current best total.')+'</p>';
+});
 document.querySelectorAll(".tabs button").forEach(b=>b.addEventListener("click",()=>{document.querySelectorAll(".tabs button").forEach(x=>x.classList.toggle("active",x===b));document.querySelectorAll(".tab").forEach(x=>x.hidden=x.id!=="tab-"+b.dataset.tab)}));
 $("shareReport").addEventListener("click",async()=>{const mm=madeMiss(),p=state.profile||{},total=liveTotal(),dots=total?dotsScore(p.sex,p.bodyweight,total):null,text=(p.name?p.name+"'s":"My")+" powerlifting meet: "+mm.made+"/"+(mm.made+mm.miss)+" attempts made, "+total+" kg total"+(dots?", "+dots.toFixed(2)+" DOTS":"")+". Built with Powerlifting Performance Hub.";if(navigator.share){await navigator.share({title:"Powerlifting Meet Report",text})}else if(navigator.clipboard){await navigator.clipboard.writeText(text);alert("Report copied to clipboard.")}});
 let deferredPrompt;window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();deferredPrompt=e;$("installBtn").hidden=false});
 $("installBtn").addEventListener("click",async()=>{if(!deferredPrompt)return;deferredPrompt.prompt();await deferredPrompt.userChoice;deferredPrompt=null;$("installBtn").hidden=true});
 if("serviceWorker" in navigator)window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js"));
-ensureState();save();render();
+ensureState();save();render();loadReference();

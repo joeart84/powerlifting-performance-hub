@@ -35,6 +35,7 @@
           <button id="onboardingImport" class="primary compact">Import athlete</button>
         </div>
         <div id="onboardingImportStatus" class="muted small"></div>
+        <div id="onboardingCandidates" class="candidateList"></div>
       </div>
 
       <div class="orDivider"><span>or enter your details manually</span></div>
@@ -78,6 +79,7 @@
         <button data-tab="planner">Meet Planner</button>
         <button data-tab="meetday">Meet Day</button>
         <button data-tab="progress">Progress</button>
+        <button data-tab="tools">Tools</button>
         <button data-tab="report">Report</button>
       </nav>
 
@@ -141,6 +143,7 @@
             <button id="progressImport" class="primary compact">Import / refresh</button>
           </div>
           <div id="importStatus" class="muted">No competition history imported yet.</div>
+          <div id="progressCandidates" class="candidateList"></div>
 
           <details class="advancedImport">
             <summary>Advanced fallback: import CSV file</summary>
@@ -171,6 +174,39 @@
               <tbody id="historyRows"></tbody>
             </table>
           </div>
+        </div>
+      </section>
+
+      <section id="tab-tools" class="tab panel" hidden>
+        <div class="eyebrow">PERFORMANCE TOOLS</div>
+        <h2>Strength context, weight class and goals</h2>
+        <p class="muted">Reference context is based on recent Raw full-power OpenPowerlifting performances. It is descriptive, not a prediction.</p>
+
+        <div class="toolGrid">
+          <section class="toolCard">
+            <h3>Strength Context</h3>
+            <div id="strengthContext" class="contextResult">Loading reference data…</div>
+          </section>
+
+          <section class="toolCard">
+            <h3>Weight Class Simulator</h3>
+            <div class="grid two">
+              <label>Target bodyweight (kg)<input id="simBodyweight" type="number" step="0.1"></label>
+              <label>Projected total (kg)<input id="simTotal" type="number" step="0.5"></label>
+            </div>
+            <button id="runSimulator" class="primary">Simulate</button>
+            <div id="simResult" class="toolResult"></div>
+          </section>
+
+          <section class="toolCard">
+            <h3>Goal Planner</h3>
+            <div class="grid two">
+              <label>Target DOTS<input id="goalDots" type="number" step="1" placeholder="400"></label>
+              <label>Target bodyweight (kg)<input id="goalBodyweight" type="number" step="0.1"></label>
+            </div>
+            <button id="runGoal" class="primary">Calculate target total</button>
+            <div id="goalResult" class="toolResult"></div>
+          </section>
         </div>
       </section>
 
