@@ -32,6 +32,7 @@ function t(key,vars={}){
   const value=messages[key]!==undefined?messages[key]:key;
   return interpolate(value,vars);
 }
+window.PPHTranslate=key=>t(key);
 async function loadMessages(lang){
   let base={};
   try{
@@ -892,24 +893,37 @@ async function shareResultCard(){
 function authHeaders(){
   return session.token?{"Accept":"application/json","Content-Type":"application/json","Authorization":"Bearer "+session.token}:{"Accept":"application/json","Content-Type":"application/json"};
 }
+async function hubRequest(path,options={}){
+  let res;
+  try{res=await fetch(HUB_API+path,{...options,signal:AbortSignal.timeout(15000)})}
+  catch(err){
+    throw new Error(err.name==="TimeoutError"?t("auth.timeout"):t("auth.network_error"));
+  }
+  let data;
+  try{data=await res.json()}catch(e){throw new Error(t("auth.server_error"))}
+  if(!res.ok)throw new Error(data.message||t("auth.server_error"));
+  return data;
+}
 async function requestLoginCode(){
-  const email=$("accountEmail").value.trim(),status=$("accountStatus");
+  const emailInput=$("accountEmail"),email=emailInput.value.trim(),status=$("accountStatus"),button=$("requestCode");
+  if(!emailInput.reportValidity())return;
+  button.disabled=true;
   status.textContent=t("dynamic.sending_code");
   try{
-    const res=await fetch(HUB_API+"/auth/request-code",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email})});
-    const data=await res.json();
-    if(!res.ok)throw new Error(data.message||"Could not send code.");
+    await hubRequest("/auth/request-code",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email})});
     session.pendingEmail=email;saveSession();$("codeStep").hidden=false;
     status.textContent=t("dynamic.code_sent");
+    $("accountCode").focus();
   }catch(err){status.textContent=err.message}
+  finally{button.disabled=false}
 }
 async function verifyLoginCode(){
-  const email=(session.pendingEmail||$("accountEmail").value).trim(),code=$("accountCode").value.trim(),status=$("accountStatus");
+  const email=(session.pendingEmail||$("accountEmail").value).trim(),code=$("accountCode").value.trim(),status=$("accountStatus"),button=$("verifyCode");
+  if(!$("accountCode").reportValidity())return;
+  button.disabled=true;
   status.textContent=t("dynamic.signing_in");
   try{
-    const res=await fetch(HUB_API+"/auth/verify-code",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email,code})});
-    const data=await res.json();
-    if(!res.ok)throw new Error(data.message||"Could not sign in.");
+    const data=await hubRequest("/auth/verify-code",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email,code})});
     session.token=data.token;session.email=data.email;session.expiresAt=data.expires_at;delete session.pendingEmail;saveSession();
     renderAccount();
     if(data.profile&&Object.keys(data.profile).length){
@@ -918,49 +932,51 @@ async function verifyLoginCode(){
       await uploadCloud(false);
     }
   }catch(err){status.textContent=err.message}
+  finally{button.disabled=false}
 }
 function renderAccount(){
-  const signed=!!session.token;
+  const firebaseUser=window.PPHCloud?.user;
+  const signed=!!firebaseUser||!!session.token;
   $("accountSignedOut").hidden=signed;$("accountSignedIn").hidden=!signed;
-  $("cloudBadge").textContent=signed?"Cloud linked":"Local only";
+  $("cloudBadge").textContent=signed?t("auth.cloud_linked"):t("cloud.local_only");
   $("cloudBadge").classList.toggle("active",signed);
   if(signed){
-    $("accountIdentity").textContent=session.email||"signed-in account";
+    $("accountIdentity").textContent=firebaseUser?.email||session.email||"signed-in account";
     if(!$("cloudStatus").textContent)$("cloudStatus").textContent=t("dynamic.cloud_linked");
   }else if(session.pendingEmail){
     $("accountEmail").value=session.pendingEmail;$("codeStep").hidden=false;
   }
 }
 async function uploadCloud(silent=false){
-  if(!session.token)return;
+  if(!session.token&&!window.PPHCloud?.user)return;
   const status=$("cloudStatus");if(!silent)status.textContent=t("dynamic.uploading");
   try{
-    const res=await fetch(HUB_API+"/profile",{method:"POST",headers:authHeaders(),body:JSON.stringify({profile:cloudPayload()})});
-    const data=await res.json();
-    if(res.status===401){clearSession();throw new Error(t("dynamic.session_expired"))}
-    if(!res.ok)throw new Error(data.message||"Cloud sync failed.");
+    if(window.PPHCloud?.user)await window.PPHCloud.upload(cloudPayload());
+    else await hubRequest("/profile",{method:"POST",headers:authHeaders(),body:JSON.stringify({profile:cloudPayload()})});
     if(!silent)status.textContent=t("dynamic.upload_complete");
-    $("cloudBadge").textContent="Cloud linked";
+    $("cloudBadge").textContent=t("auth.cloud_linked");
   }catch(err){if(!silent&&status)status.textContent=err.message}
 }
 async function downloadCloud(){
   const status=$("cloudStatus");status.textContent=t("dynamic.loading_cloud");
   try{
-    const res=await fetch(HUB_API+"/profile",{headers:authHeaders()});
-    const data=await res.json();
-    if(res.status===401){clearSession();throw new Error(t("dynamic.session_expired"))}
-    if(!res.ok)throw new Error(data.message||"Could not load cloud data.");
-    if(!data.profile||!Object.keys(data.profile).length)throw new Error(t("dynamic.no_cloud"));
-    applyCloudPayload(data.profile);status.textContent=t("dynamic.cloud_loaded");
+    const profile=window.PPHCloud?.user?await window.PPHCloud.download():(await hubRequest("/profile",{headers:authHeaders()})).profile;
+    if(!profile||!Object.keys(profile).length)throw new Error(t("dynamic.no_cloud"));
+    applyCloudPayload(profile);status.textContent=t("dynamic.cloud_loaded");
   }catch(err){status.textContent=err.message}
 }
 function clearSession(){
   delete session.token;delete session.email;delete session.expiresAt;delete session.pendingEmail;saveSession();renderAccount();
 }
 async function logoutCloud(){
+  if(window.PPHCloud?.user){
+    try{await window.PPHCloud.signOut()}catch(err){$("cloudStatus").textContent=err.message;return}
+    $("cloudStatus").textContent="";renderAccount();return;
+  }
   try{if(session.token)await fetch(HUB_API+"/session",{method:"DELETE",headers:authHeaders()})}catch(e){}
   clearSession();
 }
+window.PPHFirebaseChanged=renderAccount;
 
 function renderReport(){
   const mm=madeMiss(),attempts=mm.made+mm.miss,body=$("reportBody");
@@ -1033,8 +1049,8 @@ $("runGoal").addEventListener("click",()=>{
 $("saveGoal").addEventListener("click",saveCurrentGoal);
 $("saveMeetResult").addEventListener("click",saveMeetToHistory);
 $("shareCard").addEventListener("click",shareResultCard);
-$("requestCode").addEventListener("click",requestLoginCode);
-$("verifyCode").addEventListener("click",verifyLoginCode);
+$("legacyEmailForm").addEventListener("submit",e=>{e.preventDefault();requestLoginCode()});
+$("codeStep").addEventListener("submit",e=>{e.preventDefault();verifyLoginCode()});
 $("uploadCloud").addEventListener("click",()=>uploadCloud(false));
 $("downloadCloud").addEventListener("click",downloadCloud);
 $("signOut").addEventListener("click",logoutCloud);

@@ -1,0 +1,40 @@
+name: Deploy feature preview
+
+on:
+  push:
+    branches: [feature/auth-brand-refresh]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  preview:
+    environment:
+      name: hub-preview
+      url: https://joeart84.github.io/powerlifting-performance-hub/preview/auth-brand-refresh/
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          path: site
+      - uses: actions/checkout@v4
+        with:
+          path: feature
+      - name: Place feature under preview path
+        run: |
+          mkdir -p site/preview/auth-brand-refresh
+          rsync -a --exclude='.git' --exclude='.github' feature/ site/preview/auth-brand-refresh/
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+      - name: Deploy preview with production root from main
+        uses: actions/deploy-pages@v4
