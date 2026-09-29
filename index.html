@@ -380,12 +380,12 @@
 
         <div class="settingsCard" id="athleteProfileSettings">
           <h3 data-i18n="settings.profile_title">Athlete profile</h3>
-          <p class="muted" data-i18n="settings.profile_note">Enter your age directly, or choose your date of birth to calculate it automatically for the WUAP McCulloch Masters score.</p>
+          <p class="muted" data-i18n="settings.profile_note">Type your date of birth to calculate your age for the WUAP McCulloch Masters score, or enter your age directly.</p>
           <div class="grid two">
+            <label><span data-i18n="profile.birth_date_optional">Date of birth (optional)</span><input id="birthDate" type="text" maxlength="10" autocomplete="bday" placeholder="DD.MM.YYYY" data-i18n-placeholder="settings.birth_date_placeholder" aria-describedby="ageInputHint"></label>
             <label><span data-i18n="profile.age">Age</span><input id="profileAge" type="number" min="13" max="100" step="1" inputmode="numeric" placeholder="30" aria-describedby="ageInputHint"></label>
-            <label><span data-i18n="profile.birth_date_optional">Date of birth (optional)</span><input id="birthDate" type="date" aria-describedby="ageInputHint"></label>
           </div>
-          <p id="ageInputHint" class="muted small" data-i18n="settings.age_input_note">You can type your age. Choosing a date calculates it; editing the age afterwards clears the date.</p>
+          <p id="ageInputHint" class="muted small" data-i18n="settings.age_input_note">Type your date as DD.MM.YYYY (for example 30.09.1986), or enter your age. Editing the age afterwards clears the date.</p>
           <div class="buttonRow">
             <button id="saveAthleteProfile" class="primary" data-i18n="settings.save_profile">Save athlete profile</button>
           </div>

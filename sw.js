@@ -1,4 +1,4 @@
-const CACHE="plc-performance-hub-v11-1-age-input";
+const CACHE="plc-performance-hub-v11-2-birth-date";
 const ASSETS=["./","./index.html","./app.css","./app.js","./firebase-config.js","./firebase-auth.js","./manifest.webmanifest","./mark.svg","./logo.svg","./icon.svg","./icon-192.png","./icon-512.png","./locales/en.json","./locales/sk.json","./locales/cs.json","./locales/de.json","./locales/es.json","./locales/pl.json"];
 self.addEventListener("install",e=>{
   self.skipWaiting();
