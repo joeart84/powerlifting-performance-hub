@@ -2,7 +2,7 @@
 
 Mobile-first PWA for powerlifting athlete tracking, meet planning, attempt strategy and meet-day analytics.
 
-## MVP v0.7
+## MVP v0.8
 
 Current prototype includes:
 
@@ -30,7 +30,12 @@ Current prototype includes:
 - weight-class/bodyweight DOTS simulator
 - target-DOTS goal planner
 - saved goal + target date with progress-to-goal on dashboard
-- upcoming competition picker from the Powerlifting Calculator competition feed
+- location-aware Competition Finder from the Powerlifting Calculator competition feed
+- search by competition, city, country, venue or federation
+- Near me / My country / Europe / Worldwide scopes
+- 100 / 250 / 500 km radius filtering when coordinates are available
+- 30-day / 3-month / 6-month date filters and federation filter
+- manual home city/country or optional browser geolocation
 - save Meet Day results into Progress history
 - shareable square PNG result card
 - passwordless email magic-code account
@@ -93,7 +98,7 @@ Displayed percentiles are estimates interpolated between these reference thresho
 
 ## Cloud backend requirement
 
-Performance Hub v0.6 requires Powerlifting Trend Radar v1.12.0 on powerlifting-calculator.com for:
+Performance Hub v0.8 requires Powerlifting Trend Radar v1.13.0 on powerlifting-calculator.com for:
 - upcoming competitions
 - email magic-code authentication
 - cloud profile GET/POST
@@ -115,3 +120,14 @@ Supported languages:
 - Polish (`pl`)
 
 The **System language** option follows the browser/device locale when it matches a supported language and falls back to English otherwise. Locale files are included in the PWA offline cache.
+
+
+## Competition Discovery
+
+Competition records can include city, region, venue and crawler-generated latitude/longitude. Nearby sorting uses the Haversine distance between the user's optional home/current coordinates and competition coordinates.
+
+Location is optional:
+- users can enter a home city and country, resolved through the Hub backend;
+- users can explicitly grant browser geolocation;
+- without coordinates, the app can still filter by home country and use neighboring-country fallback for nearby discovery;
+- Worldwide search is always available.
