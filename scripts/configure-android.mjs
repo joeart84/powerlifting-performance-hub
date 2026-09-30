@@ -1,6 +1,8 @@
 import { readFile, writeFile } from "node:fs/promises";
+import { fileURLToPath } from "node:url";
 
-const manifestPath = new URL("../android/app/src/main/AndroidManifest.xml", import.meta.url);
+const manifestUrl = new URL("../android/app/src/main/AndroidManifest.xml", import.meta.url);
+const manifestPath = fileURLToPath(manifestUrl);
 const manifest = await readFile(manifestPath, "utf8");
 
 const meta = `        <meta-data
