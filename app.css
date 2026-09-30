@@ -398,3 +398,29 @@ input:focus,select:focus{outline:none;border-color:#6a5730;box-shadow:0 0 0 3px 
 #legacyAccount .authModes{margin-bottom:20px}
 #onboardingAccount{margin-left:16px}
 @media(max-width:520px){#onboardingAccount{display:block;margin-left:0}}
+
+
+/* Header utility refresh: account/settings live globally in the top bar. */
+.utilityNav{display:none!important}
+.headerIconButton{
+  width:38px;height:38px;display:inline-grid;place-items:center;flex:0 0 38px;
+  padding:0;border:1px solid rgba(255,255,255,.10);border-radius:11px;
+  background:rgba(255,255,255,.025);color:#aab2ba;cursor:pointer;
+  transition:background .16s ease,border-color .16s ease,color .16s ease,transform .16s ease
+}
+.headerIconButton:hover{background:#1a1f23;border-color:#343c43;color:#f3f5f4}
+.headerIconButton:active{transform:scale(.96)}
+.headerIconButton.active{background:var(--accent-soft);border-color:#665226;color:#e3b85e}
+.headerIconButton svg{
+  width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.7;
+  stroke-linecap:round;stroke-linejoin:round
+}
+.meetHeaderActions{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.meetReportButton{display:inline-flex;align-items:center;gap:7px}
+@media(max-width:520px){
+  .topActions{flex-direction:row;align-items:center;gap:5px}
+  .cloudBadge{max-width:72px}
+  .headerIconButton{width:36px;height:36px;flex-basis:36px}
+  .meetHeader{gap:12px}
+  .meetHeaderActions{width:100%;justify-content:flex-start}
+}
