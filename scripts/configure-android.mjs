@@ -19,3 +19,15 @@ if (!manifest.includes("com.google.android.gms.ads.APPLICATION_ID")) {
 
 await writeFile(manifestPath, next);
 console.log("Android configured with Google's sample AdMob app ID for testing.");
+
+const buildGradleUrl = new URL("../android/app/build.gradle", import.meta.url);
+const buildGradlePath = fileURLToPath(buildGradleUrl);
+let buildGradle = await readFile(buildGradlePath, "utf8");
+if (buildGradle.includes("getDefaultProguardFile('proguard-android.txt')")) {
+  buildGradle = buildGradle.replace(
+    "getDefaultProguardFile('proguard-android.txt')",
+    "getDefaultProguardFile('proguard-android-optimize.txt')"
+  );
+  await writeFile(buildGradlePath, buildGradle);
+  console.log("Updated Android release ProGuard template for current AGP/R8.");
+}
