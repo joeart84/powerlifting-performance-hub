@@ -6,7 +6,7 @@ import {
   BannerAdSize
 } from "@capacitor-community/admob";
 
-const TEST_BANNER_ID_ANDROID = "ca-app-pub-3940256099942544/6300978111";
+const ADMOB_BANNER_ID_ANDROID = "ca-app-pub-0222399393353451/1617237875";
 let initialized = false;
 let bannerCreated = false;
 let bannerHidden = false;
@@ -52,7 +52,7 @@ async function ensureBanner() {
 
   if (!bannerCreated) {
     await AdMob.showBanner({
-      adId: TEST_BANNER_ID_ANDROID,
+      adId: ADMOB_BANNER_ID_ANDROID,
       adSize: BannerAdSize.ADAPTIVE_BANNER,
       position: BannerAdPosition.BOTTOM_CENTER,
       margin: 0,
