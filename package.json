@@ -5,8 +5,8 @@
   "description": "Powerlifting Performance Hub web/PWA and native mobile shell",
   "scripts": {
     "build:mobile": "node scripts/build-mobile.mjs",
-    "android:init": "npm run build:mobile && npx cap add android && node scripts/configure-android.mjs && npx cap sync android",
-    "android:sync": "npm run build:mobile && npx cap sync android",
+    "android:init": "npm run build:mobile && node scripts/ensure-android.mjs && node scripts/configure-android.mjs && npx cap sync android",
+    "android:sync": "npm run build:mobile && node scripts/configure-android.mjs && npx cap sync android",
     "android:open": "npm run android:sync && npx cap open android"
   },
   "dependencies": {
