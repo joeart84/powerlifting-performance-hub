@@ -239,5 +239,9 @@
   "auth.api_session_error": "Přihlášení se nepodařilo uložit. Zkus to později.",
   "auth.open_account": "Vytvořit účet nebo se přihlásit",
   "auth.back_to_profile": "Vytvořit profil závodníka",
-  "auth.create_profile_note": "Tvůj účet je připravený. Vytvoř si profil závodníka, abys mohl uložit svá data."
+  "auth.create_profile_note": "Tvůj účet je připravený. Vytvoř si profil závodníka, abys mohl uložit svá data.",
+  "auth.google_recommended": "Doporučeno",
+  "auth.google_title": "Nejrychlejší způsob přihlášení",
+  "auth.google_note": "Použij svůj Google účet. Bez hesla a bez e-mailového kódu.",
+  "auth.email_divider": "nebo pokračuj e-mailem"
 }

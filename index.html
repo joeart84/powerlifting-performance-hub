@@ -22,6 +22,7 @@
     </div>
     <div class="topActions">
       <span id="cloudBadge" class="cloudBadge" data-i18n="cloud.local_only">Local only</span>
+      <button id="topAccountCta" class="primary compactTop accountTopCta" type="button" data-i18n="auth.create" hidden>Create account</button>
       <button id="installBtn" class="ghost compactTop" data-i18n="install" hidden>Install</button>
     </div>
   </header>
@@ -59,7 +60,14 @@
       </div>
 
       <button id="saveProfile" class="primary" data-i18n="profile.create">Create dashboard</button>
-      <button id="onboardingAccount" class="textButton" type="button" data-i18n="auth.open_account">Create account or sign in</button>
+      <div class="accountDiscoveryCard onboardingAccountCard">
+        <div>
+          <span class="accountDiscoveryIcon" aria-hidden="true">☁</span>
+          <strong data-i18n="account.title">Keep your Hub on every device</strong>
+          <p data-i18n="account.intro">Sign in to keep your athlete profile, goals and meet plan across devices. Your data on this device stays available without an account.</p>
+        </div>
+        <button id="onboardingAccount" class="ghost accountDiscoveryButton" type="button" data-i18n="auth.open_account">Create account or sign in</button>
+      </div>
     </section>
 
     <section id="app" hidden>
@@ -127,6 +135,18 @@
           <div class="subpanel">
             <h3 data-i18n="dashboard.next_goal">Next goal</h3>
             <div id="goalSnapshot" class="snapshot"></div>
+          </div>
+        </div>
+
+        <div id="dashboardAccountPromo" class="accountDiscoveryCard dashboardAccountPromo" hidden>
+          <div>
+            <span class="accountDiscoveryIcon" aria-hidden="true">☁</span>
+            <strong data-i18n="account.title">Keep your Hub on every device</strong>
+            <p data-i18n="account.intro">Sign in to keep your athlete profile, goals and meet plan across devices. Your data on this device stays available without an account.</p>
+          </div>
+          <div class="accountDiscoveryActions">
+            <button id="dashboardCreateAccount" class="primary" type="button" data-i18n="auth.create">Create account</button>
+            <button id="dashboardSignIn" class="ghost" type="button" data-i18n="auth.sign_in">Sign in</button>
           </div>
         </div>
 
@@ -333,11 +353,18 @@
             <div id="firebaseStatus" class="authStatus" role="status" aria-live="polite"></div>
           </div>
           <div class="accountBox authCard" id="legacyAccount">
-            <div class="googleSignInBlock">
-              <div id="googleSignInButton" aria-label="Continue with Google"></div>
-              <div id="googleStatus" class="authStatus" role="status" aria-live="polite"></div>
+            <div class="googleChoice">
+              <div class="googleChoiceCopy">
+                <span class="googleChoiceBadge" data-i18n="auth.google_recommended">Recommended</span>
+                <h3 data-i18n="auth.google_title">The fastest way in</h3>
+                <p class="muted" data-i18n="auth.google_note">Use your Google account. No password or email code needed.</p>
+              </div>
+              <div class="googleSignInBlock">
+                <div id="googleSignInButton" aria-label="Continue with Google"></div>
+                <div id="googleStatus" class="authStatus" role="status" aria-live="polite"></div>
+              </div>
             </div>
-            <div class="orDivider"><span>or continue with email</span></div>
+            <div class="orDivider"><span data-i18n="auth.email_divider">or continue with email</span></div>
             <div class="authModes" role="group" aria-label="Email account">
               <button id="emailModeSignUp" class="active" type="button" data-i18n="auth.create" aria-pressed="true">Create account</button>
               <button id="emailModeSignIn" type="button" data-i18n="auth.sign_in" aria-pressed="false">Sign in</button>

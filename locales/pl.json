@@ -239,5 +239,9 @@
   "auth.api_session_error": "Nie udało się zapisać sesji. Spróbuj później.",
   "auth.open_account": "Utwórz konto lub zaloguj się",
   "auth.back_to_profile": "Utwórz profil zawodnika",
-  "auth.create_profile_note": "Twoje konto jest gotowe. Utwórz profil zawodnika, aby zapisać swoje dane."
+  "auth.create_profile_note": "Twoje konto jest gotowe. Utwórz profil zawodnika, aby zapisać swoje dane.",
+  "auth.google_recommended": "Polecane",
+  "auth.google_title": "Najszybszy sposób logowania",
+  "auth.google_note": "Użyj konta Google. Bez hasła i bez kodu e-mail.",
+  "auth.email_divider": "lub kontynuuj przez e-mail"
 }
