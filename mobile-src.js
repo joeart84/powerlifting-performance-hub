@@ -167,8 +167,9 @@ window.addEventListener("DOMContentLoaded", () => {
   style.textContent = [
     "body{padding-bottom:var(--native-ad-space,0px)!important;transition:padding-bottom .18s ease}",
     "@media(max-width:760px){",
-    ".primaryNav{bottom:calc(var(--native-ad-space,0px) + 10px + env(safe-area-inset-bottom,0px))!important;transition:bottom .18s ease}",
-    ".shell{padding-bottom:calc(108px + var(--native-ad-space,0px))!important}",
+    ".primaryNav{bottom:calc(var(--native-ad-space,0px) + 16px + env(safe-area-inset-bottom,0px))!important;transition:bottom .18s ease}",
+    ".shell{padding-bottom:24px!important}",
+    "footer{padding-bottom:calc(92px + var(--native-ad-space,0px) + env(safe-area-inset-bottom,0px))!important}",
     "}"
   ].join("");
   document.head.appendChild(style);
