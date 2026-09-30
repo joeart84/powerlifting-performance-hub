@@ -239,5 +239,9 @@
   "auth.api_session_error": "No se pudo guardar tu sesión. Inténtalo más tarde.",
   "auth.open_account": "Crear cuenta o iniciar sesión",
   "auth.back_to_profile": "Crear perfil de deportista",
-  "auth.create_profile_note": "Tu cuenta está lista. Crea tu perfil de deportista para guardar tus datos."
+  "auth.create_profile_note": "Tu cuenta está lista. Crea tu perfil de deportista para guardar tus datos.",
+  "auth.google_recommended": "Recomendado",
+  "auth.google_title": "La forma más rápida de entrar",
+  "auth.google_note": "Usa tu cuenta de Google. Sin contraseña ni código por correo.",
+  "auth.email_divider": "o continuar con correo electrónico"
 }
