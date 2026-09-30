@@ -22,7 +22,18 @@
     </div>
     <div class="topActions">
       <span id="cloudBadge" class="cloudBadge" data-i18n="cloud.local_only">Local only</span>
-      <button id="topAccountCta" class="primary compactTop accountTopCta" type="button" data-i18n="auth.create" hidden>Create account</button>
+      <button id="topAccountCta" class="headerIconButton accountTopCta" type="button" aria-label="Account" title="Account" hidden>
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="12" cy="8" r="3.25"></circle>
+          <path d="M5.75 19c.7-3.3 3-5 6.25-5s5.55 1.7 6.25 5"></path>
+        </svg>
+      </button>
+      <button id="topSettingsCta" class="headerIconButton" type="button" data-tab="settings" aria-label="Settings" title="Settings" hidden>
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="12" cy="12" r="3"></circle>
+          <path d="M19 13.4v-2.8l-2-.7a7.2 7.2 0 0 0-.6-1.4l.9-1.9-2-2-1.9.9A7.2 7.2 0 0 0 12 4.9l-.7-2H8.5l-.7 2a7.2 7.2 0 0 0-1.4.6l-1.9-.9-2 2 .9 1.9a7.2 7.2 0 0 0-.6 1.4l-2 .7v2.8l2 .7c.1.5.3 1 .6 1.4l-.9 1.9 2 2 1.9-.9c.4.3.9.5 1.4.6l.7 2h2.8l.7-2c.5-.1 1-.3 1.4-.6l1.9.9 2-2-.9-1.9c.3-.4.5-.9.6-1.4l2-.7Z"></path>
+        </svg>
+      </button>
       <button id="installBtn" class="ghost compactTop" data-i18n="install" hidden>Install</button>
     </div>
   </header>
@@ -110,10 +121,8 @@
         <button data-tab="tools"><span class="navIcon">＋</span><span data-i18n="nav.tools">Tools</span></button>
       </nav>
 
-      <nav class="utilityNav" aria-label="Performance Hub secondary navigation">
-        <button data-tab="report" data-i18n="nav.report">Report</button>
-        <button data-tab="account" data-i18n="nav.account">Account</button>
-        <button data-tab="settings" data-i18n="nav.settings">Settings</button>
+      <nav class="utilityNav" aria-hidden="true" hidden>
+        <button data-tab="account">Account</button>
       </nav>
 
       <section id="tab-dashboard" class="tab panel dashboardPanel">
@@ -214,7 +223,13 @@
             <div class="eyebrow">MEET DAY MODE</div>
             <h2 data-i18n="meetday.title">Tap Good or Miss after each attempt</h2>
           </div>
-          <button id="resetMeet" class="ghost danger" data-i18n="meetday.reset">Reset</button>
+          <div class="meetHeaderActions">
+            <button class="ghost meetReportButton" type="button" data-tab="report">
+              <span aria-hidden="true">▤</span>
+              <span data-i18n="nav.report">Report</span>
+            </button>
+            <button id="resetMeet" class="ghost danger" data-i18n="meetday.reset">Reset</button>
+          </div>
         </div>
         <div id="meetDayRows"></div>
         <div class="meetStats">

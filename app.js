@@ -549,7 +549,10 @@ function render(){
   $("onboarding").hidden=!!p||accountOnly;$("app").hidden=!p&&!accountOnly;
   document.querySelector("#app > .heroPanel").hidden=!p;
   document.querySelector("#app > .primaryNav").hidden=!p;
-  document.querySelector("#app > .utilityNav").hidden=!p;
+  const utilityNav=document.querySelector("#app > .utilityNav");
+  if(utilityNav)utilityNav.hidden=true;
+  const topSettingsCta=$("topSettingsCta");
+  if(topSettingsCta)topSettingsCta.hidden=!p;
   $("accountBackToProfile").hidden=!!p;
   if(!p){
     if(accountOnly)document.querySelectorAll(".tab").forEach(tab=>tab.hidden=tab.id!=="tab-account");
@@ -1111,7 +1114,7 @@ function renderAccount(){
   $("cloudBadge").textContent=signed?t("auth.cloud_linked"):t("cloud.local_only");
   $("cloudBadge").classList.toggle("active",signed);
   const topAccountCta=$("topAccountCta");
-  if(topAccountCta)topAccountCta.hidden=signed;
+  if(topAccountCta)topAccountCta.hidden=!state.profile;
   const dashboardPromo=$("dashboardAccountPromo");
   if(dashboardPromo)dashboardPromo.hidden=signed;
   if(signed){
