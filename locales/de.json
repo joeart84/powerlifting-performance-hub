@@ -239,5 +239,9 @@
   "auth.api_session_error": "Deine Sitzung konnte nicht gespeichert werden. Bitte versuche es später erneut.",
   "auth.open_account": "Konto erstellen oder anmelden",
   "auth.back_to_profile": "Athletenprofil erstellen",
-  "auth.create_profile_note": "Dein Konto ist bereit. Erstelle dein Athletenprofil, um deine Daten zu speichern."
+  "auth.create_profile_note": "Dein Konto ist bereit. Erstelle dein Athletenprofil, um deine Daten zu speichern.",
+  "auth.google_recommended": "Empfohlen",
+  "auth.google_title": "Der schnellste Weg zur Anmeldung",
+  "auth.google_note": "Nutze dein Google-Konto. Kein Passwort und kein E-Mail-Code nötig.",
+  "auth.email_divider": "oder mit E-Mail fortfahren"
 }
