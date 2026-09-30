@@ -280,5 +280,9 @@
   "auth.api_session_error": "Your session could not be saved. Please try again later.",
   "auth.open_account": "Create account or sign in",
   "auth.back_to_profile": "Create athlete dashboard",
-  "auth.create_profile_note": "Your account is ready. Create your athlete dashboard to save your data."
+  "auth.create_profile_note": "Your account is ready. Create your athlete dashboard to save your data.",
+  "auth.google_recommended": "Recommended",
+  "auth.google_title": "The fastest way in",
+  "auth.google_note": "Use your Google account. No password or email code needed.",
+  "auth.email_divider": "or continue with email"
 }
