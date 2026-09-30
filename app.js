@@ -978,6 +978,12 @@ function openAccountFromOnboarding(){
   document.querySelectorAll("[data-tab]").forEach(button=>button.classList.toggle("active",button.dataset.tab==="account"));
   window.scrollTo({top:0,behavior:"auto"});
 }
+function openAccountTab(mode){
+  if(!state.profile){openAccountFromOnboarding();return}
+  if(mode==="signin"||mode==="signup")setEmailMode(mode,true);
+  const accountButton=document.querySelector('[data-tab="account"]');
+  if(accountButton)accountButton.click();
+}
 function setEmailMode(mode,reset=false){
   emailMode=mode==="signin"?"signin":"signup";
   const signIn=emailMode==="signin";
@@ -1090,7 +1096,7 @@ async function initGoogleSignIn(){
       text:"continue_with",
       shape:"rectangular",
       logo_alignment:"left",
-      width:Math.min(420,Math.max(240,container.clientWidth||360))
+      width:400
     });
     googleButtonRendered=true;
   }catch(err){
@@ -1104,6 +1110,10 @@ function renderAccount(){
   $("accountSignedOut").hidden=signed;$("accountSignedIn").hidden=!signed;
   $("cloudBadge").textContent=signed?t("auth.cloud_linked"):t("cloud.local_only");
   $("cloudBadge").classList.toggle("active",signed);
+  const topAccountCta=$("topAccountCta");
+  if(topAccountCta)topAccountCta.hidden=signed;
+  const dashboardPromo=$("dashboardAccountPromo");
+  if(dashboardPromo)dashboardPromo.hidden=signed;
   if(signed){
     $("accountIdentity").textContent=firebaseUser?.email||session.email||"signed-in account";
     if(!$("cloudStatus").textContent)$("cloudStatus").textContent=t("dynamic.cloud_linked");
@@ -1244,6 +1254,9 @@ $("emailModeSignIn").addEventListener("click",()=>setEmailMode("signin",true));
 $("emailModeSignUp").addEventListener("click",()=>setEmailMode("signup",true));
 $("checkAccountConnection").addEventListener("click",checkAccountConnection);
 $("onboardingAccount").addEventListener("click",openAccountFromOnboarding);
+$("topAccountCta").addEventListener("click",()=>openAccountTab("signup"));
+$("dashboardCreateAccount").addEventListener("click",()=>openAccountTab("signup"));
+$("dashboardSignIn").addEventListener("click",()=>openAccountTab("signin"));
 $("accountBackToProfile").addEventListener("click",()=>{accountOnly=false;render()});
 $("codeStep").addEventListener("submit",e=>{e.preventDefault();verifyLoginCode()});
 $("uploadCloud").addEventListener("click",()=>uploadCloud(false));
