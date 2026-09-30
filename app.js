@@ -1075,11 +1075,7 @@ async function initGoogleSignIn(){
         if(!response?.credential)return;
         status.textContent=t("dynamic.signing_in");
         try{
-          const data=await hubRequest("/auth/google",{
-            method:"POST",
-            headers:{"Accept":"application/json","Content-Type":"application/json"},
-            body:JSON.stringify({credential:response.credential})
-          });
+          const data=await hubAuthRequest("/auth/google",{credential:response.credential});
           status.textContent="";
           await completeHubSignIn(data);
         }catch(err){status.textContent=err.message}
