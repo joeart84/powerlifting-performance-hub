@@ -31,3 +31,20 @@ if (buildGradle.includes("getDefaultProguardFile('proguard-android.txt')")) {
   await writeFile(buildGradlePath, buildGradle);
   console.log("Updated Android release ProGuard template for current AGP/R8.");
 }
+
+
+const admobGradleUrl = new URL("../node_modules/@capacitor-community/admob/android/build.gradle", import.meta.url);
+const admobGradlePath = fileURLToPath(admobGradleUrl);
+try {
+  let admobGradle = await readFile(admobGradlePath, "utf8");
+  if (admobGradle.includes("getDefaultProguardFile('proguard-android.txt')")) {
+    admobGradle = admobGradle.replace(
+      "getDefaultProguardFile('proguard-android.txt')",
+      "getDefaultProguardFile('proguard-android-optimize.txt')"
+    );
+    await writeFile(admobGradlePath, admobGradle);
+    console.log("Updated AdMob plugin ProGuard template for current AGP/R8.");
+  }
+} catch (error) {
+  console.warn("AdMob plugin Gradle file was not found; skipping plugin patch.");
+}
