@@ -1,5 +1,6 @@
 import { cp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { build } from "esbuild";
+import { fileURLToPath } from "node:url";
 
 const dist = new URL("../dist/", import.meta.url);
 const root = new URL("../", import.meta.url);
@@ -34,8 +35,8 @@ html = html.replace(
 await writeFile(new URL("index.html", dist), html);
 
 await build({
-  entryPoints: [new URL("mobile-src.js", root).pathname],
-  outfile: new URL("mobile.js", dist).pathname,
+  entryPoints: [fileURLToPath(new URL("mobile-src.js", root))],
+  outfile: fileURLToPath(new URL("mobile.js", dist)),
   bundle: true,
   format: "esm",
   platform: "browser",
