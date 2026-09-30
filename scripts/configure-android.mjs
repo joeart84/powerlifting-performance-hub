@@ -7,7 +7,7 @@ const manifest = await readFile(manifestPath, "utf8");
 
 const meta = `        <meta-data
             android:name="com.google.android.gms.ads.APPLICATION_ID"
-            android:value="ca-app-pub-3940256099942544~3347511713" />`;
+            android:value="ca-app-pub-0222399393353451~4434972903" />`;
 
 let next = manifest;
 if (!manifest.includes("com.google.android.gms.ads.APPLICATION_ID")) {
@@ -18,7 +18,7 @@ if (!manifest.includes("com.google.android.gms.ads.APPLICATION_ID")) {
 }
 
 await writeFile(manifestPath, next);
-console.log("Android configured with Google's sample AdMob app ID for testing.");
+console.log("Android configured with the Powerlifting Performance Hub AdMob app ID.");
 
 const buildGradleUrl = new URL("../android/app/build.gradle", import.meta.url);
 const buildGradlePath = fileURLToPath(buildGradleUrl);
