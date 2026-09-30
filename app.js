@@ -1092,6 +1092,7 @@ async function initGoogleSignIn(){
       auto_select:false,
       cancel_on_tap_outside:true
     });
+    const googleButtonWidth=Math.max(220,Math.min(360,Math.floor(container.getBoundingClientRect().width||320)));
     window.google.accounts.id.renderButton(container,{
       type:"standard",
       theme:"outline",
@@ -1099,7 +1100,7 @@ async function initGoogleSignIn(){
       text:"continue_with",
       shape:"rectangular",
       logo_alignment:"left",
-      width:400
+      width:googleButtonWidth
     });
     googleButtonRendered=true;
   }catch(err){

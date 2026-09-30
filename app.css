@@ -424,3 +424,14 @@ input:focus,select:focus{outline:none;border-color:#6a5730;box-shadow:0 0 0 3px 
   .meetHeader{gap:12px}
   .meetHeaderActions{width:100%;justify-content:flex-start}
 }
+
+
+/* Keep the Google Identity button inside narrow mobile auth cards. */
+.googleSignInBlock{min-width:0}
+#googleSignInButton{width:100%;max-width:360px;min-width:0;overflow:hidden}
+#googleSignInButton>div,#googleSignInButton iframe{width:100%!important;max-width:100%!important}
+@media(max-width:420px){
+  .googleChoice{padding:14px}
+  .googleChoiceCopy{margin-bottom:10px}
+  #googleSignInButton{max-width:100%}
+}
