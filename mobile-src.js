@@ -47,18 +47,19 @@ async function ensureBannerDebugListeners() {
   await AdMob.addListener(BannerAdPluginEvents.Loaded, () => {
     console.info("[AdMob] banner loaded");
     setAdDebugStatus("banner loaded");
-    reserveBannerSpace(true);
+    reserveBannerSpace(60);
   });
 
   await AdMob.addListener(BannerAdPluginEvents.FailedToLoad, (error) => {
     console.error("[AdMob] banner failed to load", error);
     const message = error?.message || error?.code || JSON.stringify(error);
     setAdDebugStatus(`banner failed: ${message}`);
-    reserveBannerSpace(false);
+    reserveBannerSpace(0);
   });
 
   await AdMob.addListener(BannerAdPluginEvents.SizeChanged, (size) => {
     console.info("[AdMob] banner size changed", size);
+    reserveBannerSpace(size?.height || 60);
   });
 
   await AdMob.addListener(BannerAdPluginEvents.AdImpression, () => {
@@ -77,8 +78,9 @@ function shouldHideAd() {
   return tab === "meetday" || tab === "account";
 }
 
-function reserveBannerSpace(enabled) {
-  document.documentElement.style.setProperty("--native-ad-space", enabled ? "72px" : "0px");
+function reserveBannerSpace(height = 0) {
+  const pixels = Math.max(0, Math.round(Number(height) || 0));
+  document.documentElement.style.setProperty("--native-ad-space", `${pixels}px`);
 }
 
 async function ensureBanner() {
@@ -88,7 +90,7 @@ async function ensureBanner() {
       await AdMob.hideBanner();
       bannerHidden = true;
     }
-    reserveBannerSpace(false);
+    reserveBannerSpace(0);
     return;
   }
 
@@ -149,7 +151,7 @@ async function ensureBanner() {
     bannerHidden = false;
   }
 
-  reserveBannerSpace(true);
+  reserveBannerSpace(60);
 }
 
 function syncBannerVisibility() {
@@ -162,7 +164,13 @@ function syncBannerVisibility() {
 
 window.addEventListener("DOMContentLoaded", () => {
   const style = document.createElement("style");
-  style.textContent = "body{padding-bottom:var(--native-ad-space,0px)!important;transition:padding-bottom .18s ease}";
+  style.textContent = [
+    "body{padding-bottom:var(--native-ad-space,0px)!important;transition:padding-bottom .18s ease}",
+    "@media(max-width:760px){",
+    ".primaryNav{bottom:calc(var(--native-ad-space,0px) + 10px + env(safe-area-inset-bottom,0px))!important;transition:bottom .18s ease}",
+    ".shell{padding-bottom:calc(108px + var(--native-ad-space,0px))!important}",
+    "}"
+  ].join("");
   document.head.appendChild(style);
 
   document.addEventListener("click", (event) => {
