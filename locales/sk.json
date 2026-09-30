@@ -280,5 +280,9 @@
   "auth.api_session_error": "Prihlásenie sa nepodarilo uložiť. Skús to neskôr.",
   "auth.open_account": "Vytvoriť účet alebo sa prihlásiť",
   "auth.back_to_profile": "Vytvoriť profil pretekára",
-  "auth.create_profile_note": "Tvoj účet je pripravený. Vytvor si profil pretekára, aby si mohol uložiť svoje dáta."
+  "auth.create_profile_note": "Tvoj účet je pripravený. Vytvor si profil pretekára, aby si mohol uložiť svoje dáta.",
+  "auth.google_recommended": "Odporúčané",
+  "auth.google_title": "Najrýchlejší spôsob prihlásenia",
+  "auth.google_note": "Použi svoj Google účet. Bez hesla a bez e-mailového kódu.",
+  "auth.email_divider": "alebo pokračuj e-mailom"
 }
