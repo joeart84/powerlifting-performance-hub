@@ -2,15 +2,17 @@ import { Capacitor } from "@capacitor/core";
 import {
   AdMob,
   AdmobConsentStatus,
+  BannerAdPluginEvents,
   BannerAdPosition,
   BannerAdSize
 } from "@capacitor-community/admob";
 
-const ADMOB_BANNER_ID_ANDROID = "ca-app-pub-0222399393353451/1617237875";
+const ADMOB_BANNER_ID_ANDROID = "ca-app-pub-3940256099942544/6300978111";
 let initialized = false;
 let bannerCreated = false;
 let bannerHidden = false;
 let consentDebugResetDone = false;
+let bannerListenersReady = false;
 
 function setAdDebugStatus(message) {
   console.info("[AdMob]", message);
@@ -36,6 +38,33 @@ function setAdDebugStatus(message) {
     document.body.appendChild(badge);
   }
   badge.textContent = `AdMob debug: ${message}`;
+}
+
+async function ensureBannerDebugListeners() {
+  if (bannerListenersReady) return;
+  bannerListenersReady = true;
+
+  await AdMob.addListener(BannerAdPluginEvents.Loaded, () => {
+    console.info("[AdMob] banner loaded");
+    setAdDebugStatus("banner loaded");
+    reserveBannerSpace(true);
+  });
+
+  await AdMob.addListener(BannerAdPluginEvents.FailedToLoad, (error) => {
+    console.error("[AdMob] banner failed to load", error);
+    const message = error?.message || error?.code || JSON.stringify(error);
+    setAdDebugStatus(`banner failed: ${message}`);
+    reserveBannerSpace(false);
+  });
+
+  await AdMob.addListener(BannerAdPluginEvents.SizeChanged, (size) => {
+    console.info("[AdMob] banner size changed", size);
+  });
+
+  await AdMob.addListener(BannerAdPluginEvents.AdImpression, () => {
+    console.info("[AdMob] banner impression");
+    setAdDebugStatus("banner impression recorded");
+  });
 }
 
 function activeTabName() {
@@ -67,6 +96,7 @@ async function ensureBanner() {
     setAdDebugStatus("initializing");
     await AdMob.initialize();
     initialized = true;
+    await ensureBannerDebugListeners();
 
     if (!consentDebugResetDone) {
       try {
@@ -113,7 +143,7 @@ async function ensureBanner() {
     });
     bannerCreated = true;
     bannerHidden = false;
-    setAdDebugStatus("test banner requested");
+    setAdDebugStatus("test banner request sent");
   } else if (bannerHidden) {
     await AdMob.resumeBanner();
     bannerHidden = false;
