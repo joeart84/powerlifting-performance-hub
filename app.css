@@ -306,6 +306,10 @@ input:focus,select:focus{outline:none;border-color:#6a5730;box-shadow:0 0 0 3px 
 .authForm input{min-height:50px}
 .authForm .authCta{margin-top:5px;min-height:50px;width:100%}
 .authStatus{min-height:1.3em;margin-top:16px;font-size:13px;line-height:1.5;color:#d9ad54}
+.googleSignInBlock{display:grid;gap:8px}
+#googleSignInButton{min-height:44px;display:flex;align-items:center}
+#googleSignInButton>div{max-width:100%}
+#googleStatus:empty{display:none}
 .socialStack{display:grid;gap:10px}
 .socialButton{min-height:48px;border:1px solid #3c454c;border-radius:12px;background:#1c2227;color:#f4f5f3;font-weight:750;cursor:pointer}
 .socialButton:hover{background:#293139;border-color:#69747a}

@@ -11,6 +11,7 @@ const LIFTER_API="https://powerlifting-calculator.com/wp-json/plc-radar/v1/lifte
 const LIFTER_SEARCH_API="https://powerlifting-calculator.com/wp-json/plc-radar/v1/lifter-search";
 const REFERENCE_API="https://powerlifting-calculator.com/wp-json/plc-radar/v1/performance-reference";
 const HUB_API="https://powerlifting-calculator.com/wp-json/plc-radar/v1/hub";
+const GOOGLE_CLIENT_ID="565019863889-dlbtmah64pd38piet2fc27p3251cjpeq.apps.googleusercontent.com";
 let performanceReference=null;
 let upcomingCompetitions=[];
 let suppressCloud=false;
@@ -1016,6 +1017,21 @@ async function requestLoginCode(){
   }catch(err){status.textContent=err.message}
   finally{button.disabled=false}
 }
+async function completeHubSignIn(data){
+  session.token=data.token;
+  session.email=data.email;
+  session.expiresAt=data.expires_at;
+  delete session.pendingEmail;
+  saveSession();
+  renderAccount();
+  if(data.profile&&Object.keys(data.profile).length){
+    $("cloudStatus").textContent=t("dynamic.cloud_found");
+  }else if(state.profile){
+    await uploadCloud(false);
+  }else{
+    $("cloudStatus").textContent=t("auth.create_profile_note");
+  }
+}
 async function verifyLoginCode(){
   const email=(session.pendingEmail||$("accountEmail").value).trim(),code=$("accountCode").value.trim(),status=$("accountStatus"),button=$("verifyCode");
   if(button.disabled||!$("accountCode").reportValidity())return;
@@ -1023,17 +1039,67 @@ async function verifyLoginCode(){
   status.textContent=t("dynamic.signing_in");
   try{
     const data=await hubAuthRequest("/auth/verify-code",{email,code});
-    session.token=data.token;session.email=data.email;session.expiresAt=data.expires_at;delete session.pendingEmail;saveSession();
-    renderAccount();
-    if(data.profile&&Object.keys(data.profile).length){
-      $("cloudStatus").textContent=t("dynamic.cloud_found");
-    }else if(state.profile){
-      await uploadCloud(false);
-    }else{
-      $("cloudStatus").textContent=t("auth.create_profile_note");
-    }
+    await completeHubSignIn(data);
   }catch(err){status.textContent=err.message}
   finally{button.disabled=false}
+}
+let googleIdentityPromise=null;
+function loadGoogleIdentity(){
+  if(window.google?.accounts?.id)return Promise.resolve();
+  if(googleIdentityPromise)return googleIdentityPromise;
+  googleIdentityPromise=new Promise((resolve,reject)=>{
+    const existing=document.querySelector('script[data-pph-google-identity]');
+    if(existing){
+      existing.addEventListener("load",()=>resolve(),{once:true});
+      existing.addEventListener("error",()=>reject(new Error("Google sign-in could not be loaded.")),{once:true});
+      return;
+    }
+    const script=document.createElement("script");
+    script.src="https://accounts.google.com/gsi/client";
+    script.async=true;script.defer=true;script.dataset.pphGoogleIdentity="1";
+    script.onload=()=>resolve();
+    script.onerror=()=>reject(new Error("Google sign-in could not be loaded."));
+    document.head.appendChild(script);
+  });
+  return googleIdentityPromise;
+}
+let googleButtonRendered=false;
+async function initGoogleSignIn(){
+  const container=$("googleSignInButton"),status=$("googleStatus");
+  if(!container||googleButtonRendered||session.token)return;
+  try{
+    await loadGoogleIdentity();
+    window.google.accounts.id.initialize({
+      client_id:GOOGLE_CLIENT_ID,
+      callback:async response=>{
+        if(!response?.credential)return;
+        status.textContent=t("dynamic.signing_in");
+        try{
+          const data=await hubRequest("/auth/google",{
+            method:"POST",
+            headers:{"Accept":"application/json","Content-Type":"application/json"},
+            body:JSON.stringify({credential:response.credential})
+          });
+          status.textContent="";
+          await completeHubSignIn(data);
+        }catch(err){status.textContent=err.message}
+      },
+      auto_select:false,
+      cancel_on_tap_outside:true
+    });
+    window.google.accounts.id.renderButton(container,{
+      type:"standard",
+      theme:"outline",
+      size:"large",
+      text:"continue_with",
+      shape:"rectangular",
+      logo_alignment:"left",
+      width:Math.min(420,Math.max(240,container.clientWidth||360))
+    });
+    googleButtonRendered=true;
+  }catch(err){
+    status.textContent=err.message||"Google sign-in is temporarily unavailable.";
+  }
 }
 function renderAccount(){
   setEmailMode(emailMode);
@@ -1045,8 +1111,9 @@ function renderAccount(){
   if(signed){
     $("accountIdentity").textContent=firebaseUser?.email||session.email||"signed-in account";
     if(!$("cloudStatus").textContent)$("cloudStatus").textContent=t("dynamic.cloud_linked");
-  }else if(session.pendingEmail){
-    $("accountEmail").value=session.pendingEmail;$("codeStep").hidden=false;
+  }else{
+    if(session.pendingEmail){$("accountEmail").value=session.pendingEmail;$("codeStep").hidden=false}
+    queueMicrotask(()=>initGoogleSignIn());
   }
 }
 async function uploadCloud(silent=false){
@@ -1068,7 +1135,10 @@ async function downloadCloud(){
   }catch(err){status.textContent=err.message}
 }
 function clearSession(){
-  delete session.token;delete session.email;delete session.expiresAt;delete session.pendingEmail;saveSession();renderAccount();
+  delete session.token;delete session.email;delete session.expiresAt;delete session.pendingEmail;saveSession();
+  googleButtonRendered=false;
+  const googleButton=$("googleSignInButton");if(googleButton)googleButton.replaceChildren();
+  renderAccount();
 }
 async function logoutCloud(){
   if(window.PPHCloud?.user){
