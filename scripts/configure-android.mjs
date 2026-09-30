@@ -10,8 +10,10 @@ const meta = `        <meta-data
             android:value="ca-app-pub-0222399393353451~4434972903" />`;
 
 let next = manifest;
-if (!manifest.includes("com.google.android.gms.ads.APPLICATION_ID")) {
-  next = manifest.replace("<application", `<application`);
+const appIdMetaPattern = /(android:name="com\.google\.android\.gms\.ads\.APPLICATION_ID"[\s\S]*?android:value=")[^"]+(")/;
+if (appIdMetaPattern.test(next)) {
+  next = next.replace(appIdMetaPattern, `$1ca-app-pub-0222399393353451~4434972903$2`);
+} else {
   const appOpen = next.indexOf("<application");
   const appClose = next.indexOf(">", appOpen);
   next = next.slice(0, appClose + 1) + "\n" + meta + next.slice(appClose + 1);
