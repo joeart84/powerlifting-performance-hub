@@ -1,0 +1,9 @@
+{
+  "appId": "com.powerliftingcalculator.performancehub",
+  "appName": "Powerlifting Performance Hub",
+  "webDir": "dist",
+  "bundledWebRuntime": false,
+  "android": {
+    "allowMixedContent": false
+  }
+}

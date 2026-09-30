@@ -30,6 +30,12 @@ jobs:
           test -f logo.svg
           test -f icon-192.png
           test -f icon-512.png
+      - name: Build Capacitor mobile web bundle
+        run: |
+          npm install
+          npm run build:mobile
+          test -f dist/index.html
+          test -f dist/mobile.js
       - name: Check event-listener element IDs
         run: |
           node - <<'NODE'
