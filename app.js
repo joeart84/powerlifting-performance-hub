@@ -675,12 +675,30 @@ const NEIGHBORS={
   "hungary":["slovakia","austria","slovenia","croatia","serbia","romania","ukraine"],
   "poland":["slovakia","czech republic","czechia","germany","ukraine","lithuania","belarus"]
 };
-function normText(v){return String(v||"").trim().toLowerCase()}
+function normText(v){
+  return String(v||"").trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
+}
+const COUNTRY_ALIASES={
+  "sk":"slovakia","svk":"slovakia","slovensko":"slovakia","slovenska republika":"slovakia",
+  "cz":"czech republic","cze":"czech republic","cesko":"czech republic","ceska republika":"czech republic","czechia":"czech republic",
+  "at":"austria","aut":"austria","rakusko":"austria",
+  "hu":"hungary","hun":"hungary","madarsko":"hungary",
+  "pl":"poland","pol":"poland","polsko":"poland",
+  "de":"germany","deu":"germany","nemecko":"germany",
+  "si":"slovenia","svn":"slovenia","slovinsko":"slovenia",
+  "hr":"croatia","hrv":"croatia","chorvatsko":"croatia",
+  "rs":"serbia","srb":"serbia","srbsko":"serbia",
+  "ua":"ukraine","ukr":"ukraine","ukrajina":"ukraine",
+  "gb":"united kingdom","gbr":"united kingdom","great britain":"united kingdom","uk":"united kingdom",
+  "us":"united states","usa":"united states","u.s.a.":"united states"
+};
+function canonicalCountry(v){
+  const value=normText(v);
+  return COUNTRY_ALIASES[value]||value;
+}
 function countryMatches(a,b){
-  const x=normText(a),y=normText(b);
-  if(!x||!y)return false;
-  const aliases={"czechia":"czech republic","great britain":"united kingdom","uk":"united kingdom","usa":"united states","u.s.a.":"united states"};
-  return (aliases[x]||x)===(aliases[y]||y);
+  const x=canonicalCountry(a),y=canonicalCountry(b);
+  return !!x&&!!y&&x===y;
 }
 function haversineKm(lat1,lon1,lat2,lon2){
   const r=6371,toRad=x=>x*Math.PI/180;
@@ -694,7 +712,7 @@ function eventDistance(m){
   return haversineKm(num(p.homeLat),num(p.homeLon),lat,lon);
 }
 function nearbyCountryFallback(country){
-  const home=normText((state.preferences||{}).homeCountry);
+  const home=canonicalCountry((state.preferences||{}).homeCountry);
   if(!home)return false;
   if(countryMatches(country,home))return true;
   return (NEIGHBORS[home]||[]).some(x=>countryMatches(country,x));
@@ -705,13 +723,22 @@ function competitionSearchText(m){
 function competitionMatchesScope(m,scope,radius){
   const p=state.preferences||{},distance=eventDistance(m);
   if(scope==="world")return true;
-  if(scope==="europe")return EUROPE_COUNTRIES.has(normText(m.country));
+  if(scope==="europe")return EUROPE_COUNTRIES.has(canonicalCountry(m.country));
   if(scope==="country")return p.homeCountry?countryMatches(m.country,p.homeCountry):false;
   if(scope==="nearby"){
     if(distance!==null)return distance<=radius;
     return nearbyCountryFallback(m.country);
   }
   return true;
+}
+function competitionDaysUntil(m){
+  const date=String(m?.start_date||"").slice(0,10);
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(date))return num(m?.days_until);
+  const start=new Date(date+"T00:00:00Z");
+  if(Number.isNaN(start.getTime()))return num(m?.days_until);
+  const now=new Date();
+  const today=Date.UTC(now.getUTCFullYear(),now.getUTCMonth(),now.getUTCDate());
+  return Math.floor((start.getTime()-today)/86400000);
 }
 function filteredCompetitions(){
   const q=normText($("competitionSearch")?.value);
@@ -720,10 +747,12 @@ function filteredCompetitions(){
   const federation=$("competitionFederation")?.value||"";
   const rows=upcomingCompetitions.filter(m=>{
     if(q&&!competitionSearchText(m).includes(q))return false;
-    if(range<9999&&num(m.days_until)>range)return false;
+    const daysUntil=competitionDaysUntil(m);
+    if(daysUntil<0)return false;
+    if(range<9999&&daysUntil>range)return false;
     if(federation&&m.federation!==federation)return false;
     return competitionMatchesScope(m,competitionScope,radius);
-  }).map(m=>({...m,_distance:eventDistance(m)}));
+  }).map(m=>({...m,days_until:competitionDaysUntil(m),_distance:eventDistance(m)}));
   rows.sort((a,b)=>{
     if(competitionScope==="nearby"){
       const ad=a._distance===null?999999:a._distance,bd=b._distance===null?999999:b._distance;
@@ -739,7 +768,10 @@ async function loadCompetitions(){
     if(!res.ok)throw new Error("Competition feed unavailable");
     const data=await res.json();
     upcomingCompetitions=Array.isArray(data.competitions)?data.competitions:[];
-  }catch(e){upcomingCompetitions=[]}
+  }catch(e){
+    console.error("[Competitions] feed load failed",e);
+    upcomingCompetitions=[];
+  }
   renderCompetitionFinder();
 }
 function renderFederationOptions(){
