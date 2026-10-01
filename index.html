@@ -22,13 +22,13 @@
     </div>
     <div class="topActions">
       <span id="cloudBadge" class="cloudBadge" data-i18n="cloud.local_only">Local only</span>
-      <button id="topAccountCta" class="headerIconButton accountTopCta" type="button" aria-label="Account" title="Account" hidden>
+      <button id="topAccountCta" class="headerIconButton accountTopCta" type="button" aria-label="Account" title="Account" data-i18n-aria="nav.account" data-i18n-title="nav.account" hidden>
         <svg viewBox="0 0 24 24" aria-hidden="true">
           <circle cx="12" cy="8" r="3.25"></circle>
           <path d="M5.75 19c.7-3.3 3-5 6.25-5s5.55 1.7 6.25 5"></path>
         </svg>
       </button>
-      <button id="topSettingsCta" class="headerIconButton" type="button" data-tab="settings" aria-label="Settings" title="Settings" hidden>
+      <button id="topSettingsCta" class="headerIconButton" type="button" data-tab="settings" aria-label="Settings" title="Settings" data-i18n-aria="nav.settings" data-i18n-title="nav.settings" hidden>
         <svg viewBox="0 0 24 24" aria-hidden="true">
           <circle cx="12" cy="12" r="3"></circle>
           <path d="M19 13.4v-2.8l-2-.7a7.2 7.2 0 0 0-.6-1.4l.9-1.9-2-2-1.9.9A7.2 7.2 0 0 0 12 4.9l-.7-2H8.5l-.7 2a7.2 7.2 0 0 0-1.4.6l-1.9-.9-2 2 .9 1.9a7.2 7.2 0 0 0-.6 1.4l-2 .7v2.8l2 .7c.1.5.3 1 .6 1.4l-.9 1.9 2 2 1.9-.9c.4.3.9.5 1.4.6l.7 2h2.8l.7-2c.5-.1 1-.3 1.4-.6l1.9.9 2-2-.9-1.9c.3-.4.5-.9.6-1.4l2-.7Z"></path>
@@ -40,9 +40,9 @@
 
   <main class="shell">
     <section id="onboarding" class="panel">
-      <div class="eyebrow">MVP · LOCAL-FIRST</div>
+      <div class="eyebrow" data-i18n="onboarding.eyebrow">MVP · LOCAL-FIRST</div>
       <h2 data-i18n="onboarding.title">Build your athlete dashboard</h2>
-      <p class="muted">For this first test, your data stays only in this browser on your device.</p>
+      <p class="muted" data-i18n="onboarding.note">Your data stays in this browser unless you choose cloud sync.</p>
 
       <div class="oplLookup heroImport">
         <div>
@@ -63,7 +63,7 @@
         <label><span data-i18n="profile.name">Name</span><input id="name" placeholder="Joe Lifter"></label>
         <label><span data-i18n="profile.sex">Sex</span><select id="sex"><option value="M" data-i18n="profile.male">Male</option><option value="F" data-i18n="profile.female">Female</option></select></label>
         <label><span data-i18n="profile.bodyweight">Bodyweight (kg)</span><input id="bodyweight" type="number" step="0.1" placeholder="83"></label>
-        <label><span>Age</span><input id="age" type="number" min="13" max="100" step="1" placeholder="40"></label>
+        <label><span data-i18n="profile.age">Age</span><input id="age" type="number" min="13" max="100" step="1" placeholder="40"></label>
         <label><span data-i18n="profile.next_meet_date">Next meet date</span><input id="meetDate" type="date"></label>
         <label><span data-i18n="profile.squat_best">Squat best (kg)</span><input id="squatBest" type="number" step="0.5" placeholder="180"></label>
         <label><span data-i18n="profile.bench_best">Bench best (kg)</span><input id="benchBest" type="number" step="0.5" placeholder="120"></label>
@@ -84,8 +84,17 @@
     <section id="app" hidden>
       <section class="hero panel heroPanel">
         <div class="heroIntro">
-          <div class="eyebrow">ATHLETE OVERVIEW</div>
-          <h2 id="athleteName">Your dashboard</h2>
+          <div class="heroTitleRow">
+            <div>
+              <div class="eyebrow" data-i18n="dashboard.overview">ATHLETE OVERVIEW</div>
+              <h2 id="athleteName" data-i18n="dashboard.your_dashboard">Your dashboard</h2>
+            </div>
+            <button id="editProfile" class="heroEditButton" type="button" aria-label="Edit athlete profile" title="Edit athlete profile" data-i18n-aria="profile.edit" data-i18n-title="profile.edit">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M14.7 6.3a4.5 4.5 0 0 0-5.8 5.8L3.5 17.5a1.8 1.8 0 1 0 2.5 2.5l5.4-5.4a4.5 4.5 0 0 0 5.8-5.8l-2.6 2.6-2-2 2.1-3.1Z"></path>
+              </svg>
+            </button>
+          </div>
           <p id="countdown" class="muted"></p>
         </div>
         <div class="heroScores">
@@ -97,7 +106,7 @@
           <div class="heroScore">
             <span data-i18n="dashboard.current_dots">Current DOTS</span>
             <strong id="currentDots">—</strong>
-            <small>score</small>
+            <small data-i18n="common.score">score</small>
           </div>
           <div class="heroScore">
             <span>Reshel</span>
@@ -127,13 +136,13 @@
 
       <section id="tab-dashboard" class="tab panel dashboardPanel">
         <div class="sectionLead">
-          <div class="eyebrow">CURRENT FORM</div>
+          <div class="eyebrow" data-i18n="dashboard.current_form">CURRENT FORM</div>
         </div>
         <div class="cards metricStrip">
-          <article class="metric"><span>Bodyweight</span><strong id="metricBw">—</strong><small>kg</small></article>
-          <article class="metric"><span>Squat</span><strong id="metricSq">—</strong><small>kg</small></article>
-          <article class="metric"><span>Bench</span><strong id="metricBp">—</strong><small>kg</small></article>
-          <article class="metric"><span>Deadlift</span><strong id="metricDl">—</strong><small>kg</small></article>
+          <article class="metric"><span data-i18n="dashboard.bodyweight">Bodyweight</span><strong id="metricBw">—</strong><small>kg</small></article>
+          <article class="metric"><span data-i18n="progress.squat">Squat</span><strong id="metricSq">—</strong><small>kg</small></article>
+          <article class="metric"><span data-i18n="progress.bench">Bench</span><strong id="metricBp">—</strong><small>kg</small></article>
+          <article class="metric"><span data-i18n="progress.deadlift">Deadlift</span><strong id="metricDl">—</strong><small>kg</small></article>
         </div>
 
         <div class="dashboardGrid">
@@ -159,7 +168,6 @@
           </div>
         </div>
 
-        <button id="editProfile" class="ghost" data-i18n="profile.edit">Edit athlete profile</button>
       </section>
 
       <section id="tab-planner" class="tab panel" hidden>
@@ -220,7 +228,7 @@
       <section id="tab-meetday" class="tab panel" hidden>
         <div class="meetHeader">
           <div>
-            <div class="eyebrow">MEET DAY MODE</div>
+            <div class="eyebrow" data-i18n="meetday.eyebrow">MEET DAY MODE</div>
             <h2 data-i18n="meetday.title">Tap Good or Miss after each attempt</h2>
           </div>
           <div class="meetHeaderActions">
@@ -242,7 +250,7 @@
       <section id="tab-progress" class="tab panel" hidden>
         <div class="progressHead">
           <div>
-            <div class="eyebrow">ATHLETE PROGRESS</div>
+            <div class="eyebrow" data-i18n="progress.eyebrow">ATHLETE PROGRESS</div>
             <h2 data-i18n="progress.title">Competition history</h2>
             <p class="muted" data-i18n="progress.note">Import directly from OpenPowerlifting. CSV is kept only as an advanced fallback.</p>
           </div>
@@ -344,7 +352,7 @@
       </section>
 
       <section id="tab-tools" class="tab panel" hidden>
-        <div class="eyebrow">PERFORMANCE TOOLS</div>
+        <div class="eyebrow" data-i18n="tools.eyebrow">PERFORMANCE TOOLS</div>
         <h2 data-i18n="tools.title">Strength context, weight class and goals</h2>
         <p class="muted" data-i18n="tools.note">Reference context is based on recent Raw full-power OpenPowerlifting performances. It is descriptive, not a prediction.</p>
 
@@ -381,7 +389,7 @@
       </section>
 
       <section id="tab-report" class="tab panel" hidden>
-        <div class="eyebrow">POST-MEET REPORT</div>
+        <div class="eyebrow" data-i18n="report.eyebrow">POST-MEET REPORT</div>
         <h2 id="reportTitle" data-i18n="report.empty">Complete the meet to build your report</h2>
         <div id="reportBody"></div>
         <div class="buttonRow">
@@ -393,7 +401,7 @@
       </section>
 
       <section id="tab-account" class="tab panel" hidden>
-        <div class="eyebrow">CLOUD ACCOUNT</div>
+        <div class="eyebrow" data-i18n="account.eyebrow">CLOUD ACCOUNT</div>
         <h2 data-i18n="account.title">Keep your Hub on every device</h2>
         <p class="muted" data-i18n="account.intro">Sign in to keep your athlete profile, goals and meet plan across devices. Your data on this device stays available without an account.</p>
 
