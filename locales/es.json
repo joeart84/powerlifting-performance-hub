@@ -308,5 +308,17 @@
   "finder.feed_no_filter_match": "El feed funciona, pero ninguna competición cargada coincide con estos filtros.",
   "finder.feed_no_events": "El feed no devolvió competiciones. Revisa el crawler / Hub sync.",
   "finder.generic_meet": "Competición de powerlifting",
-  "report.default_meet": "Competición Performance Hub"
+  "report.default_meet": "Competición Performance Hub",
+  "dynamic.cloud_empty": "El perfil en la nube está vacío.",
+  "dynamic.csv_no_rows": "El CSV no contiene filas de datos.",
+  "dynamic.no_valid_results": "No se devolvieron resultados de competición válidos.",
+  "dynamic.athlete_not_found": "No se encontró el perfil del atleta.",
+  "dynamic.no_competition_data": "No se devolvieron datos de competición.",
+  "dynamic.search_failed": "La búsqueda falló.",
+  "finder.location_lookup_failed": "La búsqueda de ubicación falló.",
+  "dynamic.image_failed": "No se pudo crear la imagen.",
+  "auth.google_load_failed": "No se pudo cargar el inicio de sesión con Google.",
+  "auth.google_unavailable": "El inicio de sesión con Google no está disponible temporalmente.",
+  "account.signed_in_account": "cuenta conectada",
+  "dynamic.csv_no_valid_meets": "No se encontraron competiciones de powerlifting válidas en el CSV."
 }
