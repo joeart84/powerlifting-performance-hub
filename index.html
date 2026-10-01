@@ -40,11 +40,20 @@
 
   <main class="shell">
     <section id="onboarding" class="panel">
-      <div class="eyebrow" data-i18n="onboarding.eyebrow">MVP · LOCAL-FIRST</div>
-      <h2 data-i18n="onboarding.title">Build your athlete dashboard</h2>
-      <p class="muted" data-i18n="onboarding.note">Your data stays in this browser unless you choose cloud sync.</p>
+      <div class="onboardingHeader">
+        <div>
+          <div class="eyebrow" data-i18n="onboarding.eyebrow">MVP · LOCAL-FIRST</div>
+          <h2 id="profileFormTitle" data-i18n="onboarding.title">Build your athlete dashboard</h2>
+          <p id="profileFormNote" class="muted" data-i18n="onboarding.note">Your data stays in this browser unless you choose cloud sync.</p>
+        </div>
+        <button id="cancelProfileEdit" class="headerIconButton profileEditBack" type="button" aria-label="Back" title="Back" data-i18n-aria="common.back" data-i18n-title="common.back" hidden>
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M15 18l-6-6 6-6"></path>
+          </svg>
+        </button>
+      </div>
 
-      <div class="oplLookup heroImport">
+      <div id="onboardingImportBlock" class="oplLookup heroImport">
         <div>
           <strong data-i18n="onboarding.compete">Already compete?</strong>
           <p class="muted" data-i18n="onboarding.import_note">Import your OpenPowerlifting history in one tap.</p>
@@ -57,7 +66,7 @@
         <div id="onboardingCandidates" class="candidateList"></div>
       </div>
 
-      <div class="orDivider"><span data-i18n="onboarding.or">or enter your details manually</span></div>
+      <div id="onboardingOrDivider" class="orDivider"><span data-i18n="onboarding.or">or enter your details manually</span></div>
 
       <div class="grid two">
         <label><span data-i18n="profile.name">Name</span><input id="name" placeholder="Joe Lifter"></label>
@@ -70,8 +79,11 @@
         <label><span data-i18n="profile.deadlift_best">Deadlift best (kg)</span><input id="deadliftBest" type="number" step="0.5" placeholder="220"></label>
       </div>
 
-      <button id="saveProfile" class="primary" data-i18n="profile.create">Create dashboard</button>
-      <div class="accountDiscoveryCard onboardingAccountCard">
+      <div class="buttonRow profileFormActions">
+        <button id="saveProfile" class="primary" data-i18n="profile.create">Create dashboard</button>
+        <button id="cancelProfileEditBottom" class="ghost" type="button" data-i18n="common.cancel" hidden>Cancel</button>
+      </div>
+      <div id="onboardingAccountCard" class="accountDiscoveryCard onboardingAccountCard">
         <div>
           <span class="accountDiscoveryIcon" aria-hidden="true">☁</span>
           <strong data-i18n="account.title">Keep your Hub on every device</strong>
