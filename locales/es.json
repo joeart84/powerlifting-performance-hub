@@ -325,5 +325,12 @@
   "common.cancel": "Cancelar",
   "profile.edit_note": "Edita los datos del atleta. Nada cambia hasta que guardes.",
   "profile.save_changes": "Guardar cambios",
-  "profile.athlete": "Atleta"
+  "profile.athlete": "Atleta",
+  "reset.eyebrow": "PRUEBAS",
+  "reset.title": "Restablecer app",
+  "reset.note": "Borra los datos de este dispositivo y vuelve a empezar desde la primera pantalla. Tu cuenta en la nube no se elimina.",
+  "reset.button": "Restablecer datos de la app",
+  "reset.confirm": "¿Restablecer la app en este dispositivo? Se borrarán el perfil local, plan de competición, resultados, historial, objetivos, ubicación y sesión. Tu cuenta en la nube no se eliminará.",
+  "reset.working": "Restableciendo la app…",
+  "reset.done": "La app se ha restablecido."
 }
