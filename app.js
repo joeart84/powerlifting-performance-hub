@@ -1320,6 +1320,38 @@ function clearSession(){
   const googleButton=$("googleSignInButton");if(googleButton)googleButton.replaceChildren();
   renderAccount();
 }
+async function resetAppData(){
+  if(!confirm(t("reset.confirm")))return;
+  const button=$("resetAppData"),status=$("resetAppStatus");
+  if(button)button.disabled=true;
+  if(status)status.textContent=t("reset.working");
+  try{
+    if(window.PPHCloud?.user){
+      try{await window.PPHCloud.signOut()}catch(e){}
+    }
+    if(session.token){
+      try{await fetch(HUB_API+"/session",{method:"DELETE",headers:authHeaders()})}catch(e){}
+    }
+    Object.keys(state).forEach(k=>delete state[k]);
+    Object.keys(session).forEach(k=>delete session[k]);
+    localStorage.removeItem(KEY);
+    LEGACY_KEYS.forEach(k=>localStorage.removeItem(k));
+    localStorage.removeItem(SESSION_KEY);
+    accountOnly=false;
+    profileEditMode=false;
+    competitionScope="nearby";
+    googleButtonRendered=false;
+    const googleButton=$("googleSignInButton");if(googleButton)googleButton.replaceChildren();
+    ensureState();
+    save();
+    if(status)status.textContent=t("reset.done");
+    render();
+    renderAccount();
+    window.scrollTo({top:0,behavior:"auto"});
+  }finally{
+    if(button)button.disabled=false;
+  }
+}
 async function logoutCloud(){
   if(window.PPHCloud?.user){
     try{await window.PPHCloud.signOut()}catch(err){$("cloudStatus").textContent=err.message;return}
@@ -1491,6 +1523,7 @@ $("uploadCloud").addEventListener("click",()=>uploadCloud(false));
 $("downloadCloud").addEventListener("click",downloadCloud);
 $("signOut").addEventListener("click",logoutCloud);
 $("languageSelect").addEventListener("change",e=>setLanguage(e.target.value,true));
+if($("resetAppData"))$("resetAppData").addEventListener("click",resetAppData);
 document.querySelectorAll("[data-tab]").forEach(b=>b.addEventListener("click",()=>{
   const target=b.dataset.tab;
   document.querySelectorAll("[data-tab]").forEach(x=>x.classList.toggle("active",x===b));
