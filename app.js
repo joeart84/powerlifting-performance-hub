@@ -14,6 +14,8 @@ const HUB_API="https://powerlifting-calculator.com/wp-json/plc-radar/v1/hub";
 const GOOGLE_CLIENT_ID="565019863889-dlbtmah64pd38piet2fc27p3251cjpeq.apps.googleusercontent.com";
 let performanceReference=null;
 let upcomingCompetitions=[];
+let competitionFeedMeta={};
+let competitionFeedError="";
 let suppressCloud=false;
 let competitionScope="nearby";
 const LANGUAGE_KEY="plc-performance-hub-language";
@@ -763,14 +765,22 @@ function filteredCompetitions(){
   return rows;
 }
 async function loadCompetitions(){
+  competitionFeedError="";
   try{
     const res=await fetch(HUB_API+"/competitions",{headers:{"Accept":"application/json"}});
-    if(!res.ok)throw new Error("Competition feed unavailable");
+    if(!res.ok)throw new Error("Competition feed unavailable ("+res.status+")");
     const data=await res.json();
     upcomingCompetitions=Array.isArray(data.competitions)?data.competitions:[];
+    competitionFeedMeta=data&&typeof data.meta==="object"&&data.meta?data.meta:{};
+    console.info("[Competitions] feed loaded",{
+      returned:upcomingCompetitions.length,
+      meta:competitionFeedMeta
+    });
   }catch(e){
     console.error("[Competitions] feed load failed",e);
     upcomingCompetitions=[];
+    competitionFeedMeta={};
+    competitionFeedError=e?.message||String(e);
   }
   renderCompetitionFinder();
 }
@@ -789,13 +799,23 @@ function renderCompetitionFinder(){
   document.querySelectorAll("#competitionScopes button").forEach(btn=>btn.classList.toggle("active",btn.dataset.scope===competitionScope));
   const rows=filteredCompetitions();
   const hasLocation=num(p.homeLat)&&num(p.homeLon);
-  if((competitionScope==="nearby"&&!hasLocation&&!p.homeCountry)||(competitionScope==="country"&&!p.homeCountry)){
-    status.textContent=t("finder.location_needed");
+  if(competitionFeedError){
+    status.textContent="Competition feed unavailable · "+competitionFeedError;
+  }else if(!upcomingCompetitions.length){
+    const synced=competitionFeedMeta.synced_at?(" · last sync "+competitionFeedMeta.synced_at):"";
+    status.textContent="Competition feed loaded 0 events"+synced;
+  }else if((competitionScope==="nearby"&&!hasLocation&&!p.homeCountry)||(competitionScope==="country"&&!p.homeCountry)){
+    status.textContent=t("finder.location_needed")+" · "+upcomingCompetitions.length+" events loaded";
   }else{
-    status.textContent=t("finder.results_count",{count:rows.length});
+    status.textContent=t("finder.results_count",{count:rows.length})+" · "+upcomingCompetitions.length+" events loaded";
   }
   if(!rows.length){
-    root.innerHTML='<div class="finderEmpty">'+esc(t("finder.no_results"))+'</div>';
+    const detail=competitionFeedError
+      ?"The competition feed could not be loaded."
+      :upcomingCompetitions.length
+        ?"The feed is working, but no loaded competitions match these filters."
+        :"The feed returned no competitions. Check the crawler / Hub sync.";
+    root.innerHTML='<div class="finderEmpty">'+esc(detail)+'</div>';
     return;
   }
   root.innerHTML=rows.slice(0,80).map((m)=>{
