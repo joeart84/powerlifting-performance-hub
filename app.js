@@ -320,14 +320,32 @@ function parseMeetRows(text){
       equipment:String(equipment||""),
       bodyweight:bw,
       squat,bench,deadlift,total,
-      dots:round(dots,2)
+      dots:round(dots,2),
+      source:"OpenPowerlifting"
     });
   }
   return out.filter(r=>r.total>0).sort((a,b)=>String(a.date).localeCompare(String(b.date)));
 }
+function meetDedupeKey(m){
+  const date=String(m?.date||"").slice(0,10);
+  const total=Math.round(num(m?.total)*2)/2;
+  const bw=Math.round(num(m?.bodyweight)*10)/10;
+  if(date&&total&&bw)return [date,total.toFixed(1),bw.toFixed(1)].join("|");
+  return [date,normText(m?.meet||""),total||"",bw||""].join("|");
+}
 function dedupeMeets(meets){
   const map=new Map();
-  meets.forEach(m=>map.set([m.date,m.meet,m.total,m.bodyweight].join("|").toLowerCase(),m));
+  (meets||[]).filter(Boolean).forEach(m=>{
+    const key=meetDedupeKey(m);
+    const existing=map.get(key);
+    if(!existing){map.set(key,m);return}
+    const incomingIsOpl=String(m.source||"").toLowerCase()==="openpowerlifting";
+    const existingIsManual=String(existing.source||"").toLowerCase()==="manual";
+    if(incomingIsOpl&&existingIsManual){map.set(key,{...existing,...m});return}
+    const merged={...existing};
+    Object.entries(m).forEach(([k,v])=>{if(v!==""&&v!==null&&v!==undefined)merged[k]=v});
+    map.set(key,merged);
+  });
   return [...map.values()].sort((a,b)=>String(a.date).localeCompare(String(b.date)));
 }
 function extractLifterSlug(input){
@@ -357,7 +375,8 @@ function inferAthlete(meets){
 
 function applyImportedAthlete(imported,profileUrl,slug){
   if(!imported.length)throw new Error("No valid competition results were returned.");
-  state.meets=dedupeMeets(imported);
+  const manual=(state.meets||[]).filter(m=>String(m?.source||"").toLowerCase()==="manual");
+  state.meets=dedupeMeets([...manual,...imported]);
   const inferred=inferAthlete(imported);
   const pr=meetPrs();
   const existing=state.profile||{};
@@ -656,7 +675,11 @@ function renderProgress(){
   ].map(x=>'<article class="metric"><span>'+x[0]+'</span><strong>'+x[1]+'</strong></article>').join("");
   $("totalChart").innerHTML=svgChart(meets,"total");
   $("dotsChart").innerHTML=svgChart(meets,"dots");
-  rows.innerHTML=meets.slice().reverse().map(m=>'<tr><td>'+esc(m.date||"—")+'</td><td>'+esc(m.meet||"—")+'</td><td>'+fmt(m.bodyweight)+'</td><td>'+fmt(m.squat)+'</td><td>'+fmt(m.bench)+'</td><td>'+fmt(m.deadlift)+'</td><td><strong>'+fmt(m.total)+'</strong></td><td>'+fmt(m.dots,2)+'</td></tr>').join("");
+  rows.innerHTML=meets.slice().reverse().map(m=>{
+    const source=String(m.source||"");
+    const badge=source.toLowerCase()==="manual"?'<span class="meetSourceBadge">'+esc(t("manual.badge"))+'</span>':"";
+    return '<tr><td>'+esc(m.date||"—")+'</td><td>'+esc(m.meet||"—")+badge+'</td><td>'+fmt(m.bodyweight)+'</td><td>'+fmt(m.squat)+'</td><td>'+fmt(m.bench)+'</td><td>'+fmt(m.deadlift)+'</td><td><strong>'+fmt(m.total)+'</strong></td><td>'+fmt(m.dots,2)+'</td></tr>';
+  }).join("");
   if(!meets.length)rows.innerHTML='<tr><td colspan="8" class="muted">'+esc(t("dynamic.no_history"))+'</td></tr>';
 }
 function fmt(v,d=1){const n=num(v);return n?n.toFixed(d).replace(/\.0$/,""):"—"}
@@ -882,6 +905,81 @@ function useBrowserLocation(statusId="competitionStatus"){
     save();status.textContent=t("finder.location_ready");competitionScope="nearby";renderCompetitionFinder();
   },()=>{status.textContent=t("finder.location_denied")},{enableHighAccuracy:false,timeout:10000,maximumAge:3600000});
 }
+function manualAttemptValues(prefix){
+  return [1,2,3].map(i=>num($(prefix+i)?.value)).filter(v=>v!==0);
+}
+function updateManualMeetPreview(){
+  const sq=num($("manualMeetSquat")?.value),bp=num($("manualMeetBench")?.value),dl=num($("manualMeetDeadlift")?.value);
+  const bw=num($("manualMeetBw")?.value),total=sq+bp+dl;
+  if($("manualMeetTotal"))$("manualMeetTotal").textContent=total?round(total,1)+" kg":"0 kg";
+  const dots=total&&bw?dotsScore((state.profile||{}).sex||"M",bw,total):0;
+  if($("manualMeetDots"))$("manualMeetDots").textContent=dots?dots.toFixed(2):"—";
+}
+function setManualMeetOpen(open){
+  const form=$("manualMeetForm");
+  if(!form)return;
+  form.hidden=!open;
+  if(open){
+    if(!$("manualMeetDate").value)$("manualMeetDate").value=todayIso();
+    updateManualMeetPreview();
+    requestAnimationFrame(()=>form.scrollIntoView({behavior:"smooth",block:"start"}));
+  }
+}
+function saveManualMeet(event){
+  event.preventDefault();
+  const form=$("manualMeetForm"),status=$("manualMeetStatus");
+  if(!form.checkValidity()){form.reportValidity();return}
+  const date=$("manualMeetDate").value;
+  const meet=$("manualMeetName").value.trim();
+  const bw=num($("manualMeetBw").value);
+  const squat=num($("manualMeetSquat").value),bench=num($("manualMeetBench").value),deadlift=num($("manualMeetDeadlift").value);
+  const total=squat+bench+deadlift;
+  if(!date||!meet||!bw||!total){
+    status.textContent=t("manual.invalid");
+    return;
+  }
+  const dots=dotsScore((state.profile||{}).sex||"M",bw,total)||0;
+  const record={
+    date,
+    meet,
+    athleteName:(state.profile||{}).name||"",
+    athleteSex:(state.profile||{}).sex||"",
+    weightClass:"",
+    federation:$("manualMeetFederation").value.trim(),
+    equipment:$("manualMeetEquipment").value||"Raw",
+    bodyweight:bw,
+    squat,bench,deadlift,total,
+    dots:round(dots,2),
+    source:"Manual",
+    attempts:{
+      squat:manualAttemptValues("manualSq"),
+      bench:manualAttemptValues("manualBp"),
+      deadlift:manualAttemptValues("manualDl")
+    }
+  };
+  const before=(state.meets||[]).length;
+  state.meets=dedupeMeets([...(state.meets||[]),record]);
+  const p=state.profile||{};
+  p.squatBest=Math.max(num(p.squatBest),squat);
+  p.benchBest=Math.max(num(p.benchBest),bench);
+  p.deadliftBest=Math.max(num(p.deadliftBest),deadlift);
+  state.profile=p;
+  save();render();
+  status.textContent=(state.meets||[]).length===before?t("manual.updated"):t("manual.saved");
+  form.reset();
+  $("manualMeetDate").value=todayIso();
+  updateManualMeetPreview();
+  setManualMeetOpen(false);
+}
+function openHowTo(){
+  const target=document.querySelector('[data-tab="settings"]');
+  if(target)target.click();
+  requestAnimationFrame(()=>{
+    const card=$("hubHowTo");
+    if(card)card.scrollIntoView({behavior:"smooth",block:"start"});
+  });
+}
+
 function populateLocationSettings(){
   const p=state.preferences||{};
   if($("homeCountry")&&!$("homeCountry").value)$("homeCountry").value=p.homeCountry||"";
@@ -1253,6 +1351,11 @@ $("oplCsv").addEventListener("change",async e=>{
   e.target.value="";
 });
 $("clearHistory").addEventListener("click",()=>{if(confirm(t("dynamic.confirm_clear"))){state.meets=[];save();renderProgress()}});
+if($("toggleManualMeet"))$("toggleManualMeet").addEventListener("click",()=>setManualMeetOpen($("manualMeetForm").hidden));
+if($("cancelManualMeet"))$("cancelManualMeet").addEventListener("click",()=>setManualMeetOpen(false));
+if($("manualMeetForm"))$("manualMeetForm").addEventListener("submit",saveManualMeet);
+["manualMeetBw","manualMeetSquat","manualMeetBench","manualMeetDeadlift"].forEach(id=>{if($(id))$(id).addEventListener("input",updateManualMeetPreview)});
+if($("accountHowTo"))$("accountHowTo").addEventListener("click",openHowTo);
 $("competitionSearch").addEventListener("input",renderCompetitionFinder);
 $("competitionDateRange").addEventListener("change",renderCompetitionFinder);
 $("competitionRadius").addEventListener("change",renderCompetitionFinder);

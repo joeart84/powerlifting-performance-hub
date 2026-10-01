@@ -264,6 +264,59 @@
               <input id="oplCsv" type="file" accept=".csv,text/csv">
             </label>
           </details>
+
+          <div class="manualMeetLauncher">
+            <button id="toggleManualMeet" class="ghost" type="button" data-i18n="manual.add">Add meet manually</button>
+            <span class="muted small" data-i18n="manual.note">Use this when a competition is missing from OpenPowerlifting.</span>
+          </div>
+
+          <form id="manualMeetForm" class="manualMeetForm" hidden>
+            <div class="sectionLead">
+              <div>
+                <div class="eyebrow" data-i18n="manual.eyebrow">MANUAL RESULT</div>
+                <h3 data-i18n="manual.title">Add competition result</h3>
+              </div>
+              <button id="cancelManualMeet" class="textButton" type="button" data-i18n="manual.cancel">Cancel</button>
+            </div>
+            <div class="grid two">
+              <label><span data-i18n="manual.date">Date</span><input id="manualMeetDate" type="date" required></label>
+              <label><span data-i18n="manual.name">Meet name</span><input id="manualMeetName" type="text" required data-i18n-placeholder="manual.name_placeholder" placeholder="Competition name"></label>
+              <label><span data-i18n="manual.bodyweight">Bodyweight (kg)</span><input id="manualMeetBw" type="number" min="1" step="0.1" required></label>
+              <label><span data-i18n="manual.squat">Best squat (kg)</span><input id="manualMeetSquat" type="number" min="0" step="0.5" required></label>
+              <label><span data-i18n="manual.bench">Best bench (kg)</span><input id="manualMeetBench" type="number" min="0" step="0.5" required></label>
+              <label><span data-i18n="manual.deadlift">Best deadlift (kg)</span><input id="manualMeetDeadlift" type="number" min="0" step="0.5" required></label>
+            </div>
+            <div class="manualMeetPreview">
+              <span data-i18n="manual.total">Calculated total</span>
+              <strong id="manualMeetTotal">0 kg</strong>
+              <span data-i18n="manual.dots">Calculated DOTS</span>
+              <strong id="manualMeetDots">—</strong>
+            </div>
+            <details class="advancedImport manualAdvanced">
+              <summary data-i18n="manual.advanced">Advanced details (optional)</summary>
+              <div class="grid two">
+                <label><span data-i18n="manual.federation">Federation</span><input id="manualMeetFederation" type="text" placeholder="IPF, WPC, WUAP…"></label>
+                <label><span data-i18n="manual.equipment">Equipment</span>
+                  <select id="manualMeetEquipment">
+                    <option value="Raw" data-i18n="manual.equipment_raw">Raw</option>
+                    <option value="Wraps" data-i18n="manual.equipment_wraps">Wraps</option>
+                    <option value="Single-ply" data-i18n="manual.equipment_single">Single-ply</option>
+                    <option value="Multi-ply" data-i18n="manual.equipment_multi">Multi-ply</option>
+                  </select>
+                </label>
+              </div>
+              <p class="muted small" data-i18n="manual.attempt_note">Optional attempt details. Leave blank if you only know the best lifts.</p>
+              <div class="manualAttempts">
+                <div><strong data-i18n="progress.squat">Squat</strong><input id="manualSq1" type="number" step="0.5" placeholder="1"><input id="manualSq2" type="number" step="0.5" placeholder="2"><input id="manualSq3" type="number" step="0.5" placeholder="3"></div>
+                <div><strong data-i18n="progress.bench">Bench</strong><input id="manualBp1" type="number" step="0.5" placeholder="1"><input id="manualBp2" type="number" step="0.5" placeholder="2"><input id="manualBp3" type="number" step="0.5" placeholder="3"></div>
+                <div><strong data-i18n="progress.deadlift">Deadlift</strong><input id="manualDl1" type="number" step="0.5" placeholder="1"><input id="manualDl2" type="number" step="0.5" placeholder="2"><input id="manualDl3" type="number" step="0.5" placeholder="3"></div>
+              </div>
+            </details>
+            <div class="buttonRow">
+              <button class="primary" type="submit" data-i18n="manual.save">Save result</button>
+            </div>
+            <div id="manualMeetStatus" class="muted small" role="status"></div>
+          </form>
         </div>
 
         <div id="progressSummary" class="cards progressCards"></div>
@@ -410,6 +463,13 @@
             <div id="cloudStatus" class="muted small"></div>
           </div>
         </div>
+        <div class="accountBox accountHelpCard">
+          <div>
+            <strong data-i18n="help.account_card_title">New to Performance Hub?</strong>
+            <p class="muted" data-i18n="help.account_card_text">See a quick guide to Dashboard, Progress, Meet Planner, Meet Day and Tools.</p>
+          </div>
+          <button id="accountHowTo" class="ghost" type="button" data-i18n="help.open">How to use the Hub</button>
+        </div>
       </section>
 
       <section id="tab-settings" class="tab panel" hidden>
@@ -444,6 +504,25 @@
             <button id="saveAthleteProfile" class="primary" data-i18n="settings.save_profile">Save athlete profile</button>
           </div>
           <div id="athleteProfileStatus" class="muted small"></div>
+        </div>
+
+        <div class="settingsCard helpCard" id="hubHowTo">
+          <div class="sectionLead">
+            <div>
+              <div class="eyebrow" data-i18n="help.eyebrow">HELP</div>
+              <h3 data-i18n="help.title">How to use Performance Hub</h3>
+            </div>
+          </div>
+          <p class="muted" data-i18n="help.intro">A quick guide to the main parts of the Hub.</p>
+          <div class="helpSteps">
+            <article><strong data-i18n="help.dashboard_title">Dashboard</strong><p data-i18n="help.dashboard_text">See your current total, DOTS, next meet and goal.</p></article>
+            <article><strong data-i18n="help.progress_title">Progress</strong><p data-i18n="help.progress_text">Import OpenPowerlifting history or add a missing meet manually, then follow your progress.</p></article>
+            <article><strong data-i18n="help.planner_title">Meet Planner</strong><p data-i18n="help.planner_text">Find competitions and build your attempt plan.</p></article>
+            <article><strong data-i18n="help.meetday_title">Meet Day</strong><p data-i18n="help.meetday_text">Record Good or Miss attempts during the competition and build your report.</p></article>
+            <article><strong data-i18n="help.tools_title">Tools</strong><p data-i18n="help.tools_text">Use strength context, weight-class simulation and goal planning.</p></article>
+            <article><strong data-i18n="help.account_title">Account</strong><p data-i18n="help.account_text">Sign in to sync your profile, goals, plan and meet history across devices.</p></article>
+          </div>
+          <p class="helpTip"><strong data-i18n="help.tip_label">Tip:</strong> <span data-i18n="help.tip">If a meet is missing from OpenPowerlifting, add it manually in Progress.</span></p>
         </div>
 
         <div class="settingsCard">
