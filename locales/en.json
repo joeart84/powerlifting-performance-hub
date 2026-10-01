@@ -365,5 +365,12 @@
   "common.cancel": "Cancel",
   "profile.edit_note": "Update your athlete details. Nothing changes until you save.",
   "profile.save_changes": "Save changes",
-  "profile.athlete": "Athlete"
+  "profile.athlete": "Athlete",
+  "reset.eyebrow": "TESTING",
+  "reset.title": "Reset app",
+  "reset.note": "Clear this device and start again from the first screen. Your cloud account is not deleted.",
+  "reset.button": "Reset app data",
+  "reset.confirm": "Reset this app on this device? Your local profile, meet plan, results, history, goals, location and sign-in session will be cleared. Your cloud account will not be deleted.",
+  "reset.working": "Resetting app…",
+  "reset.done": "App reset complete."
 }
