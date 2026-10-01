@@ -325,5 +325,12 @@
   "common.cancel": "Abbrechen",
   "profile.edit_note": "Bearbeite deine Athletendaten. Änderungen werden erst beim Speichern übernommen.",
   "profile.save_changes": "Änderungen speichern",
-  "profile.athlete": "Athlet"
+  "profile.athlete": "Athlet",
+  "reset.eyebrow": "TESTEN",
+  "reset.title": "App zurücksetzen",
+  "reset.note": "Lösche die Daten auf diesem Gerät und starte wieder vom ersten Bildschirm. Dein Cloud-Konto wird nicht gelöscht.",
+  "reset.button": "App-Daten zurücksetzen",
+  "reset.confirm": "App auf diesem Gerät zurücksetzen? Lokales Profil, Wettkampfplan, Ergebnisse, Verlauf, Ziele, Standort und Anmeldung werden gelöscht. Dein Cloud-Konto wird nicht gelöscht.",
+  "reset.working": "App wird zurückgesetzt…",
+  "reset.done": "App wurde zurückgesetzt."
 }
