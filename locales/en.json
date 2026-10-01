@@ -360,5 +360,10 @@
   "auth.google_load_failed": "Google sign-in could not be loaded.",
   "auth.google_unavailable": "Google sign-in is temporarily unavailable.",
   "account.signed_in_account": "signed-in account",
-  "dynamic.csv_no_valid_meets": "No valid powerlifting meet rows were found."
+  "dynamic.csv_no_valid_meets": "No valid powerlifting meet rows were found.",
+  "common.back": "Back",
+  "common.cancel": "Cancel",
+  "profile.edit_note": "Update your athlete details. Nothing changes until you save.",
+  "profile.save_changes": "Save changes",
+  "profile.athlete": "Athlete"
 }
