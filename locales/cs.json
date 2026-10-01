@@ -308,5 +308,17 @@
   "finder.feed_no_filter_match": "Feed funguje, ale žádné načtené závody neodpovídají těmto filtrům.",
   "finder.feed_no_events": "Feed nevrátil žádné závody. Zkontroluj crawler / Hub sync.",
   "finder.generic_meet": "Powerliftingový závod",
-  "report.default_meet": "Závod Performance Hub"
+  "report.default_meet": "Závod Performance Hub",
+  "dynamic.cloud_empty": "Cloudový profil je prázdný.",
+  "dynamic.csv_no_rows": "CSV neobsahuje žádné datové řádky.",
+  "dynamic.no_valid_results": "Nebyly vráceny žádné platné výsledky závodů.",
+  "dynamic.athlete_not_found": "Profil sportovce nebyl nalezen.",
+  "dynamic.no_competition_data": "Nebyla vrácena žádná data o závodech.",
+  "dynamic.search_failed": "Vyhledávání selhalo.",
+  "finder.location_lookup_failed": "Vyhledání polohy selhalo.",
+  "dynamic.image_failed": "Obrázek se nepodařilo vytvořit.",
+  "auth.google_load_failed": "Přihlášení přes Google se nepodařilo načíst.",
+  "auth.google_unavailable": "Přihlášení přes Google je dočasně nedostupné.",
+  "account.signed_in_account": "přihlášený účet",
+  "dynamic.csv_no_valid_meets": "V CSV nebyly nalezeny žádné platné powerliftingové závody."
 }
