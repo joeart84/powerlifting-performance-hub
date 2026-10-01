@@ -474,3 +474,8 @@ input:focus,select:focus{outline:none;border-color:#6a5730;box-shadow:0 0 0 3px 
 .onboardingHeader{display:flex;align-items:flex-start;justify-content:space-between;gap:14px}
 .profileEditBack{flex:0 0 auto}
 .profileFormActions{margin-top:14px}
+
+
+/* Testing reset control */
+.dangerZone{border-color:#493238}
+.dangerZone .danger{margin-top:8px}
