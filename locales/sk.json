@@ -360,5 +360,10 @@
   "auth.google_load_failed": "Prihlásenie cez Google sa nepodarilo načítať.",
   "auth.google_unavailable": "Prihlásenie cez Google je dočasne nedostupné.",
   "account.signed_in_account": "prihlásený účet",
-  "dynamic.csv_no_valid_meets": "V CSV sa nenašli žiadne platné powerliftingové preteky."
+  "dynamic.csv_no_valid_meets": "V CSV sa nenašli žiadne platné powerliftingové preteky.",
+  "common.back": "Späť",
+  "common.cancel": "Zrušiť",
+  "profile.edit_note": "Uprav údaje športovca. Nič sa nezmení, kým zmeny neuložíš.",
+  "profile.save_changes": "Uložiť zmeny",
+  "profile.athlete": "Športovec"
 }

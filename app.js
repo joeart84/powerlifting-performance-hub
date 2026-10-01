@@ -575,13 +575,24 @@ function renderTools(){
 
 function render(){
   const p=state.profile;
-  $("onboarding").hidden=!!p||accountOnly;$("app").hidden=!p&&!accountOnly;
+  const showProfileForm=!accountOnly&&(!p||profileEditMode);
+  $("onboarding").hidden=!showProfileForm;
+  $("app").hidden=showProfileForm||(!p&&!accountOnly);
   document.querySelector("#app > .heroPanel").hidden=!p;
   document.querySelector("#app > .primaryNav").hidden=!p;
   const utilityNav=document.querySelector("#app > .utilityNav");
   if(utilityNav)utilityNav.hidden=true;
   const topSettingsCta=$("topSettingsCta");
-  if(topSettingsCta)topSettingsCta.hidden=!p;
+  if(topSettingsCta)topSettingsCta.hidden=!p||profileEditMode;
+  const cancelTop=$("cancelProfileEdit"),cancelBottom=$("cancelProfileEditBottom");
+  if(cancelTop)cancelTop.hidden=!profileEditMode;
+  if(cancelBottom)cancelBottom.hidden=!profileEditMode;
+  if($("onboardingImportBlock"))$("onboardingImportBlock").hidden=profileEditMode;
+  if($("onboardingOrDivider"))$("onboardingOrDivider").hidden=profileEditMode;
+  if($("onboardingAccountCard"))$("onboardingAccountCard").hidden=profileEditMode;
+  if($("profileFormTitle"))$("profileFormTitle").textContent=t(profileEditMode?"profile.edit":"onboarding.title");
+  if($("profileFormNote"))$("profileFormNote").textContent=t(profileEditMode?"profile.edit_note":"onboarding.note");
+  if($("saveProfile"))$("saveProfile").textContent=t(profileEditMode?"profile.save_changes":"profile.create");
   $("accountBackToProfile").hidden=!!p;
   if(!p){
     if(accountOnly)document.querySelectorAll(".tab").forEach(tab=>tab.hidden=tab.id!=="tab-account");
@@ -1134,6 +1145,7 @@ function hubAuthRequest(path,values){
 }
 let emailMode="signup";
 let accountOnly=false;
+let profileEditMode=false;
 function openAccountFromOnboarding(){
   accountOnly=true;render();
   document.querySelectorAll("[data-tab]").forEach(button=>button.classList.toggle("active",button.dataset.tab==="account"));
@@ -1326,12 +1338,61 @@ function renderReport(){
   body.innerHTML="<div class=\"reportCard\"><h3>"+esc(p.meetName||"Meet Day")+"</h3><div class=\"reportGrid\"><div><span>Success rate</span><strong>"+success+"%</strong></div><div><span>Best total</span><strong>"+total+" kg</strong></div><div><span>DOTS</span><strong>"+(dots?dots.toFixed(2):"—")+"</strong></div></div><p style=\"margin-top:14px\">Squat "+(bestMade("squat")||"—")+" · Bench "+(bestMade("bench")||"—")+" · Deadlift "+(bestMade("deadlift")||"—")+"</p></div>";
 }
 
+function populateProfileForm(){
+  const p=state.profile||{};
+  $("name").value=p.name||"";
+  $("sex").value=p.sex||"M";
+  $("bodyweight").value=p.bodyweight||"";
+  $("age").value=profileAge(p)||p.age||"";
+  $("meetDate").value=p.meetDate||"";
+  $("squatBest").value=p.squatBest||"";
+  $("benchBest").value=p.benchBest||"";
+  $("deadliftBest").value=p.deadliftBest||"";
+}
+function closeProfileEdit(){
+  if(!profileEditMode)return;
+  profileEditMode=false;
+  render();
+  const dashboard=document.querySelector('[data-tab="dashboard"]');
+  if(dashboard)dashboard.click();
+}
+function openProfileEdit(){
+  if(!state.profile)return;
+  profileEditMode=true;
+  populateProfileForm();
+  render();
+  window.scrollTo({top:0,behavior:reducedMotion()?"auto":"smooth"});
+}
+
 $("saveProfile").addEventListener("click",()=>{
-  state.profile={name:$("name").value.trim()||"Athlete",sex:$("sex").value,bodyweight:num($("bodyweight").value),age:parseAge($("age").value),meetDate:$("meetDate").value,meetName:(state.profile&&state.profile.meetName)||"",squatBest:num($("squatBest").value),benchBest:num($("benchBest").value),deadliftBest:num($("deadliftBest").value)};
-  state.plan=blankPlan();state.results=blankResults();suggestPlan();save();render();
-  document.querySelector('[data-tab="dashboard"]').click();
+  const existing=state.profile||{};
+  const wasEditing=profileEditMode&&!!state.profile;
+  state.profile={
+    ...existing,
+    name:$("name").value.trim()||existing.name||t("profile.athlete"),
+    sex:$("sex").value,
+    bodyweight:num($("bodyweight").value),
+    age:parseAge($("age").value),
+    meetDate:$("meetDate").value,
+    squatBest:num($("squatBest").value),
+    benchBest:num($("benchBest").value),
+    deadliftBest:num($("deadliftBest").value)
+  };
+  if(!wasEditing){
+    state.plan=blankPlan();
+    state.results=blankResults();
+    suggestPlan();
+  }else{
+    ensureState();
+  }
+  profileEditMode=false;
+  save();render();
+  const dashboard=document.querySelector('[data-tab="dashboard"]');
+  if(dashboard)dashboard.click();
 });
-$("editProfile").addEventListener("click",()=>{const p=state.profile||{};$("name").value=p.name||"";$("sex").value=p.sex||"M";$("bodyweight").value=p.bodyweight||"";$("age").value=p.age||"";$("meetDate").value=p.meetDate||"";$("squatBest").value=p.squatBest||"";$("benchBest").value=p.benchBest||"";$("deadliftBest").value=p.deadliftBest||"";delete state.profile;save();render();window.scrollTo({top:0,behavior:"smooth"})});
+$("editProfile").addEventListener("click",openProfileEdit);
+if($("cancelProfileEdit"))$("cancelProfileEdit").addEventListener("click",closeProfileEdit);
+if($("cancelProfileEditBottom"))$("cancelProfileEditBottom").addEventListener("click",closeProfileEdit);
 $("savePlan").addEventListener("click",()=>{save();alert(t("dynamic.plan_saved"))});
 $("onboardingImport").addEventListener("click",()=>importAthlete($("onboardingLifter").value,$("onboardingImportStatus"),$("onboardingCandidates")));
 $("progressImport").addEventListener("click",()=>importAthlete($("progressLifter").value,$("importStatus"),$("progressCandidates")));
@@ -1424,7 +1485,7 @@ $("onboardingAccount").addEventListener("click",openAccountFromOnboarding);
 $("topAccountCta").addEventListener("click",()=>openAccountTab("signup"));
 $("dashboardCreateAccount").addEventListener("click",()=>openAccountTab("signup"));
 $("dashboardSignIn").addEventListener("click",()=>openAccountTab("signin"));
-$("accountBackToProfile").addEventListener("click",()=>{accountOnly=false;render()});
+$("accountBackToProfile").addEventListener("click",()=>{accountOnly=false;profileEditMode=false;render()});
 $("codeStep").addEventListener("submit",e=>{e.preventDefault();verifyLoginCode()});
 $("uploadCloud").addEventListener("click",()=>uploadCloud(false));
 $("downloadCloud").addEventListener("click",downloadCloud);

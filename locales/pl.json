@@ -320,5 +320,10 @@
   "auth.google_load_failed": "Nie udało się załadować logowania przez Google.",
   "auth.google_unavailable": "Logowanie przez Google jest chwilowo niedostępne.",
   "account.signed_in_account": "zalogowane konto",
-  "dynamic.csv_no_valid_meets": "W pliku CSV nie znaleziono prawidłowych zawodów powerliftingowych."
+  "dynamic.csv_no_valid_meets": "W pliku CSV nie znaleziono prawidłowych zawodów powerliftingowych.",
+  "common.back": "Wstecz",
+  "common.cancel": "Anuluj",
+  "profile.edit_note": "Edytuj dane zawodnika. Nic się nie zmieni, dopóki nie zapiszesz zmian.",
+  "profile.save_changes": "Zapisz zmiany",
+  "profile.athlete": "Zawodnik"
 }

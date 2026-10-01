@@ -320,5 +320,10 @@
   "auth.google_load_failed": "Google-Anmeldung konnte nicht geladen werden.",
   "auth.google_unavailable": "Google-Anmeldung ist vorübergehend nicht verfügbar.",
   "account.signed_in_account": "angemeldetes Konto",
-  "dynamic.csv_no_valid_meets": "In der CSV-Datei wurden keine gültigen Powerlifting-Wettkämpfe gefunden."
+  "dynamic.csv_no_valid_meets": "In der CSV-Datei wurden keine gültigen Powerlifting-Wettkämpfe gefunden.",
+  "common.back": "Zurück",
+  "common.cancel": "Abbrechen",
+  "profile.edit_note": "Bearbeite deine Athletendaten. Änderungen werden erst beim Speichern übernommen.",
+  "profile.save_changes": "Änderungen speichern",
+  "profile.athlete": "Athlet"
 }
