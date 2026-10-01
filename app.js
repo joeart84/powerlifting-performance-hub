@@ -62,6 +62,14 @@ function applyTranslations(){
     const key=el.dataset.i18nPlaceholder;
     if(messages[key]!==undefined)el.placeholder=t(key);
   });
+  document.querySelectorAll("[data-i18n-title]").forEach(el=>{
+    const key=el.dataset.i18nTitle;
+    if(messages[key]!==undefined)el.title=t(key);
+  });
+  document.querySelectorAll("[data-i18n-aria]").forEach(el=>{
+    const key=el.dataset.i18nAria;
+    if(messages[key]!==undefined)el.setAttribute("aria-label",t(key));
+  });
 }
 async function setLanguage(preference,announce=false){
   localStorage.setItem(LANGUAGE_KEY,preference);
@@ -415,13 +423,13 @@ function renderCandidates(results,statusEl,candidateEl){
   statusEl.textContent=t("dynamic.matches",{count:results.length});
   results.forEach(item=>{
     const card=document.createElement("div");card.className="candidateCard";
-    card.innerHTML="<div><strong>"+esc(item.name||item.slug)+"</strong><small>"+esc(item.profile_url||"")+"</small></div><button class=\"primary compact\" data-slug=\""+esc(item.slug)+"\">Import</button>";
+    card.innerHTML="<div><strong>"+esc(item.name||item.slug)+"</strong><small>"+esc(item.profile_url||"")+"</small></div><button class=\"primary compact\" data-slug=\""+esc(item.slug)+"\">"+esc(t("onboarding.import"))+"</button>";
     candidateEl.appendChild(card);
   });
   candidateEl.querySelectorAll("button[data-slug]").forEach(btn=>btn.addEventListener("click",async()=>{
     candidateEl.innerHTML="";
     try{await fetchAthleteBySlug(btn.dataset.slug,statusEl)}
-    catch(err){statusEl.textContent="Import failed: "+err.message}
+    catch(err){statusEl.textContent=t("dynamic.import_failed",{message:err.message})}
   }));
 }
 
@@ -580,7 +588,7 @@ function render(){
     renderAccount();return;
   }
   ensureState();suggestPlan();
-  $("athleteName").textContent=p.name||"Your dashboard";
+  $("athleteName").textContent=p.name||t("dashboard.your_dashboard");
   setAnimatedMetric("metricBw",p.bodyweight||"—");setAnimatedMetric("metricSq",p.squatBest||"—");setAnimatedMetric("metricBp",p.benchBest||"—");setAnimatedMetric("metricDl",p.deadliftBest||"—");
   $("currentTotal").textContent=currentBestTotal();
   const currentDots=dotsScore(p.sex,p.bodyweight,currentBestTotal());
@@ -604,7 +612,7 @@ function renderGoalSnapshot(){
   const root=$("goalSnapshot");if(!root)return;
   const gp=goalProgress();
   if(!gp){root.innerHTML='<div class="muted">'+esc(t("dynamic.no_goal"))+'</div>';return}
-  root.innerHTML='<div><strong>Target:</strong> '+(gp.targetDots?gp.targetDots+" DOTS · ":"")+gp.target+' kg total</div>'
+  root.innerHTML='<div><strong>'+esc(t("dynamic.target"))+':</strong> '+(gp.targetDots?gp.targetDots+" DOTS · ":"")+gp.target+' '+esc(t("dynamic.kg_total"))+'</div>'
     +'<div><strong>'+esc(t("dynamic.target_bw"))+':</strong> '+(gp.targetBodyweight||"—")+' kg</div>'
     +(gp.targetDate?'<div><strong>'+esc(t("dynamic.target_date"))+':</strong> '+esc(gp.targetDate)+'</div>':'')
     +'<div class="goalProgress"><span style="width:'+gp.pct+'%"></span></div>'
@@ -614,7 +622,7 @@ function renderGoalSnapshot(){
 function renderPlanner(){
   const root=$("plannerRows");root.innerHTML="";
   lifts.forEach(l=>{
-    const g=document.createElement("div");g.className="liftGroup";g.innerHTML="<h3>"+l+"</h3>";
+    const g=document.createElement("div");g.className="liftGroup";g.innerHTML="<h3>"+esc(t("progress."+l))+"</h3>";
     state.plan[l].forEach((v,i)=>{
       const row=document.createElement("div");row.className="attemptRow";
       row.innerHTML="<span>"+esc(t("planner.attempt"))+" "+(i+1)+"</span><input type=\"number\" step=\"2.5\" data-lift=\""+l+"\" data-idx=\""+i+"\" value=\""+(v||"")+"\" placeholder=\"kg\">";
@@ -631,7 +639,7 @@ function renderPlanner(){
 function renderMeetDay(){
   const root=$("meetDayRows");root.innerHTML="";
   lifts.forEach(l=>{
-    const g=document.createElement("div");g.className="liftGroup";g.innerHTML="<h3>"+l+"</h3>";
+    const g=document.createElement("div");g.className="liftGroup";g.innerHTML="<h3>"+esc(t("progress."+l))+"</h3>";
     state.plan[l].forEach((v,i)=>{
       const val=state.results[l][i],row=document.createElement("div");row.className="attemptRow";
       row.innerHTML="<span>#"+(i+1)+" · "+(v||"—")+" kg</span><div class=\"attemptActions\"><button class=\"good "+(val==="good"?"active":"")+"\" data-r=\"good\" data-lift=\""+l+"\" data-idx=\""+i+"\">"+esc(t("meetday.good"))+"</button><button class=\"miss "+(val==="miss"?"active":"")+"\" data-r=\"miss\" data-lift=\""+l+"\" data-idx=\""+i+"\">"+esc(t("meetday.miss"))+"</button></div>";
@@ -826,18 +834,18 @@ function renderCompetitionFinder(){
     status.textContent="Competition feed unavailable · "+competitionFeedError;
   }else if(!upcomingCompetitions.length){
     const synced=competitionFeedMeta.synced_at?(" · last sync "+competitionFeedMeta.synced_at):"";
-    status.textContent="Competition feed loaded 0 events"+synced;
+    status.textContent=t("finder.feed_zero")+synced;
   }else if((competitionScope==="nearby"&&!hasLocation&&!p.homeCountry)||(competitionScope==="country"&&!p.homeCountry)){
-    status.textContent=t("finder.location_needed")+" · "+upcomingCompetitions.length+" events loaded";
+    status.textContent=t("finder.location_needed")+" · "+t("finder.events_loaded",{count:upcomingCompetitions.length});
   }else{
-    status.textContent=t("finder.results_count",{count:rows.length})+" · "+upcomingCompetitions.length+" events loaded";
+    status.textContent=t("finder.results_count",{count:rows.length})+" · "+t("finder.events_loaded",{count:upcomingCompetitions.length});
   }
   if(!rows.length){
     const detail=competitionFeedError
-      ?"The competition feed could not be loaded."
+      ?t("finder.feed_failed")
       :upcomingCompetitions.length
-        ?"The feed is working, but no loaded competitions match these filters."
-        :"The feed returned no competitions. Check the crawler / Hub sync.";
+        ?t("finder.feed_no_filter_match")
+        :t("finder.feed_no_events");
     root.innerHTML='<div class="finderEmpty">'+esc(detail)+'</div>';
     return;
   }
@@ -848,7 +856,7 @@ function renderCompetitionFinder(){
     const venue=m.venue?'<div class="competitionVenue">'+esc(m.venue)+'</div>':"";
     const selected=(state.profile||{}).meetName===m.event&&(state.profile||{}).meetDate===m.start_date;
     return '<article class="competitionCard">'
-      +'<div class="competitionTop"><div><h4>'+esc(m.event||"Powerlifting meet")+'</h4><div class="competitionPlace">'+esc(place)+'</div></div>'+distance+'</div>'
+      +'<div class="competitionTop"><div><h4>'+esc(m.event||t("finder.generic_meet"))+'</h4><div class="competitionPlace">'+esc(place)+'</div></div>'+distance+'</div>'
       +venue+'<div class="competitionMeta">'+esc(meta)+'</div>'
       +'<div class="competitionActions">'
       +(m.url?'<a class="ghost linkButton" href="'+esc(m.url)+'" target="_blank" rel="noopener">'+esc(t("finder.details"))+'</a>':'')
@@ -862,7 +870,7 @@ function renderCompetitionFinder(){
 }
 function selectCompetition(m){
   const p=state.profile||{};
-  p.meetName=m.event||"Powerlifting meet";
+  p.meetName=m.event||t("finder.generic_meet");
   p.meetDate=m.start_date||"";
   p.meetCountry=m.country||"";
   p.meetCity=m.city||"";
@@ -1034,7 +1042,7 @@ function buildMeetRecord(){
   if(!total)return null;
   return {
     date:p.meetDate||todayIso(),
-    meet:p.meetName||"Performance Hub Meet",
+    meet:p.meetName||t("report.default_meet"),
     athleteName:p.name||"",
     athleteSex:p.sex||"",
     weightClass:"",
@@ -1066,7 +1074,7 @@ function roundedRect(ctx,x,y,w,h,r){
 }
 async function makeResultCardBlob(){
   const record=buildMeetRecord(),p=state.profile||{};
-  if(!record)throw new Error("Complete some successful attempts first.");
+  if(!record)throw new Error(t("dynamic.need_success"));
   const canvas=document.createElement("canvas");canvas.width=1080;canvas.height=1080;
   const ctx=canvas.getContext("2d");
   ctx.fillStyle="#101214";ctx.fillRect(0,0,1080,1080);
@@ -1332,7 +1340,7 @@ $("progressLifter").addEventListener("keydown",e=>{if(e.key==="Enter")$("progres
 $("resetMeet").addEventListener("click",()=>{if(confirm(t("dynamic.confirm_reset"))){state.results=blankResults();save();renderMeetDay();renderReport()}});
 $("oplCsv").addEventListener("change",async e=>{
   const file=e.target.files&&e.target.files[0];if(!file)return;
-  $("importStatus").textContent="Reading "+file.name+"…";
+  $("importStatus").textContent=t("dynamic.reading_file",{name:file.name});
   try{
     const text=await file.text(),imported=parseMeetRows(text);
     if(!imported.length)throw new Error("No valid powerlifting meet rows were found.");
@@ -1346,8 +1354,8 @@ $("oplCsv").addEventListener("change",async e=>{
     if(pr.bench>num(p.benchBest))p.benchBest=pr.bench;
     if(pr.deadlift>num(p.deadliftBest))p.deadliftBest=pr.deadlift;
     state.profile=p;save();render();
-    $("importStatus").textContent="Imported "+imported.length+" rows. "+state.meets.length+" unique meets stored.";
-  }catch(err){$("importStatus").textContent="Import failed: "+err.message}
+    $("importStatus").textContent=t("dynamic.csv_imported",{rows:imported.length,count:state.meets.length});
+  }catch(err){$("importStatus").textContent=t("dynamic.import_failed",{message:err.message})}
   e.target.value="";
 });
 $("clearHistory").addEventListener("click",()=>{if(confirm(t("dynamic.confirm_clear"))){state.meets=[];save();renderProgress()}});
@@ -1396,14 +1404,14 @@ $("runSimulator").addEventListener("click",()=>{
   const currentDots=dotsScore(p.sex,p.bodyweight,currentBestTotal()),simDots=dotsScore(p.sex,bw,total);
   if(!bw||!total||!simDots){$("simResult").textContent=t("dynamic.valid_sim");return}
   const ctx=performanceReference?contextFor(p.sex,bw,simDots):null;
-  $("simResult").innerHTML='<strong class="big">'+simDots.toFixed(2)+' DOTS</strong><div class="toolCompare"><div><span>Current</span><strong>'+(currentDots?currentDots.toFixed(2):"—")+' DOTS</strong></div><div><span>Scenario</span><strong>'+simDots.toFixed(2)+' DOTS</strong></div></div>'+(ctx?'<p class="contextMeta">'+esc(ctx.label)+' in nearest '+esc(ctx.row.weight_class_kg)+' kg reference class.</p>':'');
+  $("simResult").innerHTML='<strong class="big">'+simDots.toFixed(2)+' DOTS</strong><div class="toolCompare"><div><span>'+esc(t("dynamic.current"))+'</span><strong>'+(currentDots?currentDots.toFixed(2):"—")+' DOTS</strong></div><div><span>'+esc(t("dynamic.scenario"))+'</span><strong>'+simDots.toFixed(2)+' DOTS</strong></div></div>'+(ctx?'<p class="contextMeta">'+esc(t("dynamic.nearest_reference",{label:ctx.label,weight:ctx.row.weight_class_kg}))+'</p>':'');
 });
 $("runGoal").addEventListener("click",()=>{
   const p=state.profile||{},target=num($("goalDots").value),bw=num($("goalBodyweight").value);
   const required=totalForDots(p.sex,bw,target);
   if(!target||!bw||!required){$("goalResult").textContent=t("dynamic.valid_goal");return}
   const gap=round(required-currentBestTotal(),1);
-  $("goalResult").innerHTML='<span class="muted">Required total at '+bw+' kg</span><strong class="big">'+required+' kg</strong><p>'+(gap>0?gap+' kg above your current best total.':Math.abs(gap)+' kg below your current best total.')+'</p>';
+  $("goalResult").innerHTML='<span class="muted">'+esc(t("dynamic.required_total",{bw:bw}))+'</span><strong class="big">'+required+' kg</strong><p>'+esc(gap>0?t("dynamic.above_current",{gap:gap}):t("dynamic.below_current",{gap:Math.abs(gap)}))+'</p>';
 });
 $("saveGoal").addEventListener("click",saveCurrentGoal);
 $("saveMeetResult").addEventListener("click",saveMeetToHistory);
