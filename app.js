@@ -162,7 +162,7 @@ function cloudPayload(){
   };
 }
 function applyCloudPayload(payload){
-  if(!payload||typeof payload!=="object")throw new Error("Cloud profile is empty.");
+  if(!payload||typeof payload!=="object")throw new Error(t("dynamic.cloud_empty"));
   suppressCloud=true;
   state.profile=payload.profile||state.profile||null;
   state.plan=payload.plan||blankPlan();
@@ -287,7 +287,7 @@ function pick(obj,names){
 function bestPositive(...vals){const nums=vals.map(num).filter(v=>v>0);return nums.length?Math.max(...nums):0}
 function parseMeetRows(text){
   const rows=parseCsv(text);
-  if(rows.length<2)throw new Error("CSV has no data rows.");
+  if(rows.length<2)throw new Error(t("dynamic.csv_no_rows"));
   const headers=rows[0].map(keyNorm);
   const out=[];
   for(const cells of rows.slice(1)){
@@ -382,7 +382,7 @@ function inferAthlete(meets){
 }
 
 function applyImportedAthlete(imported,profileUrl,slug){
-  if(!imported.length)throw new Error("No valid competition results were returned.");
+  if(!imported.length)throw new Error(t("dynamic.no_valid_results"));
   const manual=(state.meets||[]).filter(m=>String(m?.source||"").toLowerCase()==="manual");
   state.meets=dedupeMeets([...manual,...imported]);
   const inferred=inferAthlete(imported);
@@ -410,8 +410,8 @@ async function fetchAthleteBySlug(slug,statusEl){
   const res=await fetch(LIFTER_API+"?slug="+encodeURIComponent(slug),{headers:{"Accept":"application/json"}});
   let payload={};
   try{payload=await res.json()}catch(e){}
-  if(!res.ok)throw new Error(payload&&payload.message?payload.message:"Athlete profile was not found.");
-  if(!payload.csv)throw new Error("No competition data was returned.");
+  if(!res.ok)throw new Error(payload&&payload.message?payload.message:t("dynamic.athlete_not_found"));
+  if(!payload.csv)throw new Error(t("dynamic.no_competition_data"));
   const imported=parseMeetRows(payload.csv);
   applyImportedAthlete(imported,payload.profile_url||"",payload.slug||slug);
   statusEl.textContent=t("dynamic.imported_results",{count:imported.length});
@@ -451,7 +451,7 @@ async function importAthlete(input,statusEl,candidateEl){
     const res=await fetch(LIFTER_SEARCH_API+"?q="+encodeURIComponent(raw),{headers:{"Accept":"application/json"}});
     let payload={};
     try{payload=await res.json()}catch(e){}
-    if(!res.ok)throw new Error(payload&&payload.message?payload.message:"Search failed.");
+    if(!res.ok)throw new Error(payload&&payload.message?payload.message:t("dynamic.search_failed"));
     const results=Array.isArray(payload.results)?payload.results:[];
     if(results.length===1){
       await fetchAthleteBySlug(results[0].slug,statusEl);
@@ -532,7 +532,7 @@ async function loadReference(){
   if(performanceReference)return performanceReference;
   try{
     const res=await fetch(REFERENCE_API,{headers:{"Accept":"application/json"}});
-    if(!res.ok)throw new Error("Reference unavailable");
+    if(!res.ok)throw new Error(t("dynamic.reference_unavailable"));
     performanceReference=await res.json();
     renderTools();
     return performanceReference;
@@ -894,7 +894,7 @@ async function saveHomeLocation(){
     const url=HUB_API+"/geocode?city="+encodeURIComponent(city)+"&country="+encodeURIComponent(country);
     const res=await fetch(url,{headers:{"Accept":"application/json"}});
     const data=await res.json();
-    if(!res.ok)throw new Error(data.message||"Location lookup failed.");
+    if(!res.ok)throw new Error(data.message||t("finder.location_lookup_failed"));
     state.preferences.homeLat=num(data.latitude);state.preferences.homeLon=num(data.longitude);
     state.preferences.locationSource="manual";save();
     status.textContent=t("finder.location_resolved",{place:data.display_name||[city,country].filter(Boolean).join(", ")});
@@ -1093,7 +1093,7 @@ async function makeResultCardBlob(){
     ctx.fillStyle=i>=3?"#f0b54b":"#ffffff";ctx.font="800 46px system-ui";ctx.fillText(String(b[1]),x+28,y+118);
   });
   ctx.fillStyle="#a0a7af";ctx.font="500 26px system-ui";ctx.fillText("powerlifting-calculator.com",70,1010);
-  return await new Promise((resolve,reject)=>canvas.toBlob(blob=>blob?resolve(blob):reject(new Error("Could not create image.")),"image/png",0.95));
+  return await new Promise((resolve,reject)=>canvas.toBlob(blob=>blob?resolve(blob):reject(new Error(t("dynamic.image_failed"))),"image/png",0.95));
 }
 async function shareResultCard(){
   try{
@@ -1218,14 +1218,14 @@ function loadGoogleIdentity(){
     const existing=document.querySelector('script[data-pph-google-identity]');
     if(existing){
       existing.addEventListener("load",()=>resolve(),{once:true});
-      existing.addEventListener("error",()=>reject(new Error("Google sign-in could not be loaded.")),{once:true});
+      existing.addEventListener("error",()=>reject(new Error(t("auth.google_load_failed"))),{once:true});
       return;
     }
     const script=document.createElement("script");
     script.src="https://accounts.google.com/gsi/client";
     script.async=true;script.defer=true;script.dataset.pphGoogleIdentity="1";
     script.onload=()=>resolve();
-    script.onerror=()=>reject(new Error("Google sign-in could not be loaded."));
+    script.onerror=()=>reject(new Error(t("auth.google_load_failed")));
     document.head.appendChild(script);
   });
   return googleIdentityPromise;
@@ -1262,7 +1262,7 @@ async function initGoogleSignIn(){
     });
     googleButtonRendered=true;
   }catch(err){
-    status.textContent=err.message||"Google sign-in is temporarily unavailable.";
+    status.textContent=err.message||t("auth.google_unavailable");
   }
 }
 function renderAccount(){
@@ -1277,7 +1277,7 @@ function renderAccount(){
   const dashboardPromo=$("dashboardAccountPromo");
   if(dashboardPromo)dashboardPromo.hidden=signed;
   if(signed){
-    $("accountIdentity").textContent=firebaseUser?.email||session.email||"signed-in account";
+    $("accountIdentity").textContent=firebaseUser?.email||session.email||t("account.signed_in_account");
     if(!$("cloudStatus").textContent)$("cloudStatus").textContent=t("dynamic.cloud_linked");
   }else{
     if(session.pendingEmail){$("accountEmail").value=session.pendingEmail;$("codeStep").hidden=false}
@@ -1343,7 +1343,7 @@ $("oplCsv").addEventListener("change",async e=>{
   $("importStatus").textContent=t("dynamic.reading_file",{name:file.name});
   try{
     const text=await file.text(),imported=parseMeetRows(text);
-    if(!imported.length)throw new Error("No valid powerlifting meet rows were found.");
+    if(!imported.length)throw new Error(t("dynamic.csv_no_valid_meets"));
     state.meets=dedupeMeets([...(state.meets||[]),...imported]);
     const pr=meetPrs(),p=state.profile||{},inferred=inferAthlete(state.meets);
     if(!p.name&&inferred.name)p.name=inferred.name;
