@@ -460,3 +460,11 @@ input:focus,select:focus{outline:none;border-color:#6a5730;box-shadow:0 0 0 3px 
   .accountHelpCard{align-items:flex-start;flex-direction:column}
   .manualAttempts>div{grid-template-columns:1fr repeat(3,minmax(54px,1fr))}
 }
+
+
+/* Athlete overview edit action */
+.heroTitleRow{display:flex;align-items:flex-start;justify-content:space-between;gap:14px}
+.heroEditButton{width:38px;height:38px;display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto;border:1px solid #343a40;border-radius:11px;background:#171b1e;color:#aeb6bc;cursor:pointer;transition:transform .16s ease,border-color .16s ease,color .16s ease,background .16s ease}
+.heroEditButton:hover{transform:translateY(-1px);border-color:#d8aa4e;color:#f0b54b;background:#1b1f22}
+.heroEditButton:focus-visible{outline:2px solid #d8aa4e;outline-offset:2px}
+.heroEditButton svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
