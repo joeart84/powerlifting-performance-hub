@@ -325,5 +325,12 @@
   "common.cancel": "Zrušit",
   "profile.edit_note": "Uprav údaje sportovce. Nic se nezmění, dokud změny neuložíš.",
   "profile.save_changes": "Uložit změny",
-  "profile.athlete": "Sportovec"
+  "profile.athlete": "Sportovec",
+  "reset.eyebrow": "TESTOVÁNÍ",
+  "reset.title": "Reset aplikace",
+  "reset.note": "Vymaž data z tohoto zařízení a začni znovu od první obrazovky. Cloudový účet se nesmaže.",
+  "reset.button": "Resetovat data aplikace",
+  "reset.confirm": "Resetovat aplikaci na tomto zařízení? Smaže se lokální profil, plán závodu, výsledky, historie, cíle, poloha i přihlášení. Cloudový účet se nesmaže.",
+  "reset.working": "Resetuji aplikaci…",
+  "reset.done": "Aplikace byla resetována."
 }
