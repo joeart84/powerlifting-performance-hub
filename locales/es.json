@@ -9,7 +9,7 @@
   "cloud.linked": "Nube conectada",
   "cloud.synced": "Synced",
   "install": "Instalar app",
-  "onboarding.eyebrow": "MVP · LOCAL PRIMERO",
+  "onboarding.eyebrow": "TU ENTRENAMIENTO · TU PROGRESO",
   "onboarding.title": "Crea tu panel de atleta",
   "onboarding.note": "Tus datos permanecen en este navegador hasta que elijas la sincronización en la nube.",
   "onboarding.compete": "¿Ya compites?",
@@ -332,5 +332,13 @@
   "reset.button": "Restablecer datos de la app",
   "reset.confirm": "¿Restablecer la app en este dispositivo? Se borrarán el perfil local, plan de competición, resultados, historial, objetivos, ubicación y sesión. Tu cuenta en la nube no se eliminará.",
   "reset.working": "Restableciendo la app…",
-  "reset.done": "La app se ha restablecido."
+  "reset.done": "La app se ha restablecido.",
+  "brand.back": "← Todas las calculadoras",
+  "brand.guides": "Guías",
+  "brand.competitions": "Competiciones",
+  "brand.methodology": "Métodos y puntuación",
+  "brand.privacy": "Privacidad",
+  "brand.contact": "Ayuda y comentarios",
+  "score.estimate": "estimación",
+  "profile.validation": "Revisa el campo marcado. El peso corporal debe ser positivo, los levantamientos no negativos y la edad un número entero de 13 a 100."
 }

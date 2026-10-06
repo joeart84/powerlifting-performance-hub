@@ -1,10 +1,10 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 80" role="img" aria-label="Powerlifting Performance Hub">
-  <rect width="80" height="80" rx="19" fill="#171c20"/>
+  <rect width="80" height="80" rx="19" fill="#171d25"/>
   <g fill="none" stroke-linecap="round" stroke-linejoin="round">
     <path d="M10 41h60" stroke="#edf2f0" stroke-width="4"/>
-    <path d="M18 31v20M24 34v14M62 31v20M56 34v14" stroke="#d9ad54" stroke-width="5"/>
+    <path d="M18 31v20M24 34v14M62 31v20M56 34v14" stroke="#cf2035" stroke-width="5"/>
     <path d="M29 46l8-10 6 6 10-13m-5 0h5v5" stroke="#edf2f0" stroke-width="4"/>
   </g>
-  <text x="98" y="34" fill="#d9ad54" font-family="Inter,Arial,sans-serif" font-size="13" font-weight="800" letter-spacing="2">POWERLIFTING</text>
+  <text x="98" y="34" fill="#cf2035" font-family="Inter,Arial,sans-serif" font-size="13" font-weight="800" letter-spacing="2">POWERLIFTING</text>
   <text x="98" y="61" fill="#edf2f0" font-family="Inter,Arial,sans-serif" font-size="27" font-weight="800">Performance Hub</text>
 </svg>

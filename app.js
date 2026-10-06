@@ -2,9 +2,23 @@ const KEY="plc-performance-hub-v6";
 const LEGACY_KEYS=["plc-performance-hub-v2","plc-performance-hub-v1"];
 let legacy={};
 for(const k of LEGACY_KEYS){try{const v=JSON.parse(localStorage.getItem(k)||"null");if(v&&Object.keys(v).length){legacy=v;break}}catch(e){}}
-const state=JSON.parse(localStorage.getItem(KEY)||"null")||legacy||{};
+// Keep a local recovery copy before replacing malformed stored JSON.
+function readStoredObject(key,fallback={}){
+  let raw;
+  try{
+    raw=localStorage.getItem(key);
+    const value=JSON.parse(raw||"null");
+    if(value===null)return fallback;
+    if(typeof value==="object"&&!Array.isArray(value))return value;
+    throw new Error("Invalid stored object");
+  }catch(e){
+    try{if(raw&&!localStorage.getItem(key+"-recovery"))localStorage.setItem(key+"-recovery",raw)}catch(storageError){}
+    return fallback;
+  }
+}
+const state=readStoredObject(KEY,legacy||{});
 const SESSION_KEY="plc-performance-hub-session-v1";
-const session=JSON.parse(localStorage.getItem(SESSION_KEY)||"{}");
+const session=readStoredObject(SESSION_KEY);
 const $=id=>document.getElementById(id);
 const lifts=["squat","bench","deadlift"];
 const LIFTER_API="https://powerlifting-calculator.com/wp-json/plc-radar/v1/lifter";
@@ -1089,7 +1103,7 @@ async function makeResultCardBlob(){
   const canvas=document.createElement("canvas");canvas.width=1080;canvas.height=1080;
   const ctx=canvas.getContext("2d");
   ctx.fillStyle="#101214";ctx.fillRect(0,0,1080,1080);
-  ctx.fillStyle="#f0b54b";ctx.fillRect(0,0,1080,18);
+  ctx.fillStyle="#cf2035";ctx.fillRect(0,0,1080,18);
   ctx.fillStyle="#a0a7af";ctx.font="700 30px system-ui";ctx.fillText("POWERLIFTING PERFORMANCE HUB",70,95);
   ctx.fillStyle="#ffffff";ctx.font="800 64px system-ui";ctx.fillText((p.name||"Athlete").slice(0,24),70,180);
   ctx.fillStyle="#a0a7af";ctx.font="500 30px system-ui";ctx.fillText((record.meet||"Meet Day").slice(0,42),70,230);
@@ -1101,7 +1115,7 @@ async function makeResultCardBlob(){
     const col=i%3,row=Math.floor(i/3),x=70+col*320,y=320+row*230;
     ctx.fillStyle="#191d21";roundedRect(ctx,x,y,285,185,24);
     ctx.fillStyle="#9ca3ab";ctx.font="700 24px system-ui";ctx.fillText(b[0],x+28,y+48);
-    ctx.fillStyle=i>=3?"#f0b54b":"#ffffff";ctx.font="800 46px system-ui";ctx.fillText(String(b[1]),x+28,y+118);
+    ctx.fillStyle=i>=3?"#ff8797":"#ffffff";ctx.font="800 46px system-ui";ctx.fillText(String(b[1]),x+28,y+118);
   });
   ctx.fillStyle="#a0a7af";ctx.font="500 26px system-ui";ctx.fillText("powerlifting-calculator.com",70,1010);
   return await new Promise((resolve,reject)=>canvas.toBlob(blob=>blob?resolve(blob):reject(new Error(t("dynamic.image_failed"))),"image/png",0.95));
@@ -1397,6 +1411,9 @@ function openProfileEdit(){
 }
 
 $("saveProfile").addEventListener("click",()=>{
+  const invalid=["bodyweight","age","squatBest","benchBest","deadliftBest","meetDate"].map($).find(el=>!el.checkValidity());
+  if(invalid){$("profileValidationStatus").textContent=t("profile.validation");invalid.reportValidity();invalid.focus();return}
+  $("profileValidationStatus").textContent="";
   const existing=state.profile||{};
   const wasEditing=profileEditMode&&!!state.profile;
   state.profile={
@@ -1526,7 +1543,7 @@ $("languageSelect").addEventListener("change",e=>setLanguage(e.target.value,true
 if($("resetAppData"))$("resetAppData").addEventListener("click",resetAppData);
 document.querySelectorAll("[data-tab]").forEach(b=>b.addEventListener("click",()=>{
   const target=b.dataset.tab;
-  document.querySelectorAll("[data-tab]").forEach(x=>x.classList.toggle("active",x===b));
+  document.querySelectorAll("[data-tab]").forEach(x=>{x.classList.toggle("active",x.dataset.tab===target);x.setAttribute("aria-pressed",String(x.dataset.tab===target))});
   document.querySelectorAll(".tab").forEach(x=>x.hidden=x.id!=="tab-"+target);
   window.scrollTo({top:0,behavior:reducedMotion()?"auto":"smooth"});
 }));

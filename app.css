@@ -4,9 +4,9 @@ button,input,select{font:inherit}.topbar{display:flex;justify-content:space-betw
 h1,h2,h3,p{margin-top:0}h1{font-size:22px;margin-bottom:0}.eyebrow{font-size:11px;letter-spacing:.15em;color:#a0a7af;font-weight:800}
 .shell{max-width:980px;margin:0 auto;padding:24px 16px 80px}.panel{background:#171a1e;border:1px solid #292d33;border-radius:18px;padding:20px;box-shadow:0 14px 35px rgba(0,0,0,.18);margin-bottom:16px}
 .grid.two{display:grid;grid-template-columns:1fr 1fr;gap:14px}label{display:grid;gap:7px;font-size:13px;color:#c8cdd3}input,select{width:100%;padding:12px 13px;background:#0f1114;border:1px solid #333941;color:#fff;border-radius:10px}
-.primary,.ghost,.tabs button{border:0;border-radius:10px;padding:11px 14px;font-weight:800;cursor:pointer}.primary{background:#f0b54b;color:#101214;margin-top:16px}.ghost{background:#252a30;color:#fff}.danger{color:#ff9d9d}
+.primary,.ghost,.tabs button{border:0;border-radius:10px;padding:11px 14px;font-weight:800;cursor:pointer}.primary{background:var(--accent);color:#101214;margin-top:16px}.ghost{background:#252a30;color:#fff}.danger{color:#ff9d9d}
 .hero{display:flex;justify-content:space-between;align-items:center}.heroScore{display:grid;text-align:right}.heroScore strong{font-size:40px;line-height:1}.heroScore small,.heroScore span,.muted{color:#9ca3ab}
-.tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px}.tabs button{background:#171a1e;color:#aeb4bb;border:1px solid #292d33}.tabs button.active{background:#f0b54b;color:#101214}
+.tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px}.tabs button{background:#171a1e;color:#aeb4bb;border:1px solid #292d33}.tabs button.active{background:var(--accent);color:#101214}
 .cards{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.metric,.meetStats article{background:#101317;border:1px solid #292d33;border-radius:14px;padding:16px;display:grid;gap:2px}.metric span,.meetStats span{font-size:12px;color:#9ca3ab}.metric strong{font-size:28px}
 .subpanel{margin-top:16px;padding:16px;border-radius:14px;background:#101317;border:1px solid #292d33}.snapshot{display:grid;gap:8px}
 .liftGroup{margin:18px 0}.liftGroup h3{text-transform:capitalize}.attemptRow{display:grid;grid-template-columns:110px 1fr 130px;gap:10px;align-items:center;margin:8px 0}.attemptRow input{min-width:0}.attemptActions{display:flex;gap:6px}.attemptActions button{flex:1;padding:9px;border:1px solid #333941;border-radius:9px;background:#111418;color:#fff}.attemptActions button.good.active{background:#183c28;border-color:#2f8553}.attemptActions button.miss.active{background:#442020;border-color:#9d4242}
@@ -19,7 +19,7 @@ footer{text-align:center;color:#737b84;padding:24px}
 .heroScores{display:flex;gap:28px;align-items:flex-start}.heroScores .heroScore{min-width:110px}
 .tabs{grid-template-columns:repeat(5,1fr)}
 .progressHead{display:flex;justify-content:space-between;gap:16px;align-items:flex-start}.importBox{margin:16px 0;padding:16px;background:#101317;border:1px dashed #3a414a;border-radius:14px}.fileLabel{display:block;font-weight:800;color:#f7f7f5}.fileLabel input{margin-top:8px}
-.progressCards{margin:16px 0}.chartGrid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.chartGrid .subpanel{margin-top:0}.chartBox{min-height:220px;display:flex;align-items:center;justify-content:center;overflow:hidden}.chartBox svg{width:100%;height:220px}.chartEmpty{color:#7d858e;text-align:center;padding:50px 10px}.chartAxis{stroke:#3a4047;stroke-width:1}.chartLine{fill:none;stroke:currentColor;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}.chartDot{fill:#f0b54b;stroke:#101214;stroke-width:2}.chartLabel{fill:#9ca3ab;font-size:10px}
+.progressCards{margin:16px 0}.chartGrid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.chartGrid .subpanel{margin-top:0}.chartBox{min-height:220px;display:flex;align-items:center;justify-content:center;overflow:hidden}.chartBox svg{width:100%;height:220px}.chartEmpty{color:#7d858e;text-align:center;padding:50px 10px}.chartAxis{stroke:#3a4047;stroke-width:1}.chartLine{fill:none;stroke:currentColor;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}.chartDot{fill:var(--accent);stroke:#101214;stroke-width:2}.chartLabel{fill:#9ca3ab;font-size:10px}
 .historyWrap{overflow-x:auto;-webkit-overflow-scrolling:touch}.historyTable{width:100%;border-collapse:collapse;min-width:820px}.historyTable th,.historyTable td{padding:10px 9px;border-bottom:1px solid #292d33;text-align:right;white-space:nowrap}.historyTable th:first-child,.historyTable td:first-child,.historyTable th:nth-child(2),.historyTable td:nth-child(2){text-align:left}.historyTable th{font-size:11px;color:#9ca3ab;text-transform:uppercase;letter-spacing:.05em}
 @media(max-width:720px){.tabs{grid-template-columns:1fr 1fr}.chartGrid{grid-template-columns:1fr}.progressHead{display:block}.progressHead .ghost{margin-bottom:12px}.heroScores{gap:14px}.heroScores .heroScore{min-width:90px}}
 
@@ -35,11 +35,11 @@ footer{text-align:center;color:#737b84;padding:24px}
 
 .topActions{display:flex;align-items:center;gap:10px}
 .cloudBadge{font-size:12px;font-weight:800;color:#9ca3ab;background:#20252b;border:1px solid #30363d;border-radius:999px;padding:7px 10px;white-space:nowrap}
-.cloudBadge.active{color:#f0b54b;border-color:#6c5425}
+.cloudBadge.active{color:var(--accent);border-color:#74303e}
 .dashboardGrid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 .dashboardGrid .subpanel{margin-top:16px}
 .goalProgress{height:10px;background:#272c32;border-radius:999px;overflow:hidden;margin:12px 0}
-.goalProgress span{display:block;height:100%;background:#f0b54b;border-radius:999px}
+.goalProgress span{display:block;height:100%;background:var(--accent);border-radius:999px}
 .meetPicker{margin-bottom:18px}
 .buttonRow{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:14px}
 .buttonRow .primary,.buttonRow .ghost{margin-top:0}
@@ -58,10 +58,10 @@ footer{text-align:center;color:#737b84;padding:24px}
 @media(max-width:920px){.tabs{grid-template-columns:repeat(2,1fr)}}
 
 .meetFinder{margin-bottom:18px}.finderHead{display:flex;justify-content:space-between;gap:14px;align-items:flex-start}.finderHead p{margin:4px 0 0}.finderSearch{margin:12px 0}
-.scopeChips{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 14px}.scopeChips button{border:1px solid #343a42;background:#111418;color:#c8cdd3;border-radius:999px;padding:9px 13px;font-weight:800;cursor:pointer}.scopeChips button.active{background:#f0b54b;color:#101214;border-color:#f0b54b}
+.scopeChips{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 14px}.scopeChips button{border:1px solid #343a42;background:#111418;color:#c8cdd3;border-radius:999px;padding:9px 13px;font-weight:800;cursor:pointer}.scopeChips button.active{background:var(--accent);color:#101214;border-color:var(--accent)}
 .finderFilters{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px}
-.competitionResults{display:grid;gap:10px;margin-top:14px}.competitionCard{background:#111418;border:1px solid #2d3238;border-radius:14px;padding:15px}.competitionTop{display:flex;justify-content:space-between;gap:14px;align-items:flex-start}.competitionCard h4{margin:0 0 4px;font-size:16px}.competitionPlace{color:#c4c9cf}.competitionVenue,.competitionMeta{font-size:12px;color:#8f98a1;margin-top:7px}.distanceBadge{white-space:nowrap;background:#20262c;border:1px solid #343b43;border-radius:999px;padding:5px 9px;font-size:12px;font-weight:800;color:#f0b54b}
-.competitionActions{display:flex;gap:8px;justify-content:flex-end;align-items:center;margin-top:12px}.linkButton{text-decoration:none;display:inline-flex;align-items:center}.selectedMeet{border:1px solid #6b572e;background:#2d2719;color:#f0b54b;border-radius:10px;padding:10px 13px;font-weight:800}.finderEmpty{padding:22px;text-align:center;color:#8f98a1;border:1px dashed #343a42;border-radius:12px}
+.competitionResults{display:grid;gap:10px;margin-top:14px}.competitionCard{background:#111418;border:1px solid #2d3238;border-radius:14px;padding:15px}.competitionTop{display:flex;justify-content:space-between;gap:14px;align-items:flex-start}.competitionCard h4{margin:0 0 4px;font-size:16px}.competitionPlace{color:#c4c9cf}.competitionVenue,.competitionMeta{font-size:12px;color:#8f98a1;margin-top:7px}.distanceBadge{white-space:nowrap;background:#20262c;border:1px solid #343b43;border-radius:999px;padding:5px 9px;font-size:12px;font-weight:800;color:var(--accent)}
+.competitionActions{display:flex;gap:8px;justify-content:flex-end;align-items:center;margin-top:12px}.linkButton{text-decoration:none;display:inline-flex;align-items:center}.selectedMeet{border:1px solid #74303e;background:#2b1920;color:var(--accent);border-radius:10px;padding:10px 13px;font-weight:800}.finderEmpty{padding:22px;text-align:center;color:#8f98a1;border:1px dashed #343a42;border-radius:12px}
 @media(max-width:720px){.finderFilters{grid-template-columns:1fr}.finderHead{display:block}.finderHead .ghost{margin-top:10px}.competitionTop{gap:8px}.competitionActions{justify-content:stretch}.competitionActions>*{flex:1;justify-content:center;text-align:center}}
 
 
@@ -77,8 +77,9 @@ footer{text-align:center;color:#737b84;padding:24px}
   --line-strong:#343b43;
   --text:#f4f5f3;
   --muted:#929aa3;
-  --accent:#d8a94a;
-  --accent-soft:rgba(216,169,74,.12);
+  --accent:#cf2035;
+  --accent-text:#ff8797;
+  --accent-soft:rgba(207,32,53,.12);
   --success:#48b77a;
   --danger:#e26d6d;
   --radius-lg:22px;
@@ -91,7 +92,7 @@ footer{text-align:center;color:#737b84;padding:24px}
 html{background:var(--bg)}
 body{
   background:
-    radial-gradient(circle at 50% -12%,rgba(216,169,74,.08),transparent 28%),
+    radial-gradient(circle at 50% -12%,rgba(207,32,53,.08),transparent 28%),
     linear-gradient(180deg,#0c0f11 0%,var(--bg) 52%);
   color:var(--text);
 }
@@ -115,7 +116,7 @@ h3{font-size:17px}
 .brandMark{width:40px;height:40px;display:block;flex:none}
 .compactTop{padding:8px 11px;border-radius:999px}
 .cloudBadge{background:transparent;border-color:var(--line);font-size:11px}
-.cloudBadge.active{background:var(--accent-soft);color:#e4bd6f;border-color:#554523}
+.cloudBadge.active{background:var(--accent-soft);color:var(--accent-text);border-color:#74303e}
 
 .shell{max-width:1120px;padding:28px 18px 110px}
 .panel{
@@ -128,7 +129,7 @@ h3{font-size:17px}
 .heroPanel{
   min-height:152px;
   background:
-    radial-gradient(circle at 82% 30%,rgba(216,169,74,.11),transparent 34%),
+    radial-gradient(circle at 82% 30%,rgba(207,32,53,.11),transparent 34%),
     linear-gradient(145deg,#171b1e,#111416);
   overflow:hidden;
 }
@@ -181,18 +182,18 @@ h3{font-size:17px}
 }
 .subpanel h3{margin-bottom:10px}
 .goalProgress{height:7px;background:#272c30}
-.goalProgress span{background:linear-gradient(90deg,#a8792d,var(--accent))}
+.goalProgress span{background:linear-gradient(90deg,#a9182c,var(--accent))}
 
 input,select{
   min-height:46px;background:#0d1012;border:1px solid #2b3137;
   border-radius:12px;padding:11px 13px
 }
-input:focus,select:focus{outline:none;border-color:#6a5730;box-shadow:0 0 0 3px rgba(216,169,74,.08)}
+input:focus,select:focus{outline:none;border-color:#74303e;box-shadow:0 0 0 3px rgba(207,32,53,.08)}
 .primary{
   background:var(--accent);color:#111316;border-radius:12px;
   box-shadow:none
 }
-.primary:hover{background:#e2b85f}
+.primary:hover{background:#b71b2e}
 .ghost{background:#20252a;border:1px solid #2d343b;color:#eef0ee}
 .danger{color:#ef9999}
 
@@ -208,7 +209,7 @@ input:focus,select:focus{outline:none;border-color:#6a5730;box-shadow:0 0 0 3px 
 .scopeChips{gap:7px;flex-wrap:nowrap;overflow-x:auto;padding-bottom:2px;scrollbar-width:none}
 .scopeChips::-webkit-scrollbar{display:none}
 .scopeChips button{flex:0 0 auto;padding:9px 13px;background:#171b1f;border-color:#2b3137}
-.scopeChips button.active{background:var(--accent-soft);color:#e6bd6d;border-color:#685226}
+.scopeChips button.active{background:var(--accent-soft);color:var(--accent-text);border-color:#74303e}
 .finderFilters{gap:8px}
 .finderFilters label span{font-size:11px;color:#7f8891;text-transform:uppercase;letter-spacing:.06em}
 .competitionResults{gap:8px}
@@ -220,10 +221,10 @@ input:focus,select:focus{outline:none;border-color:#6a5730;box-shadow:0 0 0 3px 
 .competitionCard h4{font-size:17px;line-height:1.25}
 .competitionPlace{font-weight:700;color:#dce0dc}
 .competitionVenue,.competitionMeta{color:#818a93}
-.distanceBadge{background:var(--accent-soft);border-color:#574721;color:#e6bd6d}
+.distanceBadge{background:var(--accent-soft);border-color:#74303e;color:var(--accent-text)}
 .competitionActions{border-top:1px solid #242a30;padding-top:11px}
 .competitionActions .primary{margin-top:0}
-.selectedMeet{background:#221e15;border-color:#594823;color:#e7be6c}
+.selectedMeet{background:#2b1920;border-color:#74303e;color:var(--accent-text)}
 
 .liftGroup{
   padding:15px 16px;border:1px solid var(--line);border-radius:16px;
@@ -305,18 +306,18 @@ input:focus,select:focus{outline:none;border-color:#6a5730;box-shadow:0 0 0 3px 
 .authForm label{max-width:none;gap:9px;font-size:13px;font-weight:700}
 .authForm input{min-height:50px}
 .authForm .authCta{margin-top:5px;min-height:50px;width:100%}
-.authStatus{min-height:1.3em;margin-top:16px;font-size:13px;line-height:1.5;color:#d9ad54}
-.accountTopCta{box-shadow:0 0 0 1px rgba(217,173,84,.2),0 8px 24px rgba(0,0,0,.18)}
+.authStatus{min-height:1.3em;margin-top:16px;font-size:13px;line-height:1.5;color:var(--accent)}
+.accountTopCta{box-shadow:0 0 0 1px rgba(207,32,53,.2),0 8px 24px rgba(0,0,0,.18)}
 .accountDiscoveryCard{
   margin:18px 0;display:flex;align-items:center;justify-content:space-between;gap:18px;
-  padding:18px 20px;border:1px solid rgba(217,173,84,.28);border-radius:16px;
-  background:linear-gradient(135deg,rgba(217,173,84,.10),rgba(24,29,33,.94) 46%,rgba(16,19,23,.98));
+  padding:18px 20px;border:1px solid rgba(207,32,53,.28);border-radius:16px;
+  background:linear-gradient(135deg,rgba(207,32,53,.10),rgba(24,29,33,.94) 46%,rgba(16,19,23,.98));
   box-shadow:0 14px 34px rgba(0,0,0,.16)
 }
 .accountDiscoveryCard>div:first-child{display:grid;grid-template-columns:auto 1fr;column-gap:12px;align-items:center;min-width:0}
 .accountDiscoveryIcon{
   grid-row:1/3;width:38px;height:38px;border-radius:11px;display:grid;place-items:center;
-  background:rgba(217,173,84,.14);border:1px solid rgba(217,173,84,.30);color:#e4bb6d;font-size:18px
+  background:rgba(207,32,53,.14);border:1px solid rgba(207,32,53,.30);color:var(--accent-text);font-size:18px
 }
 .accountDiscoveryCard strong{font-size:15px;color:#f3f4f2}
 .accountDiscoveryCard p{grid-column:2;margin:4px 0 0;color:#aeb7bc;font-size:13px;line-height:1.5}
@@ -326,15 +327,15 @@ input:focus,select:focus{outline:none;border-color:#6a5730;box-shadow:0 0 0 3px 
 .dashboardAccountPromo{margin-top:20px}
 .onboardingAccountCard{margin-top:18px}
 .googleChoice{
-  padding:18px;border-radius:15px;border:1px solid rgba(217,173,84,.25);
-  background:linear-gradient(180deg,rgba(217,173,84,.08),rgba(17,21,25,.72))
+  padding:18px;border-radius:15px;border:1px solid rgba(207,32,53,.25);
+  background:linear-gradient(180deg,rgba(207,32,53,.08),rgba(17,21,25,.72))
 }
 .googleChoiceCopy{margin-bottom:14px}
 .googleChoiceCopy h3{margin:6px 0 5px;font-size:18px}
 .googleChoiceCopy p{margin:0!important}
 .googleChoiceBadge{
   display:inline-flex;align-items:center;min-height:24px;padding:4px 9px;border-radius:999px;
-  background:rgba(217,173,84,.14);border:1px solid rgba(217,173,84,.28);color:#e7be70;
+  background:rgba(207,32,53,.14);border:1px solid rgba(207,32,53,.28);color:var(--accent-text);
   font-size:10px;font-weight:850;letter-spacing:.08em;text-transform:uppercase
 }
 .googleSignInBlock{display:grid;gap:8px;justify-items:center}
@@ -356,7 +357,7 @@ input:focus,select:focus{outline:none;border-color:#6a5730;box-shadow:0 0 0 3px 
 .authModes button{padding:10px 8px;background:transparent;border:0;border-radius:9px;color:#aeb6bb;font-weight:750;cursor:pointer}
 .authModes button.active{background:#30383e;color:white}
 .authCard .orDivider{margin:20px 0}
-.textButton{border:0;background:none;color:#e3bc72;padding:12px 0;margin-top:10px;cursor:pointer;font-weight:700;text-align:left}
+.textButton{border:0;background:none;color:var(--accent-text);padding:12px 0;margin-top:10px;cursor:pointer;font-weight:700;text-align:left}
 .authCard button:disabled{opacity:.55;cursor:not-allowed}
 @media(max-width:520px){.authCard{padding:20px;margin-top:14px}.authForm{gap:16px}}
 
@@ -452,7 +453,7 @@ input:focus,select:focus{outline:none;border-color:#6a5730;box-shadow:0 0 0 3px 
 .helpSteps article{padding:13px;border:1px solid #2b3136;border-radius:12px;background:#111518}
 .helpSteps article strong{display:block;margin-bottom:4px}
 .helpSteps article p{margin:0;color:#9aa3aa;font-size:.88rem;line-height:1.45}
-.helpTip{margin:14px 0 0;padding:12px 14px;border-left:3px solid #d8aa4e;background:#151719;border-radius:8px}
+.helpTip{margin:14px 0 0;padding:12px 14px;border-left:3px solid var(--accent);background:#151719;border-radius:8px}
 .accountHelpCard{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-top:14px}
 .accountHelpCard p{margin:.3rem 0 0}
 @media(max-width:640px){
@@ -465,8 +466,8 @@ input:focus,select:focus{outline:none;border-color:#6a5730;box-shadow:0 0 0 3px 
 /* Athlete overview edit action */
 .heroTitleRow{display:flex;align-items:flex-start;justify-content:space-between;gap:14px}
 .heroEditButton{width:38px;height:38px;display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto;border:1px solid #343a40;border-radius:11px;background:#171b1e;color:#aeb6bc;cursor:pointer;transition:transform .16s ease,border-color .16s ease,color .16s ease,background .16s ease}
-.heroEditButton:hover{transform:translateY(-1px);border-color:#d8aa4e;color:#f0b54b;background:#1b1f22}
-.heroEditButton:focus-visible{outline:2px solid #d8aa4e;outline-offset:2px}
+.heroEditButton:hover{transform:translateY(-1px);border-color:var(--accent);color:var(--accent);background:#1b1f22}
+.heroEditButton:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .heroEditButton svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 
 
@@ -479,3 +480,32 @@ input:focus,select:focus{outline:none;border-color:#6a5730;box-shadow:0 0 0 3px 
 /* Testing reset control */
 .dangerZone{border-color:#493238}
 .dangerZone .danger{margin-top:8px}
+
+/* Shared Powerlifting Calculator identity. Keep the dashboard comfortable in dark mode. */
+:root{font-family:Arial,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;--bg:#10151c;--surface:#171d25;--muted:#aeb8c5;--radius-lg:18px;color-scheme:dark}
+body{background:radial-gradient(circle at 85% 0,rgba(207,32,53,.06),transparent 38%),var(--bg)}
+.topbar{background:rgba(23,29,37,.96);border-bottom:2px solid var(--accent);padding-inline:max(18px,calc((100vw - 1168px)/2))}
+.topbar .eyebrow{color:#bcc4ce;letter-spacing:.12em}
+.brandHome{display:flex;align-items:center;flex:none;border-radius:9px}
+.brandHome:focus-visible,a:focus-visible,button:focus-visible{outline:2px solid var(--accent-text);outline-offset:4px}
+.shell{max-width:1168px}
+.panel{background:linear-gradient(155deg,#1b222c,#151b23);border-color:#303946}
+.heroPanel{background:radial-gradient(circle at 95% 15%,rgba(207,32,53,.14),transparent 45%),linear-gradient(145deg,#1c2430,#151b23)}
+.primary,.primary:hover,.tabs button.active,.scopeChips button.active{color:#fff}
+.primary:hover{background:#b71b2e}
+.scopeChips button.active{background:var(--accent);border-color:var(--accent)}
+.primaryNav button.active{background:#2d2029;box-shadow:inset 0 0 0 1px #74303e}
+.primaryNav button.active .navIcon,.scoreSetup,.authStatus,.cloudBadge.active,.heroEditButton:hover{color:var(--accent-text)}
+.goalProgress span{background:var(--accent)}
+.chartLine,.chartDot{color:var(--accent-text)}
+.chartDot{fill:var(--accent-text)}
+.heroEditButton:hover{border-color:var(--accent)}
+.brandLinks{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:0 0 18px;font-size:13px}
+.brandLinks a,.appFooter a{color:#c4ccd7;text-decoration:none}
+.brandLinks a:hover,.appFooter a:hover{color:#fff;text-decoration:underline;text-underline-offset:4px}
+.brandLinks nav{display:flex;gap:20px}
+.appFooter{display:flex;justify-content:center;align-items:center;gap:12px 24px;flex-wrap:wrap;border-top:1px solid #303946;padding:24px 18px 34px;font-size:12px;color:#aeb8c5}
+.scoreDisclaimer{margin:12px 0 0;font-size:12px;line-height:1.5;color:var(--muted)}
+#profileValidationStatus:empty{display:none}
+@media(max-width:600px){.topbar{gap:10px}.topbar .eyebrow{font-size:8px;letter-spacing:.06em}.topbar h1{font-size:17px}.brandMark{width:34px;height:34px}.cloudBadge{display:none}.compactTop{font-size:11px;padding:8px}.brandLinks{font-size:12px}.brandLinks nav{gap:12px}.appFooter{padding-bottom:100px}.panel{padding:18px}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;transition:none!important;animation:none!important}}

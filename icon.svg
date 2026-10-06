@@ -1,8 +1,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Powerlifting Performance Hub icon">
-  <rect width="512" height="512" rx="112" fill="#101417"/>
+  <rect width="512" height="512" rx="112" fill="#171d25"/>
   <g fill="none" stroke-linecap="round" stroke-linejoin="round">
     <path d="M68 256h376" stroke="#edf2f0" stroke-width="22"/>
-    <path d="M107 192v128M145 211v90M405 192v128M367 211v90" stroke="#d9ad54" stroke-width="27"/>
+    <path d="M107 192v128M145 211v90M405 192v128M367 211v90" stroke="#cf2035" stroke-width="27"/>
     <path d="M183 288l49-50 39 33 58-67" stroke="#edf2f0" stroke-width="25"/>
     <path d="M299 204h30v30" stroke="#edf2f0" stroke-width="25"/>
   </g>

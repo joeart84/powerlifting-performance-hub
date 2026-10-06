@@ -9,7 +9,7 @@
   "cloud.linked": "Chmura połączona",
   "cloud.synced": "Synced",
   "install": "Zainstaluj aplikację",
-  "onboarding.eyebrow": "MVP · DANE LOKALNE",
+  "onboarding.eyebrow": "TWÓJ TRENING · TWÓJ POSTĘP",
   "onboarding.title": "Utwórz profil zawodnika",
   "onboarding.note": "Twoje dane pozostają w tej przeglądarce, dopóki nie wybierzesz synchronizacji z chmurą.",
   "onboarding.compete": "Już startujesz?",
@@ -332,5 +332,13 @@
   "reset.button": "Zresetuj dane aplikacji",
   "reset.confirm": "Zresetować aplikację na tym urządzeniu? Lokalny profil, plan zawodów, wyniki, historia, cele, lokalizacja i sesja logowania zostaną usunięte. Konto w chmurze nie zostanie usunięte.",
   "reset.working": "Resetowanie aplikacji…",
-  "reset.done": "Aplikacja została zresetowana."
+  "reset.done": "Aplikacja została zresetowana.",
+  "brand.back": "← Wszystkie kalkulatory",
+  "brand.guides": "Poradniki",
+  "brand.competitions": "Zawody",
+  "brand.methodology": "Metody i punktacja",
+  "brand.privacy": "Prywatność",
+  "brand.contact": "Pomoc i opinie",
+  "score.estimate": "szacunek",
+  "profile.validation": "Sprawdź zaznaczone pole. Masa ciała musi być dodatnia, ciężary nieujemne, a wiek liczbą całkowitą od 13 do 100."
 }

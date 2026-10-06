@@ -70,7 +70,7 @@ The app is designed to be deployed over HTTPS with GitHub Pages.
 
 After GitHub Pages is enabled for this repository using **GitHub Actions**, the test URL will be:
 
-https://joeart84.github.io/powerlifting-performance-hub/
+https://app.powerlifting-calculator.com/
 
 ### Android / Chrome
 
@@ -180,3 +180,14 @@ The optional Firebase Auth path is implemented in `firebase-auth.js`. With the d
 If the WordPress email-code form reports a network error, check that the WordPress REST endpoint responds to cross-origin `OPTIONS` and `POST` from the GitHub Pages origin with the right `Access-Control-Allow-Origin`, `Access-Control-Allow-Methods` and `Access-Control-Allow-Headers` (especially `Content-Type` and `Authorization`). The frontend cannot override a server CORS policy or site firewall.
 
 Brand colors: background `#101417`, off-white `#edf2f0`, warm gold `#d9ad54`. `logo.svg` is the horizontal lockup, `mark.svg` is the small header mark, and `icon.svg` plus the PNG sizes serve favicon and PWA icons.
+
+
+## Website integration and reliability (October 2026)
+
+The Hub shares Powerlifting Calculator’s red accent, charcoal header and website links. A homepage entry on the main WordPress website opens the app. All six locales include the new labels. Installed-app icons and result cards use the same brand colors.
+
+Run `npm test` for storage-recovery and service-worker regression checks; CI runs these alongside syntax checks and the mobile build. Invalid profile number inputs are checked before saving. Reshel and its McCulloch-adjusted score remain approximations and are labeled as estimates.
+
+Malformed local profile/session JSON no longer aborts startup. Its first original value is retained under the corresponding `-recovery` localStorage key before defaults are saved. This is a recovery aid, not a substitute for an export backup. The service worker caches only its own known assets, preserves cached assets during HTTP errors, never substitutes HTML for scripts/JSON and only clears older Hub caches.
+
+Review follow-ups: user-facing JSON backup/restore; verified reference-table scoring shared with the website; browser regression coverage for profile edits, CSV import and cloud merge conflicts; separate preview hosting and a deployment gate after successful CI. Live review covered a local demo profile, score display, planner, competition feed and navigation. Cloud authentication and installation on physical phones require separate end-to-end testing.

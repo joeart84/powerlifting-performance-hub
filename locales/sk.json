@@ -9,7 +9,7 @@
   "cloud.linked": "Cloud pripojený",
   "cloud.synced": "Synchronizované",
   "install": "Nainštalovať aplikáciu",
-  "onboarding.eyebrow": "MVP · LOKÁLNE DÁTA",
+  "onboarding.eyebrow": "TVOJ TRÉNING · TVOJ PROGRES",
   "onboarding.title": "Vytvor si profil powerliftera",
   "onboarding.note": "Tvoje údaje zostávajú v tomto prehliadači, kým si nezvolíš synchronizáciu do cloudu.",
   "onboarding.compete": "Už súťažíš?",
@@ -372,5 +372,13 @@
   "reset.button": "Resetovať údaje aplikácie",
   "reset.confirm": "Resetovať aplikáciu na tomto zariadení? Vymaže sa lokálny profil, plán pretekov, výsledky, história, ciele, poloha aj prihlásenie. Cloud účet sa nevymaže.",
   "reset.working": "Resetujem aplikáciu…",
-  "reset.done": "Aplikácia bola resetovaná."
+  "reset.done": "Aplikácia bola resetovaná.",
+  "brand.back": "← Všetky kalkulačky",
+  "brand.guides": "Návody",
+  "brand.competitions": "Preteky",
+  "brand.methodology": "Metódy a skóre",
+  "brand.privacy": "Súkromie",
+  "brand.contact": "Pomoc a spätná väzba",
+  "score.estimate": "odhad",
+  "profile.validation": "Skontroluj zvýraznené pole. Hmotnosť musí byť kladná, zdvihy nezáporné a vek celé číslo od 13 do 100."
 }

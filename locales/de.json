@@ -9,7 +9,7 @@
   "cloud.linked": "Cloud verbunden",
   "cloud.synced": "Synced",
   "install": "App installieren",
-  "onboarding.eyebrow": "MVP · LOKAL ZUERST",
+  "onboarding.eyebrow": "DEIN TRAINING · DEIN FORTSCHRITT",
   "onboarding.title": "Erstelle dein Athleten-Dashboard",
   "onboarding.note": "Deine Daten bleiben in diesem Browser, bis du die Cloud-Synchronisierung auswählst.",
   "onboarding.compete": "Du startest bereits bei Wettkämpfen?",
@@ -332,5 +332,13 @@
   "reset.button": "App-Daten zurücksetzen",
   "reset.confirm": "App auf diesem Gerät zurücksetzen? Lokales Profil, Wettkampfplan, Ergebnisse, Verlauf, Ziele, Standort und Anmeldung werden gelöscht. Dein Cloud-Konto wird nicht gelöscht.",
   "reset.working": "App wird zurückgesetzt…",
-  "reset.done": "App wurde zurückgesetzt."
+  "reset.done": "App wurde zurückgesetzt.",
+  "brand.back": "← Alle Rechner",
+  "brand.guides": "Ratgeber",
+  "brand.competitions": "Wettkämpfe",
+  "brand.methodology": "Methoden & Wertung",
+  "brand.privacy": "Datenschutz",
+  "brand.contact": "Hilfe & Feedback",
+  "score.estimate": "Schätzung",
+  "profile.validation": "Prüfe das markierte Feld. Körpergewicht muss positiv sein, Gewichte dürfen nicht negativ sein und das Alter muss eine ganze Zahl von 13 bis 100 sein."
 }

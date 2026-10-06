@@ -9,7 +9,7 @@
   "cloud.linked": "Cloud linked",
   "cloud.synced": "Synced",
   "install": "Install app",
-  "onboarding.eyebrow": "MVP · LOCAL-FIRST",
+  "onboarding.eyebrow": "YOUR TRAINING · YOUR PROGRESS",
   "onboarding.title": "Build your athlete dashboard",
   "onboarding.note": "Your data stays in this browser unless you choose cloud sync.",
   "onboarding.compete": "Already compete?",
@@ -372,5 +372,13 @@
   "reset.button": "Reset app data",
   "reset.confirm": "Reset this app on this device? Your local profile, meet plan, results, history, goals, location and sign-in session will be cleared. Your cloud account will not be deleted.",
   "reset.working": "Resetting app…",
-  "reset.done": "App reset complete."
+  "reset.done": "App reset complete.",
+  "brand.back": "← All calculators",
+  "brand.guides": "Guides",
+  "brand.competitions": "Competitions",
+  "brand.methodology": "Methods & scoring",
+  "brand.privacy": "Privacy",
+  "brand.contact": "Help & feedback",
+  "score.estimate": "estimate",
+  "profile.validation": "Please check the highlighted field. Use positive bodyweight, non-negative lifts and a whole-number age from 13 to 100."
 }

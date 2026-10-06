@@ -18,6 +18,8 @@ jobs:
           node --check app.js
           node --check firebase-config.js
           node --input-type=module --check < firebase-auth.js
+      - name: Check storage recovery and offline regressions
+        run: npm test
       - name: Check required PWA files
         run: |
           test -f index.html
