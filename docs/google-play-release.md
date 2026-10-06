@@ -12,14 +12,14 @@ npm test
 npm run android:init
 cd android
 ./gradlew assembleDebug bundleRelease lintDebug
-./gradlew connectedDebugAndroidTest
+./gradlew :app:connectedDebugAndroidTest
 ```
 
 On Windows use `gradlew.bat`. The Android directory is generated and intentionally excluded from Git. `scripts/configure-android.mjs` reproducibly applies identity, branding, release metadata, manifest, upload-signing hook and instrumentation tests. Keep private `local.properties` and keystores out of Git. Re-running sync preserves the local project. Android init on CI starts with a fresh Capacitor template.
 
 The Android workflow builds a debug-signed APK for installation and an **unsigned** release AAB, runs lint, checks ELF LOAD alignment and installs/runs a native smoke test on an API 35 emulator. These are different from a Play pre-launch report and from a physical-phone test. APK uses the runner's debug signing key: local or future CI APKs may need uninstall/reinstall because debug certificates differ. Export data before uninstalling.
 
-Native smoke coverage: native bridge, profile with decimal comma, save, next action, competition focus, recording a result, undo, persistence through activity recreation, email-login UI and suppression of unsupported web Google sign-in. Unit/integration coverage also includes cloud conflict guards, malformed backups, scores, offline cache and denied ad consent. Neither mocks nor UI tests prove delivery of email codes or real cross-device authentication.
+Native smoke coverage: native bridge, profile with decimal comma, save, next action, competition focus, recording a result, undo, persistence through activity recreation, email-login UI and suppression of unsupported web Google sign-in. Unit/integration coverage also includes cloud conflict guards, malformed backups, scores, offline cache and denied ad consent. Neither mocks nor UI tests prove delivery of email codes or real cross-device authentication. A separate live web check on 6 October 2026 verified email-code sign-in, cloud upload/download, and rejection of a stale preview across two tabs in one browser. This does not replace Android email sign-in or two physical-device checks.
 
 ## Signed upload bundle
 
@@ -68,3 +68,9 @@ Account deletion and its web resource: https://support.google.com/googleplay/and
 ## Release blockers until confirmed
 
 Private upload signing key and certificate/version match; real email-code sign-in and two-device cloud round-trip; physical Android checks; owner-operated account deletion; consent and Data safety disclosures; Play Console registration/verification and applicable closed-testing requirement. Do not label the unsigned AAB “ready to upload” or call this production approval.
+
+## Live service verification — 6 October 2026
+
+IIS intercepted OPTIONS without CORS headers. Trend Radar 1.19.1 and Hub form POST routes now carry the same expiring session credential in an HTTPS body on three restricted paths. Credentials never appear in URLs. Existing bearer-header API clients remain supported. PHP syntax and ten credential transport checks passed. Live web upload/download and stale-preview rejection passed using a synthetic Demo UX profile in an initially empty account cloud. The test leaves this synthetic profile in the account.
+
+Android lint produced zero blocking errors and 21 warnings in the test build, mostly template/dependency/resource/icon checks. The missing data extraction rules warning should be addressed before the signed production release to explicitly exclude sessions from Android device transfer; allowBackup=false is already set. Review the full lint output with the release candidate.
