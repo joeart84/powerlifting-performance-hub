@@ -42,3 +42,13 @@ test('Google SDK initializes once even when multiple renders call it before load
  const first=context.initGoogleSignIn();const second=context.initGoogleSignIn();release();await Promise.all([first,second]);assert.equal(initializations,1);assert.equal(buttons,1);
  vm.runInContext('googleButtonRendered=false',context);await context.initGoogleSignIn();assert.equal(initializations,1);assert.equal(buttons,2);
 });
+test('restore and undo cannot overlap while a backup changes the UI language',async()=>{
+ const s=sync();let release;const gate=new Promise(resolve=>release=resolve);
+ s.context.setLanguage=()=>gate;
+ await s.context.previewBackup({size:1000,text:async()=>JSON.stringify(PPHData.backup(profile(625),'sk'))});
+ const restoration=s.context.restoreBackup();
+ assert.equal(s.$('restoreBackup').disabled,true);assert.equal(s.$('undoDataChange').disabled,true);
+ await s.context.undoDataChange();assert.equal(s.getLocal().profile.deadliftBest,265);
+ release();await restoration;assert.equal(s.$('undoDataChange').disabled,false);
+ await s.context.undoDataChange();assert.equal(s.getLocal().profile.deadliftBest,240);
+});

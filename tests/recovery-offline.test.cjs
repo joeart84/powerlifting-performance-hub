@@ -24,7 +24,7 @@ test('valid profiles survive and missing storage returns the fallback',()=>{
 function worker(network=()=>Promise.reject(new Error('offline'))){
   const handlers={},entries=new Map(),deleted=[];
   const cache={match:async key=>entries.get(key)?.clone(),put:async(key,value)=>entries.set(key,value),addAll:async()=>{}};
-  const context={URL,Response,fetch:network,self:{location:{href:'https://app.powerlifting-calculator.com/sw.js'},addEventListener:(name,handler)=>handlers[name]=handler,skipWaiting:async()=>{},clients:{claim:async()=>{}}},caches:{open:async()=>cache,keys:async()=>['unrelated-cache','plc-performance-hub-old','plc-performance-hub-v13-backup-scoring'],delete:async key=>deleted.push(key)}};
+  const context={URL,Response,fetch:network,self:{location:{href:'https://app.powerlifting-calculator.com/sw.js'},addEventListener:(name,handler)=>handlers[name]=handler,skipWaiting:async()=>{},clients:{claim:async()=>{}}},caches:{open:async()=>cache,keys:async()=>['unrelated-cache','plc-performance-hub-old','plc-performance-hub-v13-1-backup-scoring'],delete:async key=>deleted.push(key)}};
   vm.runInNewContext(fs.readFileSync('sw.js','utf8'),context);
   return {handlers,entries,deleted};
 }

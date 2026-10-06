@@ -1271,6 +1271,7 @@ function renderAccount(){
 }
 const RESTORE_KEY=KEY+"-before-restore";
 let pendingBackup=null;
+let dataBusy=false;
 let backupReadId=0;
 let cloudBusy=false;
 let pendingCloudChange=null;
@@ -1304,25 +1305,33 @@ async function previewBackup(file){
     $("backupPreview").hidden=false;$("backupStatus").textContent="";
   }catch(error){if(requestId===backupReadId)$("backupStatus").textContent=dataMessage(error)}
 }
+function setDataBusy(value){
+  dataBusy=value;
+  for(const id of ["restoreBackup","undoDataChange","backupFile","exportBackup","cancelBackup","uploadCloud","downloadCloud"])$(id).disabled=value;
+}
 async function restoreBackup(){
-  if(!pendingBackup||cloudBusy)return;
+  if(!pendingBackup||cloudBusy||dataBusy)return;
+  setDataBusy(true);
   const copy=pendingBackup;
   try{
     rememberDevice();applyCloudPayload(copy.data);closeBackupPreview();
-    await setLanguage(copy.language);
+    if(copy.language!==languagePreference())await setLanguage(copy.language);
     if(state.profile)document.querySelector('[data-tab="settings"]').click();
     $("backupStatus").textContent=t("backup.restored");
   }catch(error){$("backupStatus").textContent=dataMessage(error)}
+  finally{setDataBusy(false)}
 }
 async function undoDataChange(){
-  if(cloudBusy)return;
+  if(cloudBusy||dataBusy)return;
+  setDataBusy(true);
   try{
     const previous=PPHData.parseBackup(localStorage.getItem(RESTORE_KEY)||"");
-    applyCloudPayload(previous.data);await setLanguage(previous.language);
+    applyCloudPayload(previous.data);if(previous.language!==languagePreference())await setLanguage(previous.language);
     localStorage.removeItem(RESTORE_KEY);$("undoDataChange").hidden=true;
     if(state.profile)document.querySelector('[data-tab="settings"]').click();
     $("backupStatus").textContent=t("backup.undone");
   }catch(error){$("backupStatus").textContent=dataMessage(error)}
+  finally{setDataBusy(false)}
 }
 function cloudIdentity(){return window.PPHCloud?.user?"firebase:"+window.PPHCloud.user.uid:session.token||""}
 function setCloudBusy(value){
@@ -1337,7 +1346,7 @@ async function readCloud(){
 }
 function closeCloudReview(){pendingCloudChange=null;$("cloudReview").hidden=true}
 async function prepareCloudChange(direction){
-  if(cloudBusy||!cloudIdentity())return;
+  if(cloudBusy||dataBusy||!cloudIdentity())return;
   closeCloudReview();setCloudBusy(true);
   const identity=cloudIdentity();let local;
   $("cloudStatus").textContent=t("sync.checking");
@@ -1355,7 +1364,7 @@ async function prepareCloudChange(direction){
   finally{setCloudBusy(false)}
 }
 async function confirmCloudChange(){
-  if(cloudBusy||!pendingCloudChange)return;
+  if(cloudBusy||dataBusy||!pendingCloudChange)return;
   const change=pendingCloudChange;setCloudBusy(true);
   try{
     const latest=await readCloud();
