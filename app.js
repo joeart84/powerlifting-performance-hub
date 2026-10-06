@@ -1115,6 +1115,10 @@ async function hubRequest(path,options={}){
 function hubAuthRequest(path,values){
   return hubRequest(path,{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded;charset=UTF-8"},body:new URLSearchParams(values)});
 }
+// Same-origin session validation on the backend is unchanged. Form POST avoids IIS OPTIONS interception.
+function hubSessionRequest(path,values={}){
+  return hubRequest(path,{method:"POST",headers:{"Accept":"application/json","Content-Type":"application/x-www-form-urlencoded;charset=UTF-8"},body:new URLSearchParams({...values,session_token:session.token})});
+}
 let emailMode="signup";
 let accountOnly=false;
 let profileEditMode=false;
@@ -1348,7 +1352,7 @@ function setCloudBusy(value){
   $("accountSignedIn").setAttribute("aria-busy",String(value));
 }
 async function readCloud(){
-  const value=window.PPHCloud?.user?await window.PPHCloud.download():(await hubRequest("/profile",{headers:authHeaders()})).profile;
+  const value=window.PPHCloud?.user?await window.PPHCloud.download():(await hubSessionRequest("/profile/read")).profile;
   if(!value||!Object.keys(value).length)return null;
   return PPHData.validatePayload(value);
 }
@@ -1381,7 +1385,7 @@ async function confirmCloudChange(){
     if(change.direction==="upload"){
       $("cloudStatus").textContent=t("dynamic.uploading");
       if(window.PPHCloud?.user)await window.PPHCloud.upload(change.local);
-      else await hubRequest("/profile",{method:"POST",headers:authHeaders(),body:JSON.stringify({profile:change.local})});
+      else await hubSessionRequest("/profile/write",{profile:JSON.stringify(change.local)});
       $("cloudStatus").textContent=t("dynamic.upload_complete");
     }else{
       rememberDevice();applyCloudPayload(latest);$("cloudStatus").textContent=t("dynamic.cloud_loaded");
@@ -1418,7 +1422,7 @@ async function resetAppData(){
       try{await window.PPHCloud.signOut()}catch(e){}
     }
     if(session.token){
-      try{await fetch(HUB_API+"/session",{method:"DELETE",headers:authHeaders()})}catch(e){}
+      try{await hubSessionRequest("/session/revoke")}catch(e){}
     }
     Object.keys(state).forEach(k=>delete state[k]);
     Object.keys(session).forEach(k=>delete session[k]);
@@ -1445,7 +1449,7 @@ async function logoutCloud(){
     try{await window.PPHCloud.signOut()}catch(err){$("cloudStatus").textContent=err.message;return}
     $("cloudStatus").textContent="";renderAccount();return;
   }
-  try{if(session.token)await fetch(HUB_API+"/session",{method:"DELETE",headers:authHeaders()})}catch(e){}
+  try{if(session.token)await hubSessionRequest("/session/revoke")}catch(e){}
   clearSession();
 }
 window.PPHFirebaseChanged=renderAccount;
