@@ -50,3 +50,22 @@ try {
 } catch (error) {
   console.warn("AdMob plugin Gradle file was not found; skipping plugin patch.");
 }
+
+// Reproducible release metadata; keep the existing package identity.
+const { cp, mkdir } = await import('node:fs/promises');
+const release = JSON.parse(await readFile(new URL('../android-release.json',import.meta.url),'utf8'));
+buildGradle = await readFile(buildGradlePath,'utf8');
+buildGradle = buildGradle.replace(/versionCode \d+/,`versionCode ${release.versionCode}`).replace(/versionName "[^"]+"/,`versionName "${release.versionName}"`);
+if (!buildGradle.includes('hub-release.gradle')) buildGradle += "\napply from: 'hub-release.gradle'\n";
+await writeFile(buildGradlePath,buildGradle);
+let variables=await readFile(new URL('../android/variables.gradle',import.meta.url),'utf8');
+variables=variables.replace(/compileSdkVersion = \d+/,`compileSdkVersion = ${release.targetSdk}`).replace(/targetSdkVersion = \d+/,`targetSdkVersion = ${release.targetSdk}`);
+await writeFile(new URL('../android/variables.gradle',import.meta.url),variables);
+let configuredManifest=await readFile(manifestPath,'utf8');
+configuredManifest=configuredManifest.replace('android:allowBackup="true"','android:allowBackup="false"').replace(/android:icon="[^"]+"/,'android:icon="@drawable/hub_icon"').replace(/android:roundIcon="[^"]+"/,'android:roundIcon="@drawable/hub_icon"');
+await writeFile(manifestPath,configuredManifest);
+await cp(new URL('../icon-512.png',import.meta.url),new URL('../android/app/src/main/res/drawable/hub_icon.png',import.meta.url));
+await cp(new URL('../native/hub-release.gradle',import.meta.url),new URL('../android/app/hub-release.gradle',import.meta.url));
+await mkdir(new URL('../android/app/src/androidTest/java/com/powerliftingcalculator/performancehub/',import.meta.url),{recursive:true});
+await cp(new URL('../native/HubSmokeTest.java',import.meta.url),new URL('../android/app/src/androidTest/java/com/powerliftingcalculator/performancehub/HubSmokeTest.java',import.meta.url));
+console.log(`Android ${release.versionName} (${release.versionCode}), target API ${release.targetSdk}; release signing comes only from your private environment.`);

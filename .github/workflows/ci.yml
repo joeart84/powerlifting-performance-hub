@@ -13,9 +13,12 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
+      - run: npm ci
       - name: Check JavaScript syntax
         run: |
           node --check app.js
+          node --check ux.js
+          node --check native-ads.mjs
           node --check hub-data.js
           node --check scoring.js
           node --check firebase-config.js
@@ -38,7 +41,6 @@ jobs:
           test -f icon-512.png
       - name: Build Capacitor mobile web bundle
         run: |
-          npm install
           npm run build:mobile
           test -f dist/index.html
           test -f dist/mobile.js

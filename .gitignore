@@ -4,3 +4,10 @@ android/.gradle/
 android/local.properties
 android/**/build/
 .DS_Store
+
+android/
+*.jks
+*.keystore
+keystore.properties
+
+_site/

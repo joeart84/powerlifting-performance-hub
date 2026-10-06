@@ -6,15 +6,15 @@
   <meta name="theme-color" content="#171d25">
   <meta name="description" content="Powerlifting athlete dashboard, meet planner and meet-day companion.">
   <title>Powerlifting Performance Hub</title>
-  <link rel="manifest" href="./manifest.webmanifest?v=13">
-  <link rel="icon" href="./icon.svg?v=13" type="image/svg+xml">
-  <link rel="apple-touch-icon" href="./icon-192.png?v=13">
-  <link rel="stylesheet" href="./app.css?v=13">
+  <link rel="manifest" href="./manifest.webmanifest?v=14">
+  <link rel="icon" href="./icon.svg?v=14" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="./icon-192.png?v=14">
+  <link rel="stylesheet" href="./app.css?v=14">
 </head>
 <body>
   <header class="topbar">
     <div class="brandLockup">
-      <a class="brandHome" href="https://powerlifting-calculator.com/" aria-label="Powerlifting Calculator home"><img class="brandMark" src="./mark.svg?v=13" width="40" height="40" alt=""></a>
+      <a class="brandHome" href="https://powerlifting-calculator.com/" aria-label="Powerlifting Calculator home"><img class="brandMark" src="./mark.svg?v=14" width="40" height="40" alt=""></a>
       <div>
         <div class="eyebrow">POWERLIFTING CALCULATOR</div>
         <h1 data-i18n="app.title">Performance Hub</h1>
@@ -72,12 +72,12 @@
       <div class="grid two">
         <label><span data-i18n="profile.name">Name</span><input id="name" placeholder="Joe Lifter"></label>
         <label><span data-i18n="profile.sex">Sex</span><select id="sex"><option value="M" data-i18n="profile.male">Male</option><option value="F" data-i18n="profile.female">Female</option></select></label>
-        <label><span data-i18n="profile.bodyweight">Bodyweight (kg)</span><input id="bodyweight" type="number" min="0.1" step="0.1" placeholder="83"></label>
-        <label><span data-i18n="profile.age">Age</span><input id="age" type="number" min="13" max="100" step="1" placeholder="40"></label>
+        <label><span data-i18n="profile.bodyweight">Bodyweight (kg)</span><input id="bodyweight" type="text" inputmode="decimal" data-decimal="true" pattern="[0-9]+([.,][0-9]+)?" data-min="0.1" data-step="0.1" placeholder="83"></label>
+        <label><span data-i18n="profile.age">Age</span><input id="age" type="number" inputmode="numeric" min="13" max="100" step="1" placeholder="40"></label>
         <label><span data-i18n="profile.next_meet_date">Next meet date</span><input id="meetDate" type="date"></label>
-        <label><span data-i18n="profile.squat_best">Squat best (kg)</span><input id="squatBest" type="number" min="0" step="0.5" placeholder="180"></label>
-        <label><span data-i18n="profile.bench_best">Bench best (kg)</span><input id="benchBest" type="number" min="0" step="0.5" placeholder="120"></label>
-        <label><span data-i18n="profile.deadlift_best">Deadlift best (kg)</span><input id="deadliftBest" type="number" min="0" step="0.5" placeholder="220"></label>
+        <label><span data-i18n="profile.squat_best">Squat best (kg)</span><input id="squatBest" type="text" inputmode="decimal" data-decimal="true" pattern="[0-9]+([.,][0-9]+)?" data-min="0" data-step="0.5" placeholder="180"></label>
+        <label><span data-i18n="profile.bench_best">Bench best (kg)</span><input id="benchBest" type="text" inputmode="decimal" data-decimal="true" pattern="[0-9]+([.,][0-9]+)?" data-min="0" data-step="0.5" placeholder="120"></label>
+        <label><span data-i18n="profile.deadlift_best">Deadlift best (kg)</span><input id="deadliftBest" type="text" inputmode="decimal" data-decimal="true" pattern="[0-9]+([.,][0-9]+)?" data-min="0" data-step="0.5" placeholder="220"></label>
       </div>
 
       <div id="profileValidationStatus" class="authStatus" role="alert"></div>
@@ -113,21 +113,21 @@
         </div>
         <div class="heroScores">
           <div class="heroScore">
-            <span data-i18n="dashboard.current_total">Current total</span>
+            <span data-i18n="dashboard.current_total">Current total</span> <button class="scoreInfo" type="button" data-score="total" data-i18n-aria="ux.score_info" aria-label="Explain score">ⓘ</button>
             <strong id="currentTotal">0</strong>
             <small>kg</small>
           </div>
           <div class="heroScore">
-            <span data-i18n="dashboard.current_dots">Current DOTS</span>
+            <span data-i18n="dashboard.current_dots">Current DOTS</span> <button class="scoreInfo" type="button" data-score="dots" data-i18n-aria="ux.score_info" aria-label="Explain score">ⓘ</button>
             <strong id="currentDots">—</strong>
             <small data-i18n="common.score">score</small>
           </div>
           <div class="heroScore">
-            <span data-i18n="score.reshel_label">Reshel · legacy</span>
+            <span data-i18n="score.reshel_label">Reshel · legacy</span> <button class="scoreInfo" type="button" data-score="reshel" data-i18n-aria="ux.score_info" aria-label="Explain score">ⓘ</button>
             <strong id="currentReshel">—</strong>
           </div>
           <div class="heroScore">
-            <span data-i18n="score.age_label">Age-adjusted total</span>
+            <span data-i18n="score.age_label">Age-adjusted total</span> <button class="scoreInfo" type="button" data-score="age" data-i18n-aria="ux.score_info" aria-label="Explain score">ⓘ</button>
             <strong id="currentMcculloch">—</strong>
             <small id="mccullochNote">Masters 40+</small>
             <button id="mccullochSetup" class="scoreSetup" hidden data-i18n="dynamic.add_birth_date">Add date of birth</button>
@@ -135,7 +135,7 @@
         </div>
       </section>
 
-      <p id="scoringNotes" class="scoreDisclaimer"></p>
+      <details class="scoreDetails"><summary data-i18n="ux.score_details">About these scores</summary><p id="scoringNotes" class="scoreDisclaimer"></p></details>
       <nav class="tabs primaryNav" aria-label="Performance Hub">
         <button data-tab="dashboard" class="active"><span class="navIcon">⌂</span><span data-i18n="nav.dashboard">Dashboard</span></button>
         <button data-tab="progress"><span class="navIcon">↗</span><span data-i18n="nav.progress">Progress</span></button>
@@ -149,6 +149,8 @@
       </nav>
 
       <section id="tab-dashboard" class="tab panel dashboardPanel">
+        <div id="nextStepCard" class="nextStepCard"><div><div class="eyebrow" data-i18n="ux.next">NEXT STEP</div><h2 id="nextStepTitle"></h2><p id="nextStepNote" class="muted"></p></div><button id="nextStepAction" class="primary" type="button"></button></div>
+        <p id="deviceSaveStatus" class="saveStatus" role="status" aria-live="polite"></p>
         <div class="sectionLead">
           <div class="eyebrow" data-i18n="dashboard.current_form">CURRENT FORM</div>
         </div>
@@ -246,6 +248,7 @@
             <h2 data-i18n="meetday.title">Tap Good or Miss after each attempt</h2>
           </div>
           <div class="meetHeaderActions">
+            <button id="toggleMeetFocus" class="primary" type="button" aria-pressed="false" data-i18n="ux.focus">Competition mode</button>
             <button class="ghost meetReportButton" type="button" data-tab="report">
               <span aria-hidden="true">▤</span>
               <span data-i18n="nav.report">Report</span>
@@ -253,6 +256,8 @@
             <button id="resetMeet" class="ghost danger" data-i18n="meetday.reset">Reset</button>
           </div>
         </div>
+        <section id="meetFocus" class="meetFocus" hidden aria-labelledby="focusTitle"><div class="eyebrow" data-i18n="ux.current_attempt">CURRENT ATTEMPT</div><h2 id="focusTitle"></h2><strong id="focusWeight" class="focusWeight"></strong><div id="focusAdjust" class="weightStepper"><button id="focusMinus" class="ghost" type="button">−2.5 kg</button><button id="focusPlus" class="ghost" type="button">+2.5 kg</button></div><div class="focusActions"><button id="focusGood" class="good" type="button" data-i18n="meetday.good">Good</button><button id="focusMiss" class="miss" type="button" data-i18n="meetday.miss">Miss</button></div><p id="focusNext" class="muted"></p><p id="focusStatus" role="status" aria-live="polite"></p><button id="focusReport" class="primary" data-tab="report" type="button" data-i18n="nav.report" hidden>Report</button></section>
+        <div class="buttonRow"><button id="undoAttempt" class="ghost" type="button" data-i18n="ux.undo_attempt" disabled>Undo last attempt change</button><span id="attemptStatus" role="status" aria-live="polite"></span></div>
         <div id="meetDayRows"></div>
         <div class="meetStats">
           <article><span data-i18n="meetday.made">Made</span><strong id="madeCount">0</strong></article>
@@ -303,10 +308,10 @@
             <div class="grid two">
               <label><span data-i18n="manual.date">Date</span><input id="manualMeetDate" type="date" required></label>
               <label><span data-i18n="manual.name">Meet name</span><input id="manualMeetName" type="text" required data-i18n-placeholder="manual.name_placeholder" placeholder="Competition name"></label>
-              <label><span data-i18n="manual.bodyweight">Bodyweight (kg)</span><input id="manualMeetBw" type="number" min="1" step="0.1" required></label>
-              <label><span data-i18n="manual.squat">Best squat (kg)</span><input id="manualMeetSquat" type="number" min="0" step="0.5" required></label>
-              <label><span data-i18n="manual.bench">Best bench (kg)</span><input id="manualMeetBench" type="number" min="0" step="0.5" required></label>
-              <label><span data-i18n="manual.deadlift">Best deadlift (kg)</span><input id="manualMeetDeadlift" type="number" min="0" step="0.5" required></label>
+              <label><span data-i18n="manual.bodyweight">Bodyweight (kg)</span><input id="manualMeetBw" type="text" inputmode="decimal" data-decimal="true" pattern="[0-9]+([.,][0-9]+)?" data-min="1" data-step="0.1" required></label>
+              <label><span data-i18n="manual.squat">Best squat (kg)</span><input id="manualMeetSquat" type="text" inputmode="decimal" data-decimal="true" pattern="[0-9]+([.,][0-9]+)?" data-min="0" data-step="0.5" required></label>
+              <label><span data-i18n="manual.bench">Best bench (kg)</span><input id="manualMeetBench" type="text" inputmode="decimal" data-decimal="true" pattern="[0-9]+([.,][0-9]+)?" data-min="0" data-step="0.5" required></label>
+              <label><span data-i18n="manual.deadlift">Best deadlift (kg)</span><input id="manualMeetDeadlift" type="text" inputmode="decimal" data-decimal="true" pattern="[0-9]+([.,][0-9]+)?" data-min="0" data-step="0.5" required></label>
             </div>
             <div class="manualMeetPreview">
               <span data-i18n="manual.total">Calculated total</span>
@@ -329,9 +334,9 @@
               </div>
               <p class="muted small" data-i18n="manual.attempt_note">Optional attempt details. Leave blank if you only know the best lifts.</p>
               <div class="manualAttempts">
-                <div><strong data-i18n="progress.squat">Squat</strong><input id="manualSq1" type="number" step="0.5" placeholder="1"><input id="manualSq2" type="number" step="0.5" placeholder="2"><input id="manualSq3" type="number" step="0.5" placeholder="3"></div>
-                <div><strong data-i18n="progress.bench">Bench</strong><input id="manualBp1" type="number" step="0.5" placeholder="1"><input id="manualBp2" type="number" step="0.5" placeholder="2"><input id="manualBp3" type="number" step="0.5" placeholder="3"></div>
-                <div><strong data-i18n="progress.deadlift">Deadlift</strong><input id="manualDl1" type="number" step="0.5" placeholder="1"><input id="manualDl2" type="number" step="0.5" placeholder="2"><input id="manualDl3" type="number" step="0.5" placeholder="3"></div>
+                <div><strong data-i18n="progress.squat">Squat</strong><input id="manualSq1" type="text" inputmode="decimal" data-decimal="true" pattern="[0-9]+([.,][0-9]+)?" data-step="0.5" placeholder="1"><input id="manualSq2" type="text" inputmode="decimal" data-decimal="true" pattern="[0-9]+([.,][0-9]+)?" data-step="0.5" placeholder="2"><input id="manualSq3" type="text" inputmode="decimal" data-decimal="true" pattern="[0-9]+([.,][0-9]+)?" data-step="0.5" placeholder="3"></div>
+                <div><strong data-i18n="progress.bench">Bench</strong><input id="manualBp1" type="text" inputmode="decimal" data-decimal="true" pattern="[0-9]+([.,][0-9]+)?" data-step="0.5" placeholder="1"><input id="manualBp2" type="text" inputmode="decimal" data-decimal="true" pattern="[0-9]+([.,][0-9]+)?" data-step="0.5" placeholder="2"><input id="manualBp3" type="text" inputmode="decimal" data-decimal="true" pattern="[0-9]+([.,][0-9]+)?" data-step="0.5" placeholder="3"></div>
+                <div><strong data-i18n="progress.deadlift">Deadlift</strong><input id="manualDl1" type="text" inputmode="decimal" data-decimal="true" pattern="[0-9]+([.,][0-9]+)?" data-step="0.5" placeholder="1"><input id="manualDl2" type="text" inputmode="decimal" data-decimal="true" pattern="[0-9]+([.,][0-9]+)?" data-step="0.5" placeholder="2"><input id="manualDl3" type="text" inputmode="decimal" data-decimal="true" pattern="[0-9]+([.,][0-9]+)?" data-step="0.5" placeholder="3"></div>
               </div>
             </details>
             <div class="buttonRow">
@@ -379,8 +384,8 @@
           <section class="toolCard">
             <h3 data-i18n="tools.simulator">Weight Class Simulator</h3>
             <div class="grid two">
-              <label><span data-i18n="tools.target_bw">Target bodyweight (kg)</span><input id="simBodyweight" type="number" step="0.1"></label>
-              <label><span data-i18n="tools.projected_total">Projected total (kg)</span><input id="simTotal" type="number" step="0.5"></label>
+              <label><span data-i18n="tools.target_bw">Target bodyweight (kg)</span><input id="simBodyweight" type="text" inputmode="decimal" data-decimal="true" pattern="[0-9]+([.,][0-9]+)?" data-step="0.1"></label>
+              <label><span data-i18n="tools.projected_total">Projected total (kg)</span><input id="simTotal" type="text" inputmode="decimal" data-decimal="true" pattern="[0-9]+([.,][0-9]+)?" data-step="0.5"></label>
             </div>
             <button id="runSimulator" class="primary" data-i18n="tools.simulate">Simulate</button>
             <div id="simResult" class="toolResult"></div>
@@ -389,8 +394,8 @@
           <section class="toolCard">
             <h3 data-i18n="tools.goal">Goal Planner</h3>
             <div class="grid two">
-              <label><span data-i18n="tools.target_dots">Target DOTS</span><input id="goalDots" type="number" step="1" placeholder="400"></label>
-              <label><span data-i18n="tools.target_bw">Target bodyweight (kg)</span><input id="goalBodyweight" type="number" step="0.1"></label>
+              <label><span data-i18n="tools.target_dots">Target DOTS</span><input id="goalDots" type="text" inputmode="decimal" data-decimal="true" pattern="[0-9]+([.,][0-9]+)?" data-step="1" placeholder="400"></label>
+              <label><span data-i18n="tools.target_bw">Target bodyweight (kg)</span><input id="goalBodyweight" type="text" inputmode="decimal" data-decimal="true" pattern="[0-9]+([.,][0-9]+)?" data-step="0.1"></label>
             </div>
             <label><span data-i18n="tools.target_date">Target date</span><input id="goalDate" type="date"></label>
             <div class="buttonRow">
@@ -482,7 +487,7 @@
               <button id="downloadCloud" class="ghost" data-i18n="account.load">Load cloud data</button>
               <button id="signOut" class="ghost danger" data-i18n="account.sign_out">Sign out</button>
             </div>
-            <div id="cloudStatus" class="muted small" role="status" aria-live="polite"></div>
+            <p><a href="./account-deletion.html" data-i18n="ux.delete_account">Request cloud account deletion</a></p><p id="accountSyncStatus" class="saveStatus" role="status"></p><div id="cloudStatus" class="muted small" role="status" aria-live="polite"></div>
             <div id="cloudReview" class="subpanel" hidden>
               <h3 data-i18n="sync.review_title">Review before replacing data</h3><p id="cloudReviewSummary"></p>
               <button id="confirmCloudChange" class="primary" type="button" data-i18n="sync.confirm">Confirm replacement</button>
@@ -502,6 +507,9 @@
       <section id="tab-settings" class="tab panel" hidden>
         <div class="eyebrow" data-i18n="settings.eyebrow">SETTINGS</div>
         <h2 data-i18n="settings.title">App settings</h2>
+        <div id="settingsBackupSlot"></div>
+        <button id="adPrivacyOptions" class="ghost" type="button" data-i18n="ux.ad_privacy" hidden>Ad privacy options</button>
+        <h3 data-i18n="ux.preferences">Language &amp; athlete</h3>
         <div class="settingsCard">
           <label>
             <span data-i18n="settings.language">Language</span>
@@ -552,13 +560,7 @@
           <p class="helpTip"><strong data-i18n="help.tip_label">Tip:</strong> <span data-i18n="help.tip">If a meet is missing from OpenPowerlifting, add it manually in Progress.</span></p>
         </div>
 
-        <div class="settingsCard dangerZone">
-          <div class="eyebrow" data-i18n="reset.eyebrow">TESTING</div>
-          <h3 data-i18n="reset.title">Reset app</h3>
-          <p class="muted" data-i18n="reset.note">Clear this device and start again from the first screen. Your cloud account is not deleted.</p>
-          <button id="resetAppData" class="ghost danger" type="button" data-i18n="reset.button">Reset app data</button>
-          <div id="resetAppStatus" class="muted small"></div>
-        </div>
+
 
         <div class="settingsCard">
           <h3 data-i18n="settings.home_location">Home location</h3>
@@ -573,9 +575,17 @@
           </div>
           <div id="locationStatus" class="muted small"></div>
         </div>
+        <details class="dangerZone"><summary data-i18n="ux.danger">Device data controls</summary>        <div class="settingsCard dangerZone">
+          <div class="eyebrow" data-i18n="reset.eyebrow">TESTING</div>
+          <h3 data-i18n="reset.title">Reset app</h3>
+          <p class="muted" data-i18n="reset.note">Clear this device and start again from the first screen. Your cloud account is not deleted.</p>
+          <button id="resetAppData" class="ghost danger" type="button" data-i18n="reset.button">Reset app data</button>
+          <div id="resetAppStatus" class="muted small"></div>
+        </div></details>
       </section>
     </section>
 
+    <div id="onboardingBackupSlot"></div>
     <section class="settingsCard backupCard" id="dataBackupCard" aria-labelledby="backupTitle">
       <h3 id="backupTitle" data-i18n="backup.title">Backup &amp; restore</h3>
       <p class="muted" data-i18n="backup.note">Save your profile, history, goals and meet plan to a file. Sign-in details are never included. Keep the file private.</p>
@@ -584,11 +594,13 @@
       <button id="undoDataChange" class="textButton" type="button" data-i18n="backup.undo" hidden>Undo last restore</button><div id="backupStatus" class="authStatus" role="status" aria-live="polite"></div>
     </section>
   </main>
+  <dialog id="scoreDialog" aria-labelledby="scoreDialogTitle"><h2 id="scoreDialogTitle"></h2><p id="scoreDialogText"></p><button id="closeScoreDialog" class="primary" type="button" data-i18n="ux.close">Close</button></dialog>
 
-  <footer class="appFooter"><span>Powerlifting Calculator · Performance Hub</span><a href="https://powerlifting-calculator.com/methodology/" data-i18n="brand.methodology">Methods &amp; scoring</a><a href="https://powerlifting-calculator.com/privacy-policy-2/" data-i18n="brand.privacy">Privacy</a><a href="https://powerlifting-calculator.com/contact/" data-i18n="brand.contact">Help &amp; feedback</a></footer>
-  <script src="./scoring.js?v=13"></script>
-  <script src="./hub-data.js?v=13"></script>
-  <script src="./app.js?v=13.1"></script>
+  <footer class="appFooter"><span>Powerlifting Calculator · Performance Hub</span><a href="https://powerlifting-calculator.com/methodology/" data-i18n="brand.methodology">Methods &amp; scoring</a><a href="./app-privacy.html" data-i18n="brand.privacy">Privacy</a><a href="https://powerlifting-calculator.com/contact/" data-i18n="brand.contact">Help &amp; feedback</a></footer>
+  <script src="./ux.js?v=14"></script>
+  <script src="./scoring.js?v=14"></script>
+  <script src="./hub-data.js?v=14"></script>
+  <script src="./app.js?v=14"></script>
   <script src="./firebase-config.js"></script>
   <script type="module" src="./firebase-auth.js"></script>
 </body>

@@ -101,7 +101,7 @@ async function setLanguage(preference,announce=false){
 async function initI18n(){await setLanguage(languagePreference(),false)}
 
 function save(){
-  localStorage.setItem(KEY,JSON.stringify(state));
+  try{localStorage.setItem(KEY,JSON.stringify(state));renderSaveStatus()}catch(error){if($("deviceSaveStatus"))$("deviceSaveStatus").textContent=t("ux.save_failed");throw error}
 }
 function saveSession(){localStorage.setItem(SESSION_KEY,JSON.stringify(session))}
 function num(v){const n=Number(String(v??"").replace(",",".").trim());return Number.isFinite(n)?n:0}
@@ -181,7 +181,7 @@ function applyCloudPayload(payload){
   Object.keys(state).forEach(key=>delete state[key]);
   Object.assign(state,next);
   accountOnly=false;profileEditMode=false;
-  render();
+  clearAttemptUndo();renderSaveStatus();render();
 }
 
 function dotsScore(sex,bodyweight,total){const value=PPHScoring.dots(sex,num(bodyweight),num(total));return value===null?null:round(value,2)}
@@ -537,6 +537,7 @@ function renderTools(){
 
 function render(){
   const p=state.profile;
+  moveBackupCard();
   const showProfileForm=!accountOnly&&(!p||profileEditMode);
   $("dataBackupCard").hidden=!showProfileForm&&$("tab-settings").hidden;
   $("onboarding").hidden=!showProfileForm;
@@ -581,7 +582,7 @@ function render(){
   const d=daysUntil(p.meetDate);
   $("countdown").textContent=p.meetDate?(d>=0?t("dynamic.days_until",{days:d}):t("dynamic.meet_passed")):t("dynamic.add_meet_date");
   $("meetSnapshot").innerHTML="<div><strong>"+esc(t("dynamic.meet_label"))+":</strong> "+esc(p.meetName||t("common.not_set"))+"</div><div><strong>"+esc(t("dynamic.date_label"))+":</strong> "+esc(p.meetDate||t("common.not_set"))+"</div><div><strong>"+esc(t("planner.projected_total"))+":</strong> "+totalFromPlan()+" kg</div><div><strong>"+esc(t("dynamic.current_best"))+":</strong> "+currentBestTotal()+" kg</div><div><strong>"+esc(t("dynamic.current_dots"))+":</strong> "+(currentDots?currentDots.toFixed(2):"—")+"</div>";
-  renderGoalSnapshot();
+  renderGoalSnapshot();renderNextStep();renderSaveStatus();
   renderPlanner();renderMeetDay();renderProgress();renderTools();renderReport();renderAccount();populateLocationSettings();populateAthleteProfileSettings();renderCompetitionFinder();
 }
 
@@ -602,14 +603,15 @@ function renderPlanner(){
     const g=document.createElement("div");g.className="liftGroup";g.innerHTML="<h3>"+esc(t("progress."+l))+"</h3>";
     state.plan[l].forEach((v,i)=>{
       const row=document.createElement("div");row.className="attemptRow";
-      row.innerHTML="<span>"+esc(t("planner.attempt"))+" "+(i+1)+"</span><input type=\"number\" step=\"2.5\" data-lift=\""+l+"\" data-idx=\""+i+"\" value=\""+(v||"")+"\" placeholder=\"kg\">";
+      const label=t("progress."+l)+" · "+t("planner.attempt")+" "+(i+1);
+      row.innerHTML='<label for="weight-'+l+'-'+i+'">'+esc(t("planner.attempt"))+' '+(i+1)+'</label><div class="weightStepper"><button class="ghost" type="button" data-delta="-2.5" aria-label="'+esc(t("ux.decrease",{attempt:label}))+'">−</button><input id="weight-'+l+'-'+i+'" type="text" inputmode="decimal" data-decimal data-min="0" pattern="[0-9]+([.,][0-9]+)?" data-lift="'+l+'" data-idx="'+i+'" value="'+(v||'')+'" placeholder="kg" aria-label="'+esc(label)+'"><button class="ghost" type="button" data-delta="2.5" aria-label="'+esc(t("ux.increase",{attempt:label}))+'">+</button></div>';
+      const input=row.querySelector("input");
+      const commit=()=>{if(!validateDecimalInput(input))return;clearAttemptUndo();state.plan[l][i]=num(input.value);save();$("projectedTotal").textContent=totalFromPlan()+" kg";renderMeetDay();renderReport();renderNextStep()};
+      input.addEventListener("input",commit);
+      row.querySelectorAll('[data-delta]').forEach(button=>button.addEventListener("click",()=>{if(!validateDecimalInput(input))return;input.value=PPHUX.adjust(input.value,Number(button.dataset.delta));commit()}));
       g.appendChild(row);
     });root.appendChild(g);
   });
-  root.querySelectorAll("input").forEach(inp=>inp.addEventListener("input",e=>{
-    state.plan[e.target.dataset.lift][Number(e.target.dataset.idx)]=num(e.target.value);save();
-    $("projectedTotal").textContent=totalFromPlan()+" kg";renderMeetDay();renderReport();
-  }));
   $("projectedTotal").textContent=totalFromPlan()+" kg";
 }
 
@@ -625,9 +627,9 @@ function renderMeetDay(){
   });
   root.querySelectorAll(".attemptActions button").forEach(b=>b.addEventListener("click",e=>{
     const lift=e.target.dataset.lift,idx=Number(e.target.dataset.idx),r=e.target.dataset.r;
-    state.results[lift][idx]=state.results[lift][idx]===r?"":r;save();renderMeetDay();renderReport();
+    updateAttempt(lift,idx,r);
   }));
-  const mm=madeMiss();$("madeCount").textContent=mm.made;$("missCount").textContent=mm.miss;$("liveTotal").textContent=liveTotal()+" kg";
+  const mm=madeMiss();$("madeCount").textContent=mm.made;$("missCount").textContent=mm.miss;$("liveTotal").textContent=liveTotal()+" kg";renderMeetFocus();
 }
 
 function svgChart(rows,key){
@@ -1078,6 +1080,7 @@ async function shareResultCard(){
     const file=new File([blob],"powerlifting-meet-report.png",{type:"image/png"});
     const record=buildMeetRecord(),p=state.profile||{};
     const text=(p.name||"Athlete")+" · "+record.total+" kg total · "+(record.dots?Number(record.dots).toFixed(2)+" DOTS":"Powerlifting meet");
+    if(window.PPHNative?.shareImage){await window.PPHNative.shareImage(blob,file.name,text);return}
     if(navigator.share&&navigator.canShare&&navigator.canShare({files:[file]})){
       await navigator.share({title:"Powerlifting Meet Report",text,files:[file]});
     }else{
@@ -1103,7 +1106,7 @@ async function hubRequest(path,options={}){
     const key="auth.api_"+data.code;
     const error=new Error(messages[key]!==undefined?t(key):(data.message||t("auth.server_error")));
     error.code=data.code;error.status=res.status;
-    if(res.status===401&&session.token)clearSession();
+    if(res.status===401&&session.token){clearSession();$("accountStatus").textContent=t("ux.session_expired");}
     throw error;
   }
   return data;
@@ -1217,6 +1220,8 @@ let googleIdentityInitialized=false;
 async function initGoogleSignIn(){
   const container=$("googleSignInButton"),status=$("googleStatus");
   if(!container||googleButtonRendered||googleSignInBusy||session.token||window.PPHCloud?.user)return;
+  if(window.Capacitor?.isNativePlatform?.()){container.hidden=true;status.textContent=t("ux.native_email");return}
+  container.hidden=false;
   googleSignInBusy=true;
   try{
     await loadGoogleIdentity();
@@ -1268,6 +1273,7 @@ function renderAccount(){
     if(session.pendingEmail){$("accountEmail").value=session.pendingEmail;$("codeStep").hidden=false}
     queueMicrotask(()=>initGoogleSignIn());
   }
+  renderSaveStatus();
 }
 const RESTORE_KEY=KEY+"-before-restore";
 let pendingBackup=null;
@@ -1283,11 +1289,12 @@ function rememberDevice(){
   $("undoDataChange").hidden=false;
 }
 function closeBackupPreview(){pendingBackup=null;backupReadId++;$("backupPreview").hidden=true;$("backupFile").value=""}
-function exportBackup(){
+async function exportBackup(){
   const status=$("backupStatus");
   try{
     const text=JSON.stringify(PPHData.backup(cloudPayload(),languagePreference()),null,2);
     if(new TextEncoder().encode(text).length>PPHData.MAX_BYTES)throw new Error("data.too_large");
+    if(window.PPHNative?.exportFile){await window.PPHNative.exportFile(text,"powerlifting-hub-backup-"+todayIso()+".json");status.textContent=t("backup.exported");return}
     const url=URL.createObjectURL(new Blob([text],{type:"application/json"}));
     const link=document.createElement("a");link.href=url;link.download="powerlifting-hub-backup-"+todayIso()+".json";
     document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),60000);
@@ -1355,7 +1362,7 @@ async function prepareCloudChange(direction){
     const remote=await readCloud();
     if(identity!==cloudIdentity()||PPHData.fingerprint(local)!==PPHData.fingerprint(cloudPayload()))throw new Error("sync.changed");
     if(direction==="download"&&!remote)throw new Error("dynamic.no_cloud");
-    if(remote&&PPHData.fingerprint(local)===PPHData.fingerprint(remote)){$("cloudStatus").textContent=t("sync.same");return}
+    if(remote&&PPHData.fingerprint(local)===PPHData.fingerprint(remote)){markCloudSynced(local);$("cloudStatus").textContent=t("sync.same");return}
     pendingCloudChange={direction,identity,local,remote};
     $("cloudReviewSummary").textContent=t("sync.summary",{device:backupSummary(local),cloud:remote?backupSummary(remote):t("sync.empty")});
     $("confirmCloudChange").textContent=t(direction==="upload"?"sync.use_device":"sync.use_cloud");
@@ -1378,7 +1385,7 @@ async function confirmCloudChange(){
     }else{
       rememberDevice();applyCloudPayload(latest);$("cloudStatus").textContent=t("dynamic.cloud_loaded");
     }
-    closeCloudReview();
+    markCloudSynced(change.direction==="upload"?change.local:latest);closeCloudReview();
   }catch(error){closeCloudReview();$("cloudStatus").textContent=dataMessage(error)}
   finally{setCloudBusy(false)}
 }
@@ -1414,7 +1421,7 @@ async function resetAppData(){
     }
     Object.keys(state).forEach(k=>delete state[k]);
     Object.keys(session).forEach(k=>delete session[k]);
-    localStorage.removeItem(KEY);
+    localStorage.removeItem(KEY);localStorage.removeItem(SAVE_META_KEY);localStorage.removeItem(RESTORE_KEY);clearAttemptUndo();
     LEGACY_KEYS.forEach(k=>localStorage.removeItem(k));
     localStorage.removeItem(SESSION_KEY);
     accountOnly=false;
@@ -1447,7 +1454,7 @@ function renderReport(){
   $("reportTitle").textContent=attempts?t("dynamic.attempts_made",{made:mm.made,attempts:attempts}):t("report.empty");
   const total=liveTotal(),success=attempts?Math.round(mm.made/attempts*1000)/10:0;
   const p=state.profile||{},dots=total?dotsScore(p.sex,p.bodyweight,total):null;
-  body.innerHTML="<div class=\"reportCard\"><h3>"+esc(p.meetName||"Meet Day")+"</h3><div class=\"reportGrid\"><div><span>Success rate</span><strong>"+success+"%</strong></div><div><span>Best total</span><strong>"+total+" kg</strong></div><div><span>DOTS</span><strong>"+(dots?dots.toFixed(2):"—")+"</strong></div></div><p style=\"margin-top:14px\">Squat "+(bestMade("squat")||"—")+" · Bench "+(bestMade("bench")||"—")+" · Deadlift "+(bestMade("deadlift")||"—")+"</p></div>";
+  body.innerHTML="<div class=\"reportCard\"><h3>"+esc(p.meetName||t("nav.meetday"))+"</h3><div class=\"reportGrid\"><div><span>"+esc(t("ux.success_rate"))+"</span><strong>"+success+"%</strong></div><div><span>"+esc(t("meetday.best_total"))+"</span><strong>"+total+" kg</strong></div><div><span>DOTS</span><strong>"+(dots?dots.toFixed(2):"—")+"</strong></div></div><p style=\"margin-top:14px\">"+esc(t("progress.squat"))+" "+(bestMade("squat")||"—")+" · "+esc(t("progress.bench"))+" "+(bestMade("bench")||"—")+" · "+esc(t("progress.deadlift"))+" "+(bestMade("deadlift")||"—")+"</p></div>";
 }
 
 function populateProfileForm(){
@@ -1513,7 +1520,7 @@ $("onboardingImport").addEventListener("click",()=>importAthlete($("onboardingLi
 $("progressImport").addEventListener("click",()=>importAthlete($("progressLifter").value,$("importStatus"),$("progressCandidates")));
 $("onboardingLifter").addEventListener("keydown",e=>{if(e.key==="Enter")$("onboardingImport").click()});
 $("progressLifter").addEventListener("keydown",e=>{if(e.key==="Enter")$("progressImport").click()});
-$("resetMeet").addEventListener("click",()=>{if(confirm(t("dynamic.confirm_reset"))){state.results=blankResults();save();renderMeetDay();renderReport()}});
+$("resetMeet").addEventListener("click",()=>{if(confirm(t("dynamic.confirm_reset"))){clearAttemptUndo();state.results=blankResults();save();renderMeetDay();renderReport();renderNextStep()}});
 $("oplCsv").addEventListener("change",async e=>{
   const file=e.target.files&&e.target.files[0];if(!file)return;
   $("importStatus").textContent=t("dynamic.reading_file",{name:file.name});
@@ -1612,13 +1619,105 @@ document.querySelectorAll("[data-tab]").forEach(b=>b.addEventListener("click",()
   $("dataBackupCard").hidden=target!=="settings";
   document.querySelectorAll("[data-tab]").forEach(x=>{x.classList.toggle("active",x.dataset.tab===target);x.setAttribute("aria-pressed",String(x.dataset.tab===target))});
   document.querySelectorAll(".tab").forEach(x=>x.hidden=x.id!=="tab-"+target);
+  moveBackupCard();renderMeetFocus();
+  document.dispatchEvent(new Event("pph:tab-change"));
   window.scrollTo({top:0,behavior:reducedMotion()?"auto":"smooth"});
 }));
 $("shareReport").addEventListener("click",async()=>{const mm=madeMiss(),p=state.profile||{},total=liveTotal(),dots=total?dotsScore(p.sex,p.bodyweight,total):null,text=(p.name?p.name+"'s":"My")+" powerlifting meet: "+mm.made+"/"+(mm.made+mm.miss)+" attempts made, "+total+" kg total"+(dots?", "+dots.toFixed(2)+" DOTS":"")+". Built with Powerlifting Performance Hub.";if(navigator.share){await navigator.share({title:"Powerlifting Meet Report",text})}else if(navigator.clipboard){await navigator.clipboard.writeText(text);alert(t("dynamic.report_copied"))}});
 let deferredPrompt;window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();deferredPrompt=e;$("installBtn").hidden=false});
 $("installBtn").addEventListener("click",async()=>{if(!deferredPrompt)return;deferredPrompt.prompt();await deferredPrompt.userChoice;deferredPrompt=null;$("installBtn").hidden=true});
-if("serviceWorker" in navigator)window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js"));
+if("serviceWorker" in navigator&&!window.Capacitor?.isNativePlatform?.())window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js"));
+const SAVE_META_KEY=KEY+"-save-meta";
+const ATTEMPT_UNDO_KEY=KEY+"-attempt-undo";
+let meetFocus=false;
+function moveBackupCard(){
+  const card=$("dataBackupCard"),slot=$($("tab-settings").hidden?"onboardingBackupSlot":"settingsBackupSlot");
+  if(card&&slot&&card.parentElement!==slot)slot.appendChild(card);
+}
+function renderNextStep(){
+  if(!state.profile)return;
+  const step=PPHUX.nextStep(state.profile,state.plan,state.results);
+  $("nextStepTitle").textContent=t("ux.step_"+step);
+  $("nextStepNote").textContent=t("ux.note_"+step);
+  $("nextStepAction").textContent=t("ux.action_"+step);
+  $("nextStepAction").dataset.step=step;
+}
+function syncAccountIdentity(){return window.PPHCloud?.user?.uid?"firebase:"+window.PPHCloud.user.uid:session.token&&session.email?"email:"+session.email:""}
+function saveMeta(){return readStoredObject(SAVE_META_KEY,{})}
+function renderSaveStatus(){
+  const meta=saveMeta(),identity=syncAccountIdentity();
+  const last=meta.syncedIdentity===identity&&meta.syncedAt?new Date(meta.syncedAt).toLocaleString(currentLanguage):"";
+  const match=!!identity&&meta.syncedIdentity===identity&&meta.syncedFingerprint===PPHData.fingerprint(cloudPayload());
+  const device=t("ux.saved_device")+(navigator.onLine===false?" · "+t("ux.offline"):"");
+  const detail=identity?(match?t("ux.synced"):t("ux.unsynced"))+(last?" · "+t("ux.last_sync",{date:last}):""):t("ux.device_only");
+  if($("deviceSaveStatus"))$("deviceSaveStatus").textContent=device+" · "+detail;
+  if($("accountSyncStatus"))$("accountSyncStatus").textContent=detail;
+  if($("cloudBadge")){$("cloudBadge").textContent=match?t("ux.synced_short"):identity?t("ux.unsynced_short"):t("ux.device_short");$("cloudBadge").title=device+" · "+detail;}
+}
+function markCloudSynced(payload){
+  try{localStorage.setItem(SAVE_META_KEY,JSON.stringify({...saveMeta(),syncedAt:new Date().toISOString(),syncedIdentity:syncAccountIdentity(),syncedFingerprint:PPHData.fingerprint(payload)}))}catch(error){}
+  renderSaveStatus();
+}
+function rememberAttempts(){localStorage.setItem(ATTEMPT_UNDO_KEY,JSON.stringify({plan:state.plan,results:state.results}));$("undoAttempt").disabled=false}
+function clearAttemptUndo(){localStorage.removeItem(ATTEMPT_UNDO_KEY);if($("undoAttempt"))$("undoAttempt").disabled=true}
+function updateAttempt(lift,index,result){
+  const weight=num(state.plan[lift]?.[index]);if(weight<=0){$("attemptStatus").textContent=t("ux.need_weight");return}
+  rememberAttempts();state.results[lift][index]=state.results[lift][index]===result?"":result;
+  save();renderMeetDay();renderReport();renderNextStep();$("attemptStatus").textContent=t("ux.attempt_saved");
+}
+function undoAttemptChange(){
+  try{
+    const raw=localStorage.getItem(ATTEMPT_UNDO_KEY);if(!raw)return;
+    const previous=JSON.parse(raw),valid=PPHData.validatePayload({...cloudPayload(),plan:previous.plan,results:previous.results});
+    state.plan=valid.plan;state.results=valid.results;save();clearAttemptUndo();renderPlanner();renderMeetDay();renderReport();renderNextStep();$("attemptStatus").textContent=t("ux.attempt_undone");
+  }catch(error){$("attemptStatus").textContent=dataMessage(error)}
+}
+function currentAttempt(){return PPHUX.queue(state.plan,state.results).find(a=>!a.result)}
+function renderMeetFocus(){
+  $("meetFocus").hidden=!meetFocus;$("meetDayRows").hidden=meetFocus;
+  document.body.classList.toggle("meetFocusMode",meetFocus&&!$("tab-meetday").hidden);
+  $("toggleMeetFocus").textContent=t(meetFocus?"ux.exit_focus":"ux.focus");$("toggleMeetFocus").setAttribute("aria-pressed",String(meetFocus));
+  $("undoAttempt").disabled=!localStorage.getItem(ATTEMPT_UNDO_KEY);
+  const attempt=currentAttempt();
+  $("focusTitle").textContent=attempt?t("progress."+attempt.lift)+" · "+t("planner.attempt")+" "+(attempt.index+1):t("ux.meet_complete");
+  $("focusWeight").textContent=attempt?attempt.weight+" kg":liveTotal()+" kg";
+  const queue=PPHUX.queue(state.plan,state.results).filter(a=>!a.result),next=queue[1];
+  $("focusNext").textContent=next?t("ux.next_attempt",{lift:t("progress."+next.lift),attempt:next.index+1,weight:next.weight}):attempt?t("ux.last_attempt"):t("ux.complete_note");
+  $("focusAdjust").hidden=!attempt;$("focusGood").hidden=!attempt;$("focusMiss").hidden=!attempt;
+  $("focusGood").disabled=!attempt||attempt.weight<=0;$("focusMiss").disabled=!attempt||attempt.weight<=0;
+  $("focusStatus").textContent=attempt&&attempt.weight<=0?t("ux.need_weight"):"";$("focusReport").hidden=!!attempt;
+}
+function adjustFocusWeight(delta){const attempt=currentAttempt();if(!attempt)return;rememberAttempts();state.plan[attempt.lift][attempt.index]=PPHUX.adjust(String(attempt.weight),delta);save();renderPlanner();renderMeetDay();renderReport();renderNextStep()}
+function validateDecimalInput(input){
+  const value=input.value.trim(),n=PPHUX.decimal(value);
+  const invalid=value!==""&&(n===null||(input.dataset.min!==undefined&&n<Number(input.dataset.min))||(input.dataset.max!==undefined&&n>Number(input.dataset.max)));
+  input.setCustomValidity(invalid?t("ux.valid_number"):"");input.setAttribute("aria-invalid",String(invalid));return !invalid;
+}
+function initDecimalInputs(){document.querySelectorAll('[data-decimal]').forEach(input=>{input.addEventListener("input",()=>validateDecimalInput(input));validateDecimalInput(input)})}
+function openScoreInfo(type){
+  $("scoreDialogTitle").textContent=t("ux.score_"+type+"_title");$("scoreDialogText").textContent=t("ux.score_"+type+"_note");$("scoreDialog").showModal();
+}
+function initUX(){
+  initDecimalInputs();
+  $("nextStepAction").addEventListener("click",()=>{
+    const step=$("nextStepAction").dataset.step,target=step==="find"||step==="plan"?"planner":step==="report"?"report":"meetday";
+    document.querySelector('[data-tab="'+target+'"]').click();
+    if(step==="plan")$("plannerRows").scrollIntoView({block:"start",behavior:reducedMotion()?"auto":"smooth"});
+    if(step==="meet"){meetFocus=true;renderMeetFocus()}
+  });
+  $("toggleMeetFocus").addEventListener("click",()=>{meetFocus=!meetFocus;renderMeetFocus()});
+  $("focusGood").addEventListener("click",()=>{const a=currentAttempt();if(a)updateAttempt(a.lift,a.index,"good")});
+  $("focusMiss").addEventListener("click",()=>{const a=currentAttempt();if(a)updateAttempt(a.lift,a.index,"miss")});
+  $("focusMinus").addEventListener("click",()=>adjustFocusWeight(-2.5));$("focusPlus").addEventListener("click",()=>adjustFocusWeight(2.5));
+  $("undoAttempt").addEventListener("click",undoAttemptChange);
+  document.querySelectorAll('[data-score]').forEach(button=>button.addEventListener("click",()=>openScoreInfo(button.dataset.score)));
+  $("closeScoreDialog").addEventListener("click",()=>$("scoreDialog").close());
+  window.addEventListener("online",renderSaveStatus);window.addEventListener("offline",renderSaveStatus);
+  window.addEventListener("pph:native-ready",()=>{googleButtonRendered=false;renderAccount()});
+}
+
 async function initApp(){
+  initUX();
   ensureState();
   if(session.expiresAt&&Date.parse(session.expiresAt)<=Date.now())clearSession();
   await initI18n();

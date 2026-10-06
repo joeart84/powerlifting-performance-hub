@@ -1,140 +1,54 @@
 import { Capacitor } from "@capacitor/core";
-import {
-  AdMob,
-  AdmobConsentStatus,
-  BannerAdPluginEvents,
-  BannerAdPosition,
-  BannerAdSize
-} from "@capacitor-community/admob";
+import { App } from "@capacitor/app";
+import { Filesystem, Directory, Encoding } from "@capacitor/filesystem";
+import { Share } from "@capacitor/share";
+import { AdMob, AdmobConsentStatus, BannerAdPluginEvents, BannerAdPosition, BannerAdSize } from "@capacitor-community/admob";
+import { createAdController } from "./native-ads.mjs";
 
-const ADMOB_BANNER_ID_ANDROID = "ca-app-pub-3940256099942544/6300978111";
-let initialized = false;
-let bannerCreated = false;
-let bannerHidden = false;
-let bannerListenersReady = false;
-
-async function ensureBannerDebugListeners() {
-  if (bannerListenersReady) return;
-  bannerListenersReady = true;
-
-  await AdMob.addListener(BannerAdPluginEvents.Loaded, () => {
-    console.info("[AdMob] banner loaded");
-    reserveBannerSpace(60);
-  });
-
-  await AdMob.addListener(BannerAdPluginEvents.FailedToLoad, (error) => {
-    console.error("[AdMob] banner failed to load", error);
-    reserveBannerSpace(0);
-  });
-
-  await AdMob.addListener(BannerAdPluginEvents.SizeChanged, (size) => {
-    console.info("[AdMob] banner size changed", size);
-    reserveBannerSpace(size?.height || 60);
-  });
-
-  await AdMob.addListener(BannerAdPluginEvents.AdImpression, () => {
-    console.info("[AdMob] banner impression");
-  });
-}
-
-function activeTabName() {
-  const active = document.querySelector("[data-tab].active");
-  return active?.dataset?.tab || "";
-}
-
-function shouldHideAd() {
-  const tab = activeTabName();
-  return tab === "meetday" || tab === "account";
-}
-
-function reserveBannerSpace(height = 0) {
-  const pixels = Math.max(0, Math.round(Number(height) || 0));
-  document.documentElement.style.setProperty("--native-ad-space", `${pixels}px`);
-}
-
-async function ensureBanner() {
-  if (!Capacitor.isNativePlatform() || Capacitor.getPlatform() !== "android") return;
-  if (shouldHideAd()) {
-    if (bannerCreated && !bannerHidden) {
-      await AdMob.hideBanner();
-      bannerHidden = true;
+if (Capacitor.isNativePlatform()) {
+  window.PPHNative = {
+    async exportFile(text,name){
+      const file=await Filesystem.writeFile({path:name.replace(/[^a-zA-Z0-9._-]/g,'_'),data:text,directory:Directory.Cache,encoding:Encoding.UTF8});
+      await Share.share({title:'Powerlifting Hub backup',files:[file.uri],dialogTitle:'Save or share backup'});
+    },
+    async shareImage(blob,name,text){
+      const data=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(String(reader.result).split(',')[1]);reader.onerror=reject;reader.readAsDataURL(blob)});
+      const file=await Filesystem.writeFile({path:name,data,directory:Directory.Cache});
+      await Share.share({title:'Powerlifting meet report',text,files:[file.uri]});
     }
-    reserveBannerSpace(0);
-    return;
-  }
-
-  if (!initialized) {
-    await AdMob.initialize();
-    initialized = true;
-    await ensureBannerDebugListeners();
-
-    let consentInfo = await AdMob.requestConsentInfo();
-    console.info("[AdMob] consent info", consentInfo);
-
-    if (
-      consentInfo.isConsentFormAvailable &&
-      consentInfo.status === AdmobConsentStatus.REQUIRED
-    ) {
-      consentInfo = await AdMob.showConsentForm();
-      console.info("[AdMob] consent after form", consentInfo);
-    }
-
-    if (!consentInfo.canRequestAds) {
-      console.info("[AdMob] ads blocked by consent state");
-      return;
-    }
-  }
-
-  if (!bannerCreated) {
-    console.info("[AdMob] requesting test banner");
-    await AdMob.showBanner({
-      adId: ADMOB_BANNER_ID_ANDROID,
-      adSize: BannerAdSize.ADAPTIVE_BANNER,
-      position: BannerAdPosition.BOTTOM_CENTER,
-      margin: 0,
-      isTesting: true
-    });
-    bannerCreated = true;
-    bannerHidden = false;
-  } else if (bannerHidden) {
-    await AdMob.resumeBanner();
-    bannerHidden = false;
-  }
-
-  reserveBannerSpace(60);
-}
-
-function syncBannerVisibility() {
-  ensureBanner().catch((error) => {
-    console.error("[AdMob] banner error", error);
+  };
+  window.dispatchEvent(new Event('pph:native-ready'));
+  App.addListener('backButton',()=>{
+    const dialog=document.querySelector('dialog[open]');if(dialog){dialog.close();return}
+    const editing=document.getElementById('cancelProfileEdit');if(editing&&!editing.hidden){editing.click();return}
+    const accountBack=document.getElementById('accountBackToProfile');if(accountBack&&!accountBack.hidden&&!document.getElementById('tab-account').hidden){accountBack.click();return}
+    const dashboard=document.querySelector('[data-tab="dashboard"]');
+    if(dashboard&&!dashboard.classList.contains('active')&&!document.getElementById('app').hidden){dashboard.click();return}
+    App.exitApp();
   });
 }
 
-window.addEventListener("DOMContentLoaded", () => {
-  const style = document.createElement("style");
-  style.textContent = [
-    "body{padding-bottom:var(--native-ad-space,0px)!important;transition:padding-bottom .18s ease}",
-    "@media(max-width:760px){",
-    ".primaryNav{bottom:calc(var(--native-ad-space,0px) + 40px + env(safe-area-inset-bottom,0px))!important;transition:bottom .18s ease}",
-    ".shell{padding-bottom:24px!important}",
-    "footer{padding-bottom:calc(92px + var(--native-ad-space,0px) + env(safe-area-inset-bottom,0px))!important}",
-    "}"
-  ].join("");
-  document.head.appendChild(style);
-
-  document.addEventListener("click", (event) => {
-    if (event.target.closest("[data-tab]")) {
-      setTimeout(syncBannerVisibility, 0);
-    }
-  });
-
-  const accountSection = document.getElementById("tab-account");
-  if (accountSection) {
-    new MutationObserver(syncBannerVisibility).observe(accountSection, {
-      attributes: true,
-      attributeFilter: ["hidden"]
-    });
-  }
-
-  setTimeout(syncBannerVisibility, 500);
-});
+function setupAndroid(){
+  if(!Capacitor.isNativePlatform()||Capacitor.getPlatform()!=='android')return;
+  document.body.classList.add('nativeAndroid');
+  const space=height=>document.documentElement.style.setProperty('--native-ad-space',`${Math.max(0,Math.round(Number(height)||0))}px`);
+  const hidden=()=>!document.getElementById('onboarding').hidden||!document.getElementById('tab-meetday').hidden||!document.getElementById('tab-account').hidden||document.body.classList.contains('meetFocusMode');
+  const consentAdapter={
+    initialize:()=>AdMob.initialize(),
+    requestConsentInfo:async()=>normalizeConsent(await AdMob.requestConsentInfo()),
+    showConsentForm:async()=>normalizeConsent(await AdMob.showConsentForm()),
+    showPrivacyOptionsForm:()=>AdMob.showPrivacyOptionsForm(),
+    showBanner:options=>AdMob.showBanner(options),hideBanner:()=>AdMob.hideBanner(),resumeBanner:()=>AdMob.resumeBanner()
+  };
+  function normalizeConsent(info){return {...info,status:info.status===AdmobConsentStatus.REQUIRED?'REQUIRED':info.status,privacyOptionsRequirementStatus:info.privacyOptionsRequirementStatus}}
+  const controller=createAdController({admob:consentAdapter,hidden,onSpace:space,onPrivacy:required=>{document.getElementById('adPrivacyOptions').hidden=!required},options:{adId:'ca-app-pub-3940256099942544/6300978111',adSize:BannerAdSize.ADAPTIVE_BANNER,position:BannerAdPosition.BOTTOM_CENTER,margin:0,isTesting:true}});
+  const sync=()=>controller.sync().catch(()=>space(0));
+  AdMob.addListener(BannerAdPluginEvents.SizeChanged,size=>space(hidden()?0:size?.height||60));
+  AdMob.addListener(BannerAdPluginEvents.FailedToLoad,()=>space(0));
+  document.getElementById('adPrivacyOptions').addEventListener('click',()=>controller.privacy().catch(()=>space(0)));
+  document.addEventListener('pph:tab-change',sync);
+  const observer=new MutationObserver(sync);
+  for(const id of ['onboarding','tab-account','tab-meetday'])observer.observe(document.getElementById(id),{attributes:true,attributeFilter:['hidden']});
+  sync();
+}
+if(document.readyState==='loading')window.addEventListener('DOMContentLoaded',setupAndroid,{once:true});else setupAndroid();

@@ -1,0 +1,9 @@
+{
+  "applicationId": "com.powerliftingcalculator.performancehub",
+  "versionCode": 14,
+  "versionName": "0.14.0",
+  "minSdk": 24,
+  "targetSdk": 36,
+  "adsMode": "test",
+  "nativeGoogleSignIn": false
+}

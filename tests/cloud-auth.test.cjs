@@ -6,7 +6,7 @@ function sync(){
  let local=profile(),remote=profile(625),uploads=[],downloads=0;
  const elements=new Map(),storage=new Map();
  const $=id=>{if(!elements.has(id))elements.set(id,{hidden:true,disabled:false,textContent:'',value:'',addEventListener(){},setAttribute(){}});return elements.get(id)};
- const context={PPHData,KEY:'test',session:{},state:{},$: $,num:Number,t:key=>key,messages:{},TextEncoder,Blob,URL,setTimeout,localStorage:{getItem:key=>storage.get(key)||null,setItem:(key,value)=>storage.set(key,value),removeItem:key=>storage.delete(key)},languagePreference:()=> 'en',cloudPayload:()=>structuredClone(local),applyCloudPayload:value=>{local=PPHData.validatePayload(value)},window:{PPHCloud:{user:{uid:'test-user'},download:async()=>{downloads++;return structuredClone(remote)},upload:async value=>uploads.push(value)}}};
+ const context={markCloudSynced(){},PPHData,KEY:'test',session:{},state:{},$: $,num:Number,t:key=>key,messages:{},TextEncoder,Blob,URL,setTimeout,localStorage:{getItem:key=>storage.get(key)||null,setItem:(key,value)=>storage.set(key,value),removeItem:key=>storage.delete(key)},languagePreference:()=> 'en',cloudPayload:()=>structuredClone(local),applyCloudPayload:value=>{local=PPHData.validatePayload(value)},window:{PPHCloud:{user:{uid:'test-user'},download:async()=>{downloads++;return structuredClone(remote)},upload:async value=>uploads.push(value)}}};
  vm.createContext(context);vm.runInContext(source.slice(source.indexOf('const RESTORE_KEY='),source.indexOf('function clearSession()')),context);
  return {context,$,storage,uploads,remote:value=>{remote=value},local:value=>{local=value},getLocal:()=>local,getDownloads:()=>downloads};
 }

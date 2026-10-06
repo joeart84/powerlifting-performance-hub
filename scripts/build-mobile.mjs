@@ -10,9 +10,12 @@ await mkdir(dist, { recursive: true });
 
 const assets = [
   "app.css",
+  "account-deletion.html",
+  "app-privacy.html",
   "app.js",
   "hub-data.js",
   "scoring.js",
+  "ux.js",
   "firebase-auth.js",
   "firebase-config.js",
   "icon-192.png",

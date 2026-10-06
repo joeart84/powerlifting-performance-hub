@@ -1,0 +1,16 @@
+// Supply your existing upload key via private environment variables. No keys in Git.
+def uploadPath = System.getenv('HUB_UPLOAD_KEYSTORE')
+def uploadAlias = System.getenv('HUB_UPLOAD_ALIAS')
+def storePasswordValue = System.getenv('HUB_UPLOAD_STORE_PASSWORD')
+def keyPasswordValue = System.getenv('HUB_UPLOAD_KEY_PASSWORD')
+if (uploadPath && uploadAlias && storePasswordValue && keyPasswordValue) {
+    android.signingConfigs {
+        hubUpload {
+            storeFile file(uploadPath)
+            storePassword storePasswordValue
+            keyAlias uploadAlias
+            keyPassword keyPasswordValue
+        }
+    }
+    android.buildTypes.release.signingConfig = android.signingConfigs.hubUpload
+}
