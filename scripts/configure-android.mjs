@@ -69,3 +69,10 @@ await cp(new URL('../native/hub-release.gradle',import.meta.url),new URL('../and
 await mkdir(new URL('../android/app/src/androidTest/java/com/powerliftingcalculator/performancehub/',import.meta.url),{recursive:true});
 await cp(new URL('../native/HubSmokeTest.java',import.meta.url),new URL('../android/app/src/androidTest/java/com/powerliftingcalculator/performancehub/HubSmokeTest.java',import.meta.url));
 console.log(`Android ${release.versionName} (${release.versionCode}), target API ${release.targetSdk}; release signing comes only from your private environment.`);
+
+// The Capacitor starter assertion uses its placeholder package, not our app ID.
+const starterTest = new URL('../android/app/src/androidTest/java/com/getcapacitor/myapp/ExampleInstrumentedTest.java', import.meta.url);
+try {
+  const source = await readFile(starterTest,'utf8');
+  await writeFile(starterTest,source.replace('assertEquals("com.getcapacitor.app", appContext.getPackageName());',`assertEquals("${release.applicationId}", appContext.getPackageName());`));
+} catch (error) { if (error.code !== 'ENOENT') throw error; }

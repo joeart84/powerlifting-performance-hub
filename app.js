@@ -68,6 +68,7 @@ async function loadMessages(lang){
 }
 function applyTranslations(){
   document.documentElement.lang=currentLanguage;
+  document.querySelectorAll("[data-score]").forEach(button=>button.setAttribute("aria-label",t("ux.score_info")+": "+t("ux.score_"+button.dataset.score+"_title")));
   document.querySelectorAll("[data-i18n]").forEach(el=>{
     const key=el.dataset.i18n;
     if(messages[key]!==undefined)el.textContent=t(key);
@@ -80,7 +81,7 @@ function applyTranslations(){
     const key=el.dataset.i18nTitle;
     if(messages[key]!==undefined)el.title=t(key);
   });
-  document.querySelectorAll("[data-i18n-aria]").forEach(el=>{
+  document.querySelectorAll("[data-i18n-aria]:not([data-score])").forEach(el=>{
     const key=el.dataset.i18nAria;
     if(messages[key]!==undefined)el.setAttribute("aria-label",t(key));
   });
@@ -1631,7 +1632,7 @@ const SAVE_META_KEY=KEY+"-save-meta";
 const ATTEMPT_UNDO_KEY=KEY+"-attempt-undo";
 let meetFocus=false;
 function moveBackupCard(){
-  const card=$("dataBackupCard"),slot=$($("tab-settings").hidden?"onboardingBackupSlot":"settingsBackupSlot");
+  const card=$("dataBackupCard"),slot=$((profileEditMode||!state.profile&&!accountOnly||$("tab-settings").hidden)?"onboardingBackupSlot":"settingsBackupSlot");
   if(card&&slot&&card.parentElement!==slot)slot.appendChild(card);
 }
 function renderNextStep(){
