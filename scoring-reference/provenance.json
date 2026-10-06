@@ -1,0 +1,16 @@
+{
+  "checked_at": "2026-10-06",
+  "implementation_url": "https://powerlifting-calculator.com/wp-content/plugins/pl-site-refresh/calculators.js?ver=1.3.1",
+  "implementation_sha256": "cbd2af0e726a778fe0eba07eaee2e6aad8b1bffbfe24b9bae7d535df98e69b2d",
+  "methodology_url": "https://powerlifting-calculator.com/methodology/",
+  "tables": {
+    "male": {
+      "url": "https://powerlifting-calculator.com/wp-content/plugins/powerlifting-calculators/assets/reshel_male.json",
+      "sha256": "62369bd80d073666eeed1efbc6d1c67668c1e0b22db5612dedba170e18db6f9c"
+    },
+    "female": {
+      "url": "https://powerlifting-calculator.com/wp-content/plugins/powerlifting-calculators/assets/reshel_female.json",
+      "sha256": "8c353f738be1a2978422c32a30568a6d453ea2b8834ae27faddf4591de99bac9"
+    }
+  }
+}

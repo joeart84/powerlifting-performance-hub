@@ -1,6 +1,6 @@
-const CACHE="plc-performance-hub-v12-brand";
+const CACHE="plc-performance-hub-v13-backup-scoring";
 const CACHE_PREFIX="plc-performance-hub-";
-const ASSETS=["./","./index.html","./app.css","./app.js","./firebase-config.js","./firebase-auth.js","./manifest.webmanifest","./mark.svg","./logo.svg","./icon.svg","./icon-192.png","./icon-512.png","./locales/en.json","./locales/sk.json","./locales/cs.json","./locales/de.json","./locales/es.json","./locales/pl.json"];
+const ASSETS=["./","./index.html","./app.css","./app.js","./hub-data.js","./scoring.js","./firebase-config.js","./firebase-auth.js","./manifest.webmanifest","./mark.svg","./logo.svg","./icon.svg","./icon-192.png","./icon-512.png","./locales/en.json","./locales/sk.json","./locales/cs.json","./locales/de.json","./locales/es.json","./locales/pl.json"];
 const ASSET_URLS=new Set(ASSETS.map(path=>new URL(path,self.location.href).href));
 self.addEventListener("install",e=>{
   e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)).then(()=>self.skipWaiting()));

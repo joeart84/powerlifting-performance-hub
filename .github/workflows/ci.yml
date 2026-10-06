@@ -16,6 +16,8 @@ jobs:
       - name: Check JavaScript syntax
         run: |
           node --check app.js
+          node --check hub-data.js
+          node --check scoring.js
           node --check firebase-config.js
           node --input-type=module --check < firebase-auth.js
       - name: Check storage recovery and offline regressions
@@ -25,6 +27,8 @@ jobs:
           test -f index.html
           test -f app.css
           test -f app.js
+          test -f hub-data.js
+          test -f scoring.js
           test -f manifest.webmanifest
           test -f sw.js
           test -f icon.svg

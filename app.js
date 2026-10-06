@@ -176,30 +176,15 @@ function cloudPayload(){
   };
 }
 function applyCloudPayload(payload){
-  if(!payload||typeof payload!=="object")throw new Error(t("dynamic.cloud_empty"));
-  suppressCloud=true;
-  state.profile=payload.profile||state.profile||null;
-  state.plan=payload.plan||blankPlan();
-  state.results=payload.results||blankResults();
-  state.meets=Array.isArray(payload.meets)?payload.meets:[];
-  state.goal=payload.goal||null;
-  state.preferences=payload.preferences||state.preferences||{};
-  save();
-  suppressCloud=false;
+  const next=PPHData.validatePayload(payload);
+  localStorage.setItem(KEY,JSON.stringify(next));
+  Object.keys(state).forEach(key=>delete state[key]);
+  Object.assign(state,next);
+  accountOnly=false;profileEditMode=false;
   render();
 }
 
-function dotsScore(sex,bodyweight,total){
-  const bw=num(bodyweight),t=num(total);
-  if(!bw||!t)return null;
-  const male=[-0.000001093,0.0007391293,-0.1918759221,24.0900756,-307.75076];
-  const female=[-0.0000010706,0.0005158568,-0.1126655495,13.6175032,-57.96288];
-  const c=sex==="F"?female:male;
-  const denom=c[0]*bw**4+c[1]*bw**3+c[2]*bw**2+c[3]*bw+c[4];
-  if(denom<=0)return null;
-  return round(t*500/denom,2);
-}
-
+function dotsScore(sex,bodyweight,total){const value=PPHScoring.dots(sex,num(bodyweight),num(total));return value===null?null:round(value,2)}
 function parseAge(value){
   const m=String(value??"").match(/\d{1,3}/);
   return m?Math.max(0,Math.min(120,Number(m[0]))):0;
@@ -237,40 +222,10 @@ function profileAge(profile){
   return p.birthDate?ageFromBirthDate(p.birthDate):parseAge(p.age);
 }
 
-// Smooth approximation of the published WUAP Reshel tables.
-// The WUAP source tables themselves are rounded to 0.001 at 0.25 kg steps.
-function reshelCoefficient(sex,bodyweight){
-  let bw=num(bodyweight);
-  if(!bw)return null;
-  if(sex==="F"){
-    const A=239.894659799145,B=-20.5105859285582,C=1.16052601684125,D=-1.61417872668708;
-    bw=Math.max(40,Math.min(119.75,bw));
-    return A*(bw+B)**D+C;
-  }
-  const A=23740.8329088123,B=-9.75618720662844,C=0.787990994925928,D=-2.68445158813578;
-  bw=Math.max(50,Math.min(180.75,bw));
-  return A*(bw+B)**D+C;
-}
-function reshelScore(sex,bodyweight,total){
-  const c=reshelCoefficient(sex,bodyweight),t=num(total);
-  return c&&t?round(t*c,3):null;
-}
-const MCCULLOCH_WUAP={
-  40:1.000,41:1.005,42:1.014,43:1.028,44:1.044,45:1.060,46:1.078,47:1.096,48:1.114,49:1.132,
-  50:1.150,51:1.168,52:1.187,53:1.207,54:1.228,55:1.250,56:1.273,57:1.297,58:1.322,59:1.350,
-  60:1.380,61:1.410,62:1.440,63:1.470,64:1.501,65:1.533,66:1.565,67:1.597,68:1.630,69:1.664,
-  70:1.700,71:1.740,72:1.780,73:1.820,74:1.860,75:1.900,76:1.940,77:1.980,78:2.020,79:2.060,
-  80:2.100
-};
-function mccullochMultiplier(age){
-  const a=parseAge(age);
-  if(a<40)return null;
-  return MCCULLOCH_WUAP[Math.min(80,a)]||null;
-}
-function mccullochScore(sex,bodyweight,total,age){
-  const reshel=reshelScore(sex,bodyweight,total),m=mccullochMultiplier(age);
-  return reshel&&m?round(reshel*m,3):null;
-}
+function reshelCoefficient(sex,bodyweight){return PPHScoring.reshelCoefficient(sex,num(bodyweight))}
+function reshelScore(sex,bodyweight,total){return PPHScoring.reshel(sex,num(bodyweight),num(total))}
+function mccullochMultiplier(age){return PPHScoring.ageMultiplier(age)}
+function mccullochScore(sex,bodyweight,total,age){return PPHScoring.ageAdjustedTotal(num(total),age)}
 
 function parseCsv(text){
   const rows=[];let row=[],field="",quoted=false;
@@ -484,14 +439,7 @@ function meetPrs(){
   const max=k=>meets.reduce((m,r)=>Math.max(m,num(r[k])),0);
   return {squat:max("squat"),bench:max("bench"),deadlift:max("deadlift"),total:max("total"),dots:round(max("dots"),2)};
 }
-function dotsDenominator(sex,bodyweight){
-  const bw=num(bodyweight);if(!bw)return null;
-  const male=[-0.000001093,0.0007391293,-0.1918759221,24.0900756,-307.75076];
-  const female=[-0.0000010706,0.0005158568,-0.1126655495,13.6175032,-57.96288];
-  const k=sex==="F"?female:male;
-  const d=k[0]*bw**4+k[1]*bw**3+k[2]*bw**2+k[3]*bw+k[4];
-  return d>0?d:null;
-}
+function dotsDenominator(sex,bodyweight){return PPHScoring.dotsDenominator(sex,num(bodyweight))}
 function totalForDots(sex,bodyweight,targetDots){
   const d=dotsDenominator(sex,bodyweight);return d?round(num(targetDots)*d/500,1):null;
 }
@@ -590,6 +538,7 @@ function renderTools(){
 function render(){
   const p=state.profile;
   const showProfileForm=!accountOnly&&(!p||profileEditMode);
+  $("dataBackupCard").hidden=!showProfileForm&&$("tab-settings").hidden;
   $("onboarding").hidden=!showProfileForm;
   $("app").hidden=showProfileForm||(!p&&!accountOnly);
   document.querySelector("#app > .heroPanel").hidden=!p;
@@ -621,9 +570,12 @@ function render(){
   const currentAge=profileAge(p);
   const currentMcculloch=mccullochScore(p.sex,p.bodyweight,currentBestTotal(),currentAge);
   $("currentDots").textContent=currentDots?currentDots.toFixed(2):"—";
-  $("currentReshel").textContent=currentReshel?currentReshel.toFixed(3):"—";
-  $("currentMcculloch").textContent=currentMcculloch?currentMcculloch.toFixed(3):"—";
-  $("mccullochNote").textContent=currentAge>=40?t("dynamic.age_value",{age:currentAge}):t("dynamic.masters_40");
+  $("currentReshel").textContent=currentReshel?currentReshel.toFixed(2):"—";
+  $("currentMcculloch").textContent=currentMcculloch?currentMcculloch.toFixed(1):"—";
+  $("mccullochNote").textContent=currentMcculloch?t("score.age_factor",{factor:PPHScoring.ageMultiplier(currentAge).toFixed(3)}):t("score.age_range");
+  const scoringNotes=[t("score.legacy_note")];
+  if(p.bodyweight&&PPHScoring.dotsBodyweight(p.sex,num(p.bodyweight))!==num(p.bodyweight))scoringNotes.push(t("score.dots_boundary",{weight:PPHScoring.dotsBodyweight(p.sex,num(p.bodyweight))}));
+  $("scoringNotes").textContent=scoringNotes.join(" ");
   $("mccullochSetup").hidden=!!p.birthDate;
   $("mccullochSetup").textContent=t("dynamic.add_birth_date");
   const d=daysUntil(p.meetDate);
@@ -1150,7 +1102,9 @@ async function hubRequest(path,options={}){
   if(!res.ok){
     const key="auth.api_"+data.code;
     const error=new Error(messages[key]!==undefined?t(key):(data.message||t("auth.server_error")));
-    error.code=data.code;error.status=res.status;throw error;
+    error.code=data.code;error.status=res.status;
+    if(res.status===401&&session.token)clearSession();
+    throw error;
   }
   return data;
 }
@@ -1211,6 +1165,7 @@ async function requestLoginCode(){
   finally{button.disabled=false}
 }
 async function completeHubSignIn(data){
+  if(!data||typeof data.token!=="string"||!data.token||typeof data.email!=="string"||!Number.isFinite(Date.parse(data.expires_at)))throw new Error(t("auth.server_error"));
   session.token=data.token;
   session.email=data.email;
   session.expiresAt=data.expires_at;
@@ -1220,7 +1175,7 @@ async function completeHubSignIn(data){
   if(data.profile&&Object.keys(data.profile).length){
     $("cloudStatus").textContent=t("dynamic.cloud_found");
   }else if(state.profile){
-    await uploadCloud(false);
+    $("cloudStatus").textContent=t("sync.upload_prompt");
   }else{
     $("cloudStatus").textContent=t("auth.create_profile_note");
   }
@@ -1257,12 +1212,16 @@ function loadGoogleIdentity(){
   return googleIdentityPromise;
 }
 let googleButtonRendered=false;
+let googleSignInBusy=false;
+let googleIdentityInitialized=false;
 async function initGoogleSignIn(){
   const container=$("googleSignInButton"),status=$("googleStatus");
-  if(!container||googleButtonRendered||session.token)return;
+  if(!container||googleButtonRendered||googleSignInBusy||session.token||window.PPHCloud?.user)return;
+  googleSignInBusy=true;
   try{
     await loadGoogleIdentity();
-    window.google.accounts.id.initialize({
+    if(session.token||window.PPHCloud?.user)return;
+    if(!googleIdentityInitialized){window.google.accounts.id.initialize({
       client_id:GOOGLE_CLIENT_ID,
       callback:async response=>{
         if(!response?.credential)return;
@@ -1275,7 +1234,7 @@ async function initGoogleSignIn(){
       },
       auto_select:false,
       cancel_on_tap_outside:true
-    });
+    });googleIdentityInitialized=true;}
     const googleButtonWidth=Math.max(220,Math.min(360,Math.floor(container.getBoundingClientRect().width||320)));
     window.google.accounts.id.renderButton(container,{
       type:"standard",
@@ -1289,7 +1248,7 @@ async function initGoogleSignIn(){
     googleButtonRendered=true;
   }catch(err){
     status.textContent=err.message||t("auth.google_unavailable");
-  }
+  }finally{googleSignInBusy=false}
 }
 function renderAccount(){
   setEmailMode(emailMode);
@@ -1310,25 +1269,123 @@ function renderAccount(){
     queueMicrotask(()=>initGoogleSignIn());
   }
 }
-async function uploadCloud(silent=false){
-  if(!session.token&&!window.PPHCloud?.user)return;
-  const status=$("cloudStatus");if(!silent)status.textContent=t("dynamic.uploading");
-  try{
-    if(window.PPHCloud?.user)await window.PPHCloud.upload(cloudPayload());
-    else await hubRequest("/profile",{method:"POST",headers:authHeaders(),body:JSON.stringify({profile:cloudPayload()})});
-    if(!silent)status.textContent=t("dynamic.upload_complete");
-    $("cloudBadge").textContent=t("auth.cloud_linked");
-  }catch(err){if(!silent&&status)status.textContent=err.message}
+const RESTORE_KEY=KEY+"-before-restore";
+let pendingBackup=null;
+let backupReadId=0;
+let cloudBusy=false;
+let pendingCloudChange=null;
+function dataMessage(error){return messages[error?.message]!==undefined?t(error.message):error.message||t("data.invalid")}
+function backupSummary(data){return t("backup.summary",{name:data.profile?.name||t("profile.athlete"),meets:data.meets.length,total:num(data.profile?.squatBest)+num(data.profile?.benchBest)+num(data.profile?.deadliftBest)})}
+function rememberDevice(){
+  const copy=PPHData.backup(cloudPayload(),languagePreference());
+  localStorage.setItem(RESTORE_KEY,JSON.stringify(copy));
+  $("undoDataChange").hidden=false;
 }
-async function downloadCloud(){
-  const status=$("cloudStatus");status.textContent=t("dynamic.loading_cloud");
+function closeBackupPreview(){pendingBackup=null;backupReadId++;$("backupPreview").hidden=true;$("backupFile").value=""}
+function exportBackup(){
+  const status=$("backupStatus");
   try{
-    const profile=window.PPHCloud?.user?await window.PPHCloud.download():(await hubRequest("/profile",{headers:authHeaders()})).profile;
-    if(!profile||!Object.keys(profile).length)throw new Error(t("dynamic.no_cloud"));
-    applyCloudPayload(profile);status.textContent=t("dynamic.cloud_loaded");
-  }catch(err){status.textContent=err.message}
+    const text=JSON.stringify(PPHData.backup(cloudPayload(),languagePreference()),null,2);
+    if(new TextEncoder().encode(text).length>PPHData.MAX_BYTES)throw new Error("data.too_large");
+    const url=URL.createObjectURL(new Blob([text],{type:"application/json"}));
+    const link=document.createElement("a");link.href=url;link.download="powerlifting-hub-backup-"+todayIso()+".json";
+    document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),60000);
+    status.textContent=t("backup.exported");
+  }catch(error){status.textContent=dataMessage(error)}
 }
+async function previewBackup(file){
+  const requestId=++backupReadId;pendingBackup=null;$("backupPreview").hidden=true;
+  if(!file)return;
+  try{
+    if(file.size>PPHData.MAX_BYTES)throw new Error("data.too_large");
+    const parsed=PPHData.parseBackup(await file.text());
+    if(requestId!==backupReadId)return;
+    pendingBackup=parsed;$("backupSummary").textContent=backupSummary(parsed.data);
+    $("backupPreview").hidden=false;$("backupStatus").textContent="";
+  }catch(error){if(requestId===backupReadId)$("backupStatus").textContent=dataMessage(error)}
+}
+async function restoreBackup(){
+  if(!pendingBackup||cloudBusy)return;
+  const copy=pendingBackup;
+  try{
+    rememberDevice();applyCloudPayload(copy.data);closeBackupPreview();
+    await setLanguage(copy.language);
+    if(state.profile)document.querySelector('[data-tab="settings"]').click();
+    $("backupStatus").textContent=t("backup.restored");
+  }catch(error){$("backupStatus").textContent=dataMessage(error)}
+}
+async function undoDataChange(){
+  if(cloudBusy)return;
+  try{
+    const previous=PPHData.parseBackup(localStorage.getItem(RESTORE_KEY)||"");
+    applyCloudPayload(previous.data);await setLanguage(previous.language);
+    localStorage.removeItem(RESTORE_KEY);$("undoDataChange").hidden=true;
+    if(state.profile)document.querySelector('[data-tab="settings"]').click();
+    $("backupStatus").textContent=t("backup.undone");
+  }catch(error){$("backupStatus").textContent=dataMessage(error)}
+}
+function cloudIdentity(){return window.PPHCloud?.user?"firebase:"+window.PPHCloud.user.uid:session.token||""}
+function setCloudBusy(value){
+  cloudBusy=value;
+  for(const id of ["uploadCloud","downloadCloud","confirmCloudChange","cancelCloudChange","restoreBackup","undoDataChange","signOut"])$(id).disabled=value;
+  $("accountSignedIn").setAttribute("aria-busy",String(value));
+}
+async function readCloud(){
+  const value=window.PPHCloud?.user?await window.PPHCloud.download():(await hubRequest("/profile",{headers:authHeaders()})).profile;
+  if(!value||!Object.keys(value).length)return null;
+  return PPHData.validatePayload(value);
+}
+function closeCloudReview(){pendingCloudChange=null;$("cloudReview").hidden=true}
+async function prepareCloudChange(direction){
+  if(cloudBusy||!cloudIdentity())return;
+  closeCloudReview();setCloudBusy(true);
+  const identity=cloudIdentity();let local;
+  $("cloudStatus").textContent=t("sync.checking");
+  try{
+    local=PPHData.validatePayload(cloudPayload());
+    const remote=await readCloud();
+    if(identity!==cloudIdentity()||PPHData.fingerprint(local)!==PPHData.fingerprint(cloudPayload()))throw new Error("sync.changed");
+    if(direction==="download"&&!remote)throw new Error("dynamic.no_cloud");
+    if(remote&&PPHData.fingerprint(local)===PPHData.fingerprint(remote)){$("cloudStatus").textContent=t("sync.same");return}
+    pendingCloudChange={direction,identity,local,remote};
+    $("cloudReviewSummary").textContent=t("sync.summary",{device:backupSummary(local),cloud:remote?backupSummary(remote):t("sync.empty")});
+    $("confirmCloudChange").textContent=t(direction==="upload"?"sync.use_device":"sync.use_cloud");
+    $("cloudReview").hidden=false;$("cloudStatus").textContent=t("sync.review_note");
+  }catch(error){$("cloudStatus").textContent=dataMessage(error)}
+  finally{setCloudBusy(false)}
+}
+async function confirmCloudChange(){
+  if(cloudBusy||!pendingCloudChange)return;
+  const change=pendingCloudChange;setCloudBusy(true);
+  try{
+    const latest=await readCloud();
+    const sameRemote=(!latest&&!change.remote)||(latest&&change.remote&&PPHData.fingerprint(latest)===PPHData.fingerprint(change.remote));
+    if(change.identity!==cloudIdentity()||!sameRemote||PPHData.fingerprint(change.local)!==PPHData.fingerprint(cloudPayload()))throw new Error("sync.changed");
+    if(change.direction==="upload"){
+      $("cloudStatus").textContent=t("dynamic.uploading");
+      if(window.PPHCloud?.user)await window.PPHCloud.upload(change.local);
+      else await hubRequest("/profile",{method:"POST",headers:authHeaders(),body:JSON.stringify({profile:change.local})});
+      $("cloudStatus").textContent=t("dynamic.upload_complete");
+    }else{
+      rememberDevice();applyCloudPayload(latest);$("cloudStatus").textContent=t("dynamic.cloud_loaded");
+    }
+    closeCloudReview();
+  }catch(error){closeCloudReview();$("cloudStatus").textContent=dataMessage(error)}
+  finally{setCloudBusy(false)}
+}
+async function uploadCloud(){return prepareCloudChange("upload")}
+async function downloadCloud(){return prepareCloudChange("download")}
+$("exportBackup").addEventListener("click",exportBackup);
+$("backupFile").addEventListener("change",event=>previewBackup(event.target.files?.[0]));
+$("restoreBackup").addEventListener("click",restoreBackup);
+$("cancelBackup").addEventListener("click",closeBackupPreview);
+$("undoDataChange").addEventListener("click",undoDataChange);
+$("confirmCloudChange").addEventListener("click",confirmCloudChange);
+$("cancelCloudChange").addEventListener("click",closeCloudReview);
+try{$("undoDataChange").hidden=!localStorage.getItem(RESTORE_KEY)}catch(error){}
+
 function clearSession(){
+  closeCloudReview();
   delete session.token;delete session.email;delete session.expiresAt;delete session.pendingEmail;saveSession();
   googleButtonRendered=false;
   const googleButton=$("googleSignInButton");if(googleButton)googleButton.replaceChildren();
@@ -1543,6 +1600,7 @@ $("languageSelect").addEventListener("change",e=>setLanguage(e.target.value,true
 if($("resetAppData"))$("resetAppData").addEventListener("click",resetAppData);
 document.querySelectorAll("[data-tab]").forEach(b=>b.addEventListener("click",()=>{
   const target=b.dataset.tab;
+  $("dataBackupCard").hidden=target!=="settings";
   document.querySelectorAll("[data-tab]").forEach(x=>{x.classList.toggle("active",x.dataset.tab===target);x.setAttribute("aria-pressed",String(x.dataset.tab===target))});
   document.querySelectorAll(".tab").forEach(x=>x.hidden=x.id!=="tab-"+target);
   window.scrollTo({top:0,behavior:reducedMotion()?"auto":"smooth"});

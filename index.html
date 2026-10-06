@@ -6,15 +6,15 @@
   <meta name="theme-color" content="#171d25">
   <meta name="description" content="Powerlifting athlete dashboard, meet planner and meet-day companion.">
   <title>Powerlifting Performance Hub</title>
-  <link rel="manifest" href="./manifest.webmanifest?v=12">
-  <link rel="icon" href="./icon.svg?v=12" type="image/svg+xml">
-  <link rel="apple-touch-icon" href="./icon-192.png?v=12">
-  <link rel="stylesheet" href="./app.css?v=12">
+  <link rel="manifest" href="./manifest.webmanifest?v=13">
+  <link rel="icon" href="./icon.svg?v=13" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="./icon-192.png?v=13">
+  <link rel="stylesheet" href="./app.css?v=13">
 </head>
 <body>
   <header class="topbar">
     <div class="brandLockup">
-      <a class="brandHome" href="https://powerlifting-calculator.com/" aria-label="Powerlifting Calculator home"><img class="brandMark" src="./mark.svg?v=12" width="40" height="40" alt=""></a>
+      <a class="brandHome" href="https://powerlifting-calculator.com/" aria-label="Powerlifting Calculator home"><img class="brandMark" src="./mark.svg?v=13" width="40" height="40" alt=""></a>
       <div>
         <div class="eyebrow">POWERLIFTING CALCULATOR</div>
         <h1 data-i18n="app.title">Performance Hub</h1>
@@ -123,11 +123,11 @@
             <small data-i18n="common.score">score</small>
           </div>
           <div class="heroScore">
-            <span>Reshel <small data-i18n="score.estimate">estimate</small></span>
+            <span data-i18n="score.reshel_label">Reshel · legacy</span>
             <strong id="currentReshel">—</strong>
           </div>
           <div class="heroScore">
-            <span>McCulloch <small data-i18n="score.estimate">estimate</small></span>
+            <span data-i18n="score.age_label">Age-adjusted total</span>
             <strong id="currentMcculloch">—</strong>
             <small id="mccullochNote">Masters 40+</small>
             <button id="mccullochSetup" class="scoreSetup" hidden data-i18n="dynamic.add_birth_date">Add date of birth</button>
@@ -135,6 +135,7 @@
         </div>
       </section>
 
+      <p id="scoringNotes" class="scoreDisclaimer"></p>
       <nav class="tabs primaryNav" aria-label="Performance Hub">
         <button data-tab="dashboard" class="active"><span class="navIcon">⌂</span><span data-i18n="nav.dashboard">Dashboard</span></button>
         <button data-tab="progress"><span class="navIcon">↗</span><span data-i18n="nav.progress">Progress</span></button>
@@ -481,7 +482,12 @@
               <button id="downloadCloud" class="ghost" data-i18n="account.load">Load cloud data</button>
               <button id="signOut" class="ghost danger" data-i18n="account.sign_out">Sign out</button>
             </div>
-            <div id="cloudStatus" class="muted small"></div>
+            <div id="cloudStatus" class="muted small" role="status" aria-live="polite"></div>
+            <div id="cloudReview" class="subpanel" hidden>
+              <h3 data-i18n="sync.review_title">Review before replacing data</h3><p id="cloudReviewSummary"></p>
+              <button id="confirmCloudChange" class="primary" type="button" data-i18n="sync.confirm">Confirm replacement</button>
+              <button id="cancelCloudChange" class="ghost" type="button" data-i18n="common.cancel">Cancel</button>
+            </div>
           </div>
         </div>
         <div class="accountBox accountHelpCard">
@@ -569,10 +575,20 @@
         </div>
       </section>
     </section>
+
+    <section class="settingsCard backupCard" id="dataBackupCard" aria-labelledby="backupTitle">
+      <h3 id="backupTitle" data-i18n="backup.title">Backup &amp; restore</h3>
+      <p class="muted" data-i18n="backup.note">Save your profile, history, goals and meet plan to a file. Sign-in details are never included. Keep the file private.</p>
+      <div class="buttonRow"><button id="exportBackup" class="ghost" type="button" data-i18n="backup.export">Download backup</button><label class="ghost backupFileButton"><span data-i18n="backup.select">Choose backup file</span><input id="backupFile" type="file" accept=".json,application/json"></label></div>
+      <div id="backupPreview" class="subpanel" hidden><p id="backupSummary"></p><p class="muted" data-i18n="backup.replace_note">Restoring replaces this device’s data. An undo copy is kept on this device. Your cloud data stays unchanged.</p><button id="restoreBackup" class="primary" type="button" data-i18n="backup.restore">Restore this backup</button><button id="cancelBackup" class="ghost" type="button" data-i18n="common.cancel">Cancel</button></div>
+      <button id="undoDataChange" class="textButton" type="button" data-i18n="backup.undo" hidden>Undo last restore</button><div id="backupStatus" class="authStatus" role="status" aria-live="polite"></div>
+    </section>
   </main>
 
   <footer class="appFooter"><span>Powerlifting Calculator · Performance Hub</span><a href="https://powerlifting-calculator.com/methodology/" data-i18n="brand.methodology">Methods &amp; scoring</a><a href="https://powerlifting-calculator.com/privacy-policy-2/" data-i18n="brand.privacy">Privacy</a><a href="https://powerlifting-calculator.com/contact/" data-i18n="brand.contact">Help &amp; feedback</a></footer>
-  <script src="./app.js?v=12"></script>
+  <script src="./scoring.js?v=13"></script>
+  <script src="./hub-data.js?v=13"></script>
+  <script src="./app.js?v=13"></script>
   <script src="./firebase-config.js"></script>
   <script type="module" src="./firebase-auth.js"></script>
 </body>

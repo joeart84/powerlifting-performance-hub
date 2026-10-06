@@ -11,6 +11,8 @@ await mkdir(dist, { recursive: true });
 const assets = [
   "app.css",
   "app.js",
+  "hub-data.js",
+  "scoring.js",
   "firebase-auth.js",
   "firebase-config.js",
   "icon-192.png",
