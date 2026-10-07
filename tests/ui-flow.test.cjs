@@ -107,7 +107,8 @@ test('horizontal swipes switch main tabs while vertical scroll, inputs and focus
 test('account entry scrolls to the form while email mode and form saves do not jump to page top',async()=>{
  const {dom,w,$,fill}=await app();try{
   const movements=[];w.scrollTo=options=>movements.push(['window',options.top]);w.HTMLElement.prototype.scrollIntoView=function(){movements.push(['element',this.id])};
-  $('dashboardCreateAccount').click();await new Promise(r=>w.requestAnimationFrame(r));
+  $('dashboardCreateAccount').click();assert.deepEqual(movements,[['element','legacyAccount']]);
+  fill('accountEmail','athlete@example.com');await new Promise(r=>w.requestAnimationFrame(r));
   assert.deepEqual(movements,[['element','legacyAccount']]);
   movements.length=0;fill('accountEmail','athlete@example.com');$('emailModeSignIn').click();assert.equal($('accountEmail').value,'athlete@example.com');assert.equal(movements.length,0);
   w.navigateTab('settings');await new Promise(r=>w.requestAnimationFrame(r));movements.length=0;fill('profileAge','51');$('saveAthleteProfile').click();await new Promise(r=>w.requestAnimationFrame(r));assert.equal(movements.length,0);

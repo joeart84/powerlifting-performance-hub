@@ -1659,14 +1659,12 @@ $("downloadCloud").addEventListener("click",downloadCloud);
 $("signOut").addEventListener("click",logoutCloud);
 $("languageSelect").addEventListener("change",e=>setLanguage(e.target.value,true));
 if($("resetAppData"))$("resetAppData").addEventListener("click",resetAppData);
-let navigationScrollTask=0;
 function visibleTab(){return Array.from(document.querySelectorAll('.tab')).find(tab=>!tab.hidden)?.id.replace('tab-','')||'dashboard'}
 function scrollToContent(element,position){
-  const task=++navigationScrollTask;
-  requestAnimationFrame(()=>{if(task!==navigationScrollTask)return;
-    if(position!==undefined)window.scrollTo({top:position,behavior:'auto'});
-    else if(element&&!element.hidden)element.scrollIntoView({block:'start',behavior:reducedMotion()?'auto':'smooth'});
-  });
+  // Complete navigation before an input is focused. A delayed smooth scroll can
+  // otherwise override the keyboard/field scroll and pull the user away again.
+  if(position!==undefined)window.scrollTo({top:position,behavior:'auto'});
+  else if(element&&!element.hidden)element.scrollIntoView({block:'start',behavior:'auto'});
 }
 function navigateTab(target,{position}={}){
   if(!document.getElementById('tab-'+target))return;
