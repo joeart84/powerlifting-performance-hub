@@ -35,7 +35,9 @@ public class HubSmokeTest {
             assertEquals("true",js(scenario,"document.getElementById('currentReshel').textContent==='496.72' && JSON.parse(localStorage.getItem('plc-performance-hub-v6')).profile.bodyweight===109.37"));
             js(scenario,"document.getElementById('nextStepAction').click()");
             waitFor(scenario,"document.body.classList.contains('meetFocusMode')");
-            js(scenario,"document.getElementById('focusGood').click()");
+            js(scenario,"document.getElementById('focusBack').click()");
+            assertEquals("true",js(scenario,"!document.body.classList.contains('meetFocusMode') && !document.getElementById('tab-dashboard').hidden"));
+            js(scenario,"document.getElementById('nextStepAction').click();document.getElementById('focusGood').click()");
             assertEquals("true",js(scenario,"document.getElementById('madeCount').textContent==='1'"));
             js(scenario,"document.getElementById('undoAttempt').click()");
             assertEquals("true",js(scenario,"document.getElementById('madeCount').textContent==='0'"));
@@ -44,8 +46,10 @@ public class HubSmokeTest {
             scenario.recreate();
             waitFor(scenario,"document.getElementById('athleteName').textContent==='Android Test'");
             js(scenario,"document.getElementById('topAccountCta').click()");
-            waitFor(scenario,"document.getElementById('googleSignInButton').hidden===true && !document.getElementById('tab-account').hidden");
-            assertEquals("true",js(scenario,"!document.querySelector('script[data-pph-google-identity]')"));
+            waitFor(scenario,"document.getElementById('googleSignInButton').hidden===true && !document.getElementById('nativeGoogleSignIn').hidden && !document.getElementById('nativeGoogleSignIn').disabled && !document.getElementById('tab-account').hidden");
+            assertEquals("true",js(scenario,"!document.querySelector('script[data-pph-google-identity]') && typeof window.PPHNative.googleSignIn==='function'"));
+            js(scenario,"document.getElementById('topSettingsCta').click();document.getElementById('problemDescription').value='Native test report';document.getElementById('prepareProblemReport').click();true");
+            assertEquals("true",js(scenario,"document.getElementById('problemReportPreview').value.includes('0.16.0') && !document.getElementById('problemReportPreview').value.includes('Android Test')"));
         }
     }
     @Test public void nativeCompetitionFeedAndLocationConfiguration() throws Exception {

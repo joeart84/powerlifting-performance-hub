@@ -6,15 +6,15 @@
   <meta name="theme-color" content="#171d25">
   <meta name="description" content="Powerlifting athlete dashboard, meet planner and meet-day companion.">
   <title>Powerlifting Performance Hub</title>
-  <link rel="manifest" href="./manifest.webmanifest?v=15.0">
-  <link rel="icon" href="./icon.svg?v=15.0" type="image/svg+xml">
-  <link rel="apple-touch-icon" href="./icon-192.png?v=15.0">
-  <link rel="stylesheet" href="./app.css?v=15.0">
+  <link rel="manifest" href="./manifest.webmanifest?v=16.0">
+  <link rel="icon" href="./icon.svg?v=16.0" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="./icon-192.png?v=16.0">
+  <link rel="stylesheet" href="./app.css?v=16.0">
 </head>
 <body>
   <header class="topbar">
     <div class="brandLockup">
-      <a class="brandHome" href="https://powerlifting-calculator.com/" aria-label="Powerlifting Calculator home"><img class="brandMark" src="./mark.svg?v=15.0" width="40" height="40" alt=""></a>
+      <a class="brandHome" href="https://powerlifting-calculator.com/" aria-label="Powerlifting Calculator home"><img class="brandMark" src="./mark.svg?v=16.0" width="40" height="40" alt=""></a>
       <div>
         <div class="eyebrow">POWERLIFTING CALCULATOR</div>
         <h1 data-i18n="app.title">Performance Hub</h1>
@@ -260,7 +260,7 @@
             <button id="resetMeet" class="ghost danger" data-i18n="meetday.reset">Reset</button>
           </div>
         </div>
-        <section id="meetFocus" class="meetFocus" hidden aria-labelledby="focusTitle"><div class="eyebrow" data-i18n="ux.current_attempt">CURRENT ATTEMPT</div><h2 id="focusTitle"></h2><strong id="focusWeight" class="focusWeight"></strong><div id="focusAdjust" class="weightStepper"><button id="focusMinus" class="ghost" type="button">−2.5 kg</button><button id="focusPlus" class="ghost" type="button">+2.5 kg</button></div><div class="focusActions"><button id="focusGood" class="good" type="button" data-i18n="meetday.good">Good</button><button id="focusMiss" class="miss" type="button" data-i18n="meetday.miss">Miss</button></div><p id="focusNext" class="muted"></p><p id="focusStatus" role="status" aria-live="polite"></p><button id="focusReport" class="primary" data-tab="report" type="button" data-i18n="nav.report" hidden>Report</button></section>
+        <section id="meetFocus" class="meetFocus" hidden aria-labelledby="focusTitle"><button id="focusBack" class="ghost focusBack" type="button" data-i18n="support.back">← Back</button><div class="eyebrow" data-i18n="ux.current_attempt">CURRENT ATTEMPT</div><h2 id="focusTitle"></h2><strong id="focusWeight" class="focusWeight"></strong><div id="focusAdjust" class="weightStepper"><button id="focusMinus" class="ghost" type="button">−2.5 kg</button><button id="focusPlus" class="ghost" type="button">+2.5 kg</button></div><div class="focusActions"><button id="focusGood" class="good" type="button" data-i18n="meetday.good">Good</button><button id="focusMiss" class="miss" type="button" data-i18n="meetday.miss">Miss</button></div><p id="focusNext" class="muted"></p><p id="focusStatus" role="status" aria-live="polite"></p><button id="focusReport" class="primary" data-tab="report" type="button" data-i18n="nav.report" hidden>Report</button></section>
         <div class="buttonRow"><button id="undoAttempt" class="ghost" type="button" data-i18n="ux.undo_attempt" disabled>Undo last attempt change</button><span id="attemptStatus" role="status" aria-live="polite"></span></div>
         <div id="meetDayRows"></div>
         <div class="meetStats">
@@ -459,7 +459,7 @@
                 <p class="muted" data-i18n="auth.google_note">Use your Google account. No password or email code needed.</p>
               </div>
               <div class="googleSignInBlock">
-                <div id="googleSignInButton" aria-label="Continue with Google"></div>
+                <div id="googleSignInButton" aria-label="Continue with Google"></div><button id="nativeGoogleSignIn" class="socialButton" type="button" data-i18n="auth.google" hidden>Continue with Google</button>
                 <div id="googleStatus" class="authStatus" role="status" aria-live="polite"></div>
               </div>
             </div>
@@ -580,6 +580,17 @@
           </div>
           <div id="locationStatus" class="muted small"></div>
         </div>
+        <div class="settingsCard" id="supportSettings">
+          <h3 data-i18n="support.title">Help &amp; report a problem</h3>
+          <p class="muted"><span data-i18n="support.version">App version</span>: <strong id="appVersion"></strong></p>
+          <p class="muted" data-i18n="support.note">Describe what happened and how to repeat it. Review the report before sharing it; nothing is sent automatically.</p>
+          <label><span data-i18n="support.description">What went wrong?</span><textarea id="problemDescription" rows="4" maxlength="2000" required></textarea></label>
+          <label class="checkLabel"><input id="includeDiagnostics" type="checkbox" checked><span data-i18n="support.diagnostics">Include app version and basic diagnostics (no profile, email or location)</span></label>
+          <button id="prepareProblemReport" class="ghost" type="button" data-i18n="support.prepare">Prepare report</button>
+          <div id="problemReportActions" hidden><label><span data-i18n="support.preview">Report preview</span><textarea id="problemReportPreview" rows="7" readonly></textarea></label><div class="buttonRow"><a id="emailProblemReport" class="textButton" data-i18n="support.email">Email support</a><button id="copyProblemReport" class="ghost" type="button" data-i18n="support.copy">Copy report</button><button id="shareProblemReport" class="ghost" type="button" data-i18n="support.share">Share report</button></div><p class="muted small">contact@powerlifting-calculator.com</p></div>
+          <p id="problemReportStatus" class="muted small" role="status" aria-live="polite"></p>
+          <div id="nativeAdsSettings" hidden><h4 data-i18n="support.ads_title">Advertising</h4><p id="adStatus" class="muted small" role="status" aria-live="polite"></p><p id="adDetails" class="muted small"></p><button id="retryAds" class="ghost" type="button" data-i18n="support.ads_retry" hidden>Retry loading banner</button></div>
+        </div>
         <details class="dangerZone"><summary data-i18n="ux.danger">Device data controls</summary>        <div class="settingsCard dangerZone">
           <div class="eyebrow" data-i18n="reset.eyebrow">TESTING</div>
           <h3 data-i18n="reset.title">Reset app</h3>
@@ -602,10 +613,10 @@
   <dialog id="scoreDialog" aria-labelledby="scoreDialogTitle"><h2 id="scoreDialogTitle"></h2><p id="scoreDialogText"></p><button id="closeScoreDialog" class="primary" type="button" data-i18n="ux.close">Close</button></dialog>
 
   <footer class="appFooter"><span>Powerlifting Calculator · Performance Hub</span><a href="https://powerlifting-calculator.com/methodology/" data-i18n="brand.methodology">Methods &amp; scoring</a><a href="./app-privacy.html" data-i18n="brand.privacy">Privacy</a><a href="https://powerlifting-calculator.com/contact/" data-i18n="brand.contact">Help &amp; feedback</a></footer>
-  <script src="./ux.js?v=15.0"></script>
-  <script src="./scoring.js?v=15.0"></script>
-  <script src="./hub-data.js?v=15.0"></script>
-  <script src="./app.js?v=15.0"></script>
+  <script src="./ux.js?v=16.0"></script>
+  <script src="./scoring.js?v=16.0"></script>
+  <script src="./hub-data.js?v=16.0"></script>
+  <script src="./app.js?v=16.0"></script>
   <script src="./firebase-config.js"></script>
   <script type="module" src="./firebase-auth.js"></script>
 </body>

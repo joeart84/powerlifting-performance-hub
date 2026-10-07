@@ -5,14 +5,17 @@ const manifestUrl = new URL("../android/app/src/main/AndroidManifest.xml", impor
 const manifestPath = fileURLToPath(manifestUrl);
 const manifest = await readFile(manifestPath, "utf8");
 
+const adConfig=JSON.parse(await readFile(new URL('../admob-config.json',import.meta.url),'utf8'));
+if(!['test','production'].includes(adConfig.mode)||!/^ca-app-pub-\d{16}~\d{10}$/.test(adConfig.appId))throw new Error('Invalid AdMob configuration');
+if(adConfig.mode==='production'&&(!/^ca-app-pub-\d{16}\/\d{10}$/.test(adConfig.bannerAdUnitId)||adConfig.bannerAdUnitId.startsWith('ca-app-pub-3940256099942544/')||adConfig.bannerAdUnitId.split('/')[0]!==adConfig.appId.split('~')[0]))throw new Error('Production ads need your own banner ad unit ID from the same AdMob account');
 const meta = `        <meta-data
             android:name="com.google.android.gms.ads.APPLICATION_ID"
-            android:value="ca-app-pub-0222399393353451~4434972903" />`;
+            android:value="${adConfig.appId}" />`;
 
 let next = manifest;
 const appIdMetaPattern = /(android:name="com\.google\.android\.gms\.ads\.APPLICATION_ID"[\s\S]*?android:value=")[^"]+(")/;
 if (appIdMetaPattern.test(next)) {
-  next = next.replace(appIdMetaPattern, `$1ca-app-pub-0222399393353451~4434972903$2`);
+  next = next.replace(appIdMetaPattern, `$1${adConfig.appId}$2`);
 } else {
   const appOpen = next.indexOf("<application");
   const appClose = next.indexOf(">", appOpen);
@@ -77,3 +80,5 @@ try {
   const source = await readFile(starterTest,'utf8');
   await writeFile(starterTest,source.replace('assertEquals("com.getcapacitor.app", appContext.getPackageName());',`assertEquals("${release.applicationId}", appContext.getPackageName());`));
 } catch (error) { if (error.code !== 'ENOENT') throw error; }
+
+await cp(new URL('../native/MainActivity.java',import.meta.url),new URL('../android/app/src/main/java/com/powerliftingcalculator/performancehub/MainActivity.java',import.meta.url));

@@ -36,7 +36,7 @@ test('parallel clicks produce a single in-flight cloud request',async()=>{
 });
 test('Google SDK initializes once even when multiple renders call it before loading',async()=>{
  let release,initializations=0,buttons=0;const gate=new Promise(resolve=>release=resolve);
- const elements={googleSignInButton:{getBoundingClientRect:()=>({width:320})},googleStatus:{textContent:''}};
+ const elements={nativeGoogleSignIn:{},googleSignInButton:{getBoundingClientRect:()=>({width:320})},googleStatus:{textContent:''}};
  const context={GOOGLE_CLIENT_ID:'test-client',$:id=>elements[id],session:{},window:{google:{accounts:{id:{initialize(){initializations++},renderButton(){buttons++}}}}},loadGoogleIdentity:()=>gate,t:key=>key};
  vm.createContext(context);vm.runInContext(source.slice(source.indexOf('let googleButtonRendered='),source.indexOf('function renderAccount()')),context);
  const first=context.initGoogleSignIn();const second=context.initGoogleSignIn();release();await Promise.all([first,second]);assert.equal(initializations,1);assert.equal(buttons,1);

@@ -96,7 +96,7 @@ async function setLanguage(preference,announce=false){
   if(select)select.value=preference;
   render();
   renderCompetitionFinder();
-  renderAccount();
+  renderAccount();renderAppDiagnostics();
   if(announce&&$("settingsStatus"))$("settingsStatus").textContent=t("settings.saved");
 }
 async function initI18n(){await setLanguage(languagePreference(),false)}
@@ -1156,13 +1156,14 @@ let profileEditMode=false;
 function openAccountFromOnboarding(){
   accountOnly=true;render();
   document.querySelectorAll("[data-tab]").forEach(button=>button.classList.toggle("active",button.dataset.tab==="account"));
-  window.scrollTo({top:0,behavior:"auto"});
+  scrollToContent($("legacyAccount"));
 }
 function openAccountTab(mode){
-  if(!state.profile){openAccountFromOnboarding();return}
+  if(!state.profile){if(mode==="signin"||mode==="signup")setEmailMode(mode,true);openAccountFromOnboarding();return}
   if(mode==="signin"||mode==="signup")setEmailMode(mode,true);
   const accountButton=document.querySelector('[data-tab="account"]');
   if(accountButton)accountButton.click();
+  scrollToContent($("legacyAccount"));
 }
 function setEmailMode(mode,reset=false){
   emailMode=mode==="signin"?"signin":"signup";
@@ -1256,7 +1257,12 @@ let googleIdentityInitialized=false;
 async function initGoogleSignIn(){
   const container=$("googleSignInButton"),status=$("googleStatus");
   if(!container||googleButtonRendered||googleSignInBusy||session.token||window.PPHCloud?.user)return;
-  if(window.Capacitor?.isNativePlatform?.()){container.hidden=true;status.textContent=t("ux.native_email");return}
+  if(window.Capacitor?.isNativePlatform?.()){
+    container.hidden=true;$('nativeGoogleSignIn').hidden=false;
+    $('nativeGoogleSignIn').disabled=!window.PPHNative?.googleSignIn;
+    status.textContent=window.PPHNative?.googleSignIn?'':t('support.google_loading');return;
+  }
+  $('nativeGoogleSignIn').hidden=true;
   container.hidden=false;
   googleSignInBusy=true;
   try{
@@ -1516,7 +1522,7 @@ function openProfileEdit(){
   profileEditMode=true;
   populateProfileForm();
   render();
-  window.scrollTo({top:0,behavior:reducedMotion()?"auto":"smooth"});
+  scrollToContent($("onboarding"));
 }
 
 $("saveProfile").addEventListener("click",()=>{
@@ -1653,15 +1659,27 @@ $("downloadCloud").addEventListener("click",downloadCloud);
 $("signOut").addEventListener("click",logoutCloud);
 $("languageSelect").addEventListener("change",e=>setLanguage(e.target.value,true));
 if($("resetAppData"))$("resetAppData").addEventListener("click",resetAppData);
-document.querySelectorAll("[data-tab]").forEach(b=>b.addEventListener("click",()=>{
-  const target=b.dataset.tab;
+let navigationScrollTask=0;
+function visibleTab(){return Array.from(document.querySelectorAll('.tab')).find(tab=>!tab.hidden)?.id.replace('tab-','')||'dashboard'}
+function scrollToContent(element,position){
+  const task=++navigationScrollTask;
+  requestAnimationFrame(()=>{if(task!==navigationScrollTask)return;
+    if(position!==undefined)window.scrollTo({top:position,behavior:'auto'});
+    else if(element&&!element.hidden)element.scrollIntoView({block:'start',behavior:reducedMotion()?'auto':'smooth'});
+  });
+}
+function navigateTab(target,{position}={}){
+  if(!document.getElementById('tab-'+target))return;
+  if(target!=='meetday'&&meetFocus){meetFocus=false;focusReturn=null}
+
   $("dataBackupCard").hidden=target!=="settings";
   document.querySelectorAll("[data-tab]").forEach(x=>{x.classList.toggle("active",x.dataset.tab===target);x.setAttribute("aria-pressed",String(x.dataset.tab===target))});
   document.querySelectorAll(".tab").forEach(x=>x.hidden=x.id!=="tab-"+target);
   moveBackupCard();renderMeetFocus();
   document.dispatchEvent(new Event("pph:tab-change"));
-  window.scrollTo({top:0,behavior:reducedMotion()?"auto":"smooth"});
-}));
+    scrollToContent($('tab-'+target),position);
+}
+document.querySelectorAll('[data-tab]').forEach(button=>button.addEventListener('click',()=>navigateTab(button.dataset.tab)));
 $("shareReport").addEventListener("click",async()=>{const mm=madeMiss(),p=state.profile||{},total=liveTotal(),dots=total?chosenScore(p.sex,p.bodyweight,total):null,text=(p.name?p.name+"'s":"My")+" powerlifting meet: "+mm.made+"/"+(mm.made+mm.miss)+" attempts made, "+weightText(total)+" total"+(dots?", "+dots.toFixed(2)+" "+scoreName():"")+". Built with Powerlifting Performance Hub.";if(navigator.share){await navigator.share({title:"Powerlifting Meet Report",text})}else if(navigator.clipboard){await navigator.clipboard.writeText(text);alert(t("dynamic.report_copied"))}});
 let deferredPrompt;window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();deferredPrompt=e;$("installBtn").hidden=false});
 $("installBtn").addEventListener("click",async()=>{if(!deferredPrompt)return;deferredPrompt.prompt();await deferredPrompt.userChoice;deferredPrompt=null;$("installBtn").hidden=true});
@@ -1669,6 +1687,18 @@ if("serviceWorker" in navigator&&!window.Capacitor?.isNativePlatform?.())window.
 const SAVE_META_KEY=KEY+"-save-meta";
 const ATTEMPT_UNDO_KEY=KEY+"-attempt-undo";
 let meetFocus=false;
+let focusReturn=null;
+function enterMeetFocus(origin={tab:visibleTab(),scroll:window.scrollY}){
+  if(meetFocus)return;
+  focusReturn=origin;
+  navigateTab('meetday');meetFocus=true;renderMeetFocus();scrollToContent($('tab-meetday'));
+}
+function exitMeetFocus(){
+  if(!meetFocus)return false;
+  const origin=focusReturn||{tab:'meetday',scroll:0};
+  meetFocus=false;focusReturn=null;renderMeetFocus();navigateTab(origin.tab,{position:origin.scroll});return true;
+}
+window.PPHNavigation={back:exitMeetFocus};
 function moveBackupCard(){
   const card=$("dataBackupCard"),slot=$((profileEditMode||!state.profile&&!accountOnly||$("tab-settings").hidden)?"onboardingBackupSlot":"settingsBackupSlot");
   if(card&&slot&&card.parentElement!==slot)slot.appendChild(card);
@@ -1740,11 +1770,13 @@ function initUX(){
   initDecimalInputs();
   $("nextStepAction").addEventListener("click",()=>{
     const step=$("nextStepAction").dataset.step,target=step==="find"||step==="plan"?"planner":step==="report"?"report":"meetday";
-    document.querySelector('[data-tab="'+target+'"]').click();
+    const origin={tab:visibleTab(),scroll:window.scrollY};
+    if(step==="meet"){enterMeetFocus(origin);return}
+    navigateTab(target);
     if(step==="plan")$("plannerRows").scrollIntoView({block:"start",behavior:reducedMotion()?"auto":"smooth"});
-    if(step==="meet"){meetFocus=true;renderMeetFocus()}
   });
-  $("toggleMeetFocus").addEventListener("click",()=>{meetFocus=!meetFocus;renderMeetFocus()});
+  $("toggleMeetFocus").addEventListener("click",()=>meetFocus?exitMeetFocus():enterMeetFocus());
+  $("focusBack").addEventListener("click",exitMeetFocus);
   $("focusGood").addEventListener("click",()=>{const a=currentAttempt();if(a)updateAttempt(a.lift,a.index,"good")});
   $("focusMiss").addEventListener("click",()=>{const a=currentAttempt();if(a)updateAttempt(a.lift,a.index,"miss")});
   $("focusMinus").addEventListener("click",()=>adjustFocusWeight(-2.5));$("focusPlus").addEventListener("click",()=>adjustFocusWeight(2.5));
@@ -1787,3 +1819,55 @@ async function initApp(){
   save();render();renderAccount();loadReference();loadCompetitions();
 }
 initApp();
+
+// Support reports deliberately include app diagnostics only, never profile or session data.
+const HUB_VERSION='0.16.0';
+let appBuildInfo={version:HUB_VERSION,build:'web',platform:'web'};
+let adDiagnostics={state:'web'};
+function renderAppDiagnostics(){
+ $('appVersion').textContent=appBuildInfo.version+' · '+appBuildInfo.build+' · '+appBuildInfo.platform;
+ $('adStatus').textContent=t('support.ads_'+adDiagnostics.state);
+ $('adDetails').textContent=adDiagnostics.detail||'';
+ $('retryAds').hidden=!window.PPHNative?.retryAds;
+ $('nativeAdsSettings').hidden=appBuildInfo.platform==='web';
+ $('shareProblemReport').hidden=!window.PPHNative?.shareText&&!navigator.share;
+}
+async function refreshAppDiagnostics(){
+ if(window.PPHNative?.getAppInfo)try{appBuildInfo=await window.PPHNative.getAppInfo()}catch(e){appBuildInfo.platform='android';appBuildInfo.build='unknown'}
+ renderAppDiagnostics();
+}
+function supportReport(){
+ const description=$('problemDescription').value.trim();
+ if(!description){$('problemDescription').reportValidity();$('problemDescription').focus();return null}
+ const diagnostics=$('includeDiagnostics').checked?'\n\nApp: '+appBuildInfo.version+' ('+appBuildInfo.build+')\nPlatform: '+appBuildInfo.platform+'\nLanguage: '+currentLanguage+'\nSection: '+visibleTab()+'\nUnits: '+weightUnit()+'\nScore: '+scoreName()+'\nOnline: '+navigator.onLine+'\nAds: '+adDiagnostics.state:'';
+ return description+diagnostics;
+}
+$('prepareProblemReport').addEventListener('click',()=>{
+ const report=supportReport();if(report===null)return;
+ $('problemReportPreview').value=report;$('problemReportActions').hidden=false;
+ $('emailProblemReport').href='mailto:contact@powerlifting-calculator.com?subject='+encodeURIComponent('Performance Hub '+appBuildInfo.version+' — problem report')+'&body='+encodeURIComponent(report);
+ $('problemReportStatus').textContent=t('support.ready');
+});
+$('problemDescription').addEventListener('input',()=>{$('problemReportActions').hidden=true;$('problemReportStatus').textContent=''});
+$('includeDiagnostics').addEventListener('change',()=>{$('problemReportActions').hidden=true});
+$('copyProblemReport').addEventListener('click',async()=>{
+ try{await navigator.clipboard.writeText($('problemReportPreview').value);$('problemReportStatus').textContent=t('support.copied')}
+ catch(e){$('problemReportPreview').focus();$('problemReportPreview').select();$('problemReportStatus').textContent=t('support.copy_manual')}
+});
+$('shareProblemReport').addEventListener('click',async()=>{
+ try{const text=$('problemReportPreview').value;if(window.PPHNative?.shareText)await window.PPHNative.shareText(text);else if(navigator.share)await navigator.share({title:'Performance Hub problem report',text})}
+ catch(e){if(e.name!=='AbortError')$('problemReportStatus').textContent=t('support.share_failed')}
+});
+$('retryAds').addEventListener('click',async()=>{const button=$('retryAds');button.disabled=true;try{await window.PPHNative?.retryAds()}catch(e){}finally{button.disabled=false}});
+window.addEventListener('pph:ads-status',e=>{adDiagnostics=e.detail;renderAppDiagnostics()});
+window.addEventListener('pph:native-ready',refreshAppDiagnostics);
+refreshAppDiagnostics();
+
+$('nativeGoogleSignIn').addEventListener('click',async()=>{
+ const button=$('nativeGoogleSignIn'),status=$('googleStatus');
+ if(button.disabled||!window.PPHNative?.googleSignIn)return;
+ button.disabled=true;status.textContent=t('dynamic.signing_in');
+ try{const credential=await window.PPHNative.googleSignIn();const data=await hubAuthRequest('/auth/google',{credential});status.textContent='';await completeHubSignIn(data)}
+ catch(error){status.textContent=/cancel/i.test(error.code||'')?t('support.google_cancelled'):t('support.google_failed')}
+ finally{button.disabled=false}
+});

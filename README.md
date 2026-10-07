@@ -229,3 +229,9 @@ Validation: 26 frontend tests pass, including an OpenPowerlifting import at 109.
 + Each lift can enable a fourth record attempt. Its weight/result persist in plan, backup/cloud and saved history. Total, scored lift bests, DOTS/Reshel, PR updates and nine-attempt success rates use only the first three attempts per lift. Reports list record attempts separately; eligibility follows the federation and referees. Legacy three-attempt backups still load.
 
 Validation: 33 frontend tests cover conversions without drift, unit entry, score selection, filtering, geocoding, denied location, cached data, swipe exclusions, fourth attempts and backup preservation. Android instrumentation checks bundled scoring, conversions, record exclusion/persistence, declared location permission, live native competition loading and city geocoding. Physical-device location permission and GPS behavior still need user confirmation. Android versionCode 16 / versionName 0.15.0.
+
+### 0.16.0 — navigation and support review
+
+Opening account/profile forms now targets the form rather than page top. Other tab navigation targets the active section; mode switches and form saves do not force top scrolling. Competition focus has Back and Android Back support that restores its originating tab/scroll position. Settings displays the actual app version/build and prepares a user-reviewed support email/share/copy report with optional basic diagnostics only.
+
+Native Google sign-in uses an ID token and the existing server verifier; Google Cloud must register the installed APK's signing SHA-1 before live login can be confirmed. Native ad consent/loading/errors are visible in Settings with retry. Test ads remain enabled; live banners require the owner's banner ad unit ID and verified AdMob consent setup. See `docs/google-play-release.md` for owner configuration and review priorities. Automated native tests validate bridge/UI flow, not a real Google account or physical ad delivery.

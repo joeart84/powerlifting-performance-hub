@@ -528,3 +528,5 @@ body{background:radial-gradient(circle at 85% 0,rgba(207,32,53,.06),transparent 
 @media(max-width:600px){.scoreChoice{justify-content:flex-start}.scoreChoice label{width:100%;justify-content:space-between}.finderLocation .grid{grid-template-columns:1fr}}
 
 .competitionResults{max-height:600px;overflow-y:auto;overscroll-behavior:contain;padding-right:4px}
+
+.tab,#onboarding,.authCard,#manualMeetForm{scroll-margin-top:85px}.focusBack{display:block;margin-bottom:20px}.checkLabel{display:flex;align-items:flex-start;gap:10px;margin:16px 0}.checkLabel input{width:20px;min-height:20px;flex-shrink:0}#problemReportActions{margin-top:18px}#problemDescription,#problemReportPreview{width:100%;resize:vertical}

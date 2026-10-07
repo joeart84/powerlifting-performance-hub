@@ -1,6 +1,6 @@
 {
   "name": "powerlifting-performance-hub",
-  "version": "0.15.0",
+  "version": "0.16.0",
   "private": true,
   "description": "Powerlifting Performance Hub web/PWA and native mobile shell",
   "scripts": {
@@ -19,7 +19,8 @@
     "@capacitor/core": "8.5.2",
     "@capacitor/filesystem": "^8.1.4",
     "@capacitor/geolocation": "8.2.3",
-    "@capacitor/share": "^8.0.3"
+    "@capacitor/share": "^8.0.3",
+    "@capgo/capacitor-social-login": "8.5.12"
   },
   "devDependencies": {
     "@capacitor/cli": "8.5.2",

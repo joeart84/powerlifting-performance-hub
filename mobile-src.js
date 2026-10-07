@@ -1,5 +1,8 @@
 import { Capacitor, CapacitorHttp } from "@capacitor/core";
 import { Geolocation } from "@capacitor/geolocation";
+import { SocialLogin } from "@capgo/capacitor-social-login";
+import { createGoogleLogin } from "./native-google.mjs";
+import adConfig from "./admob-config.json";
 import { App } from "@capacitor/app";
 import { Filesystem, Directory, Encoding } from "@capacitor/filesystem";
 import { Share } from "@capacitor/share";
@@ -8,6 +11,9 @@ import { createAdController } from "./native-ads.mjs";
 
 if (Capacitor.isNativePlatform()) {
   window.PPHNative = {
+    googleSignIn:createGoogleLogin(SocialLogin,'565019863889-dlbtmah64pd38piet2fc27p3251cjpeq.apps.googleusercontent.com'),
+    async getAppInfo(){const info=await App.getInfo();return {version:info.version,build:info.build,platform:Capacitor.getPlatform()}},
+    async shareText(text){await Share.share({title:'Performance Hub problem report',text,dialogTitle:'Share problem report'})},
     async getPublicJSON(url){
       const parsed=new URL(url);
       if(parsed.origin!=='https://powerlifting-calculator.com'||!/^\/wp-json\/plc-radar\/v1\/(hub\/(competitions|geocode)|performance-reference)$/.test(parsed.pathname))throw new Error('Unsupported public endpoint');
@@ -34,6 +40,7 @@ if (Capacitor.isNativePlatform()) {
   window.dispatchEvent(new Event('pph:native-ready'));
   App.addListener('backButton',()=>{
     const dialog=document.querySelector('dialog[open]');if(dialog){dialog.close();return}
+    if(window.PPHNavigation?.back())return;
     const editing=document.getElementById('cancelProfileEdit');if(editing&&!editing.hidden){editing.click();return}
     const accountBack=document.getElementById('accountBackToProfile');if(accountBack&&!accountBack.hidden&&!document.getElementById('tab-account').hidden){accountBack.click();return}
     const dashboard=document.querySelector('[data-tab="dashboard"]');
@@ -52,13 +59,15 @@ function setupAndroid(){
     requestConsentInfo:async()=>normalizeConsent(await AdMob.requestConsentInfo()),
     showConsentForm:async()=>normalizeConsent(await AdMob.showConsentForm()),
     showPrivacyOptionsForm:()=>AdMob.showPrivacyOptionsForm(),
-    showBanner:options=>AdMob.showBanner(options),hideBanner:()=>AdMob.hideBanner(),resumeBanner:()=>AdMob.resumeBanner()
+    showBanner:options=>AdMob.showBanner(options),hideBanner:()=>AdMob.hideBanner(),resumeBanner:()=>AdMob.resumeBanner(),removeBanner:()=>AdMob.removeBanner()
   };
   function normalizeConsent(info){return {...info,status:info.status===AdmobConsentStatus.REQUIRED?'REQUIRED':info.status,privacyOptionsRequirementStatus:info.privacyOptionsRequirementStatus}}
-  const controller=createAdController({admob:consentAdapter,hidden,onSpace:space,onPrivacy:required=>{document.getElementById('adPrivacyOptions').hidden=!required},options:{adId:'ca-app-pub-3940256099942544/6300978111',adSize:BannerAdSize.ADAPTIVE_BANNER,position:BannerAdPosition.BOTTOM_CENTER,margin:0,isTesting:true}});
+  const controller=createAdController({admob:consentAdapter,hidden,onSpace:space,onPrivacy:required=>{document.getElementById('adPrivacyOptions').hidden=!required},onStatus:detail=>window.dispatchEvent(new CustomEvent('pph:ads-status',{detail})),options:{adId:adConfig.mode==='production'?adConfig.bannerAdUnitId:'ca-app-pub-3940256099942544/6300978111',adSize:BannerAdSize.ADAPTIVE_BANNER,position:BannerAdPosition.BOTTOM_CENTER,margin:0,isTesting:adConfig.mode!=='production'}});
   const sync=()=>controller.sync().catch(()=>space(0));
   AdMob.addListener(BannerAdPluginEvents.SizeChanged,size=>space(hidden()?0:size?.height||60));
-  AdMob.addListener(BannerAdPluginEvents.FailedToLoad,()=>space(0));
+  AdMob.addListener(BannerAdPluginEvents.FailedToLoad,error=>controller.failed(error));
+  window.PPHNative.retryAds=()=>controller.retry();
+  document.getElementById('retryAds').hidden=false;
   document.getElementById('adPrivacyOptions').addEventListener('click',()=>controller.privacy().catch(()=>space(0)));
   document.addEventListener('pph:tab-change',sync);
   const observer=new MutationObserver(sync);

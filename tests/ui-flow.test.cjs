@@ -104,3 +104,39 @@ test('horizontal swipes switch main tabs while vertical scroll, inputs and focus
   w.document.querySelector('[data-tab="meetday"]').click();$('toggleMeetFocus').click();swipe($('tab-meetday'),-100,0);assert.equal($('tab-meetday').hidden,false);
  }finally{dom.window.close()}
 });
+test('account entry scrolls to the form while email mode and form saves do not jump to page top',async()=>{
+ const {dom,w,$,fill}=await app();try{
+  const movements=[];w.scrollTo=options=>movements.push(['window',options.top]);w.HTMLElement.prototype.scrollIntoView=function(){movements.push(['element',this.id])};
+  $('dashboardCreateAccount').click();await new Promise(r=>w.requestAnimationFrame(r));
+  assert.deepEqual(movements,[['element','legacyAccount']]);
+  movements.length=0;fill('accountEmail','athlete@example.com');$('emailModeSignIn').click();assert.equal($('accountEmail').value,'athlete@example.com');assert.equal(movements.length,0);
+  w.navigateTab('settings');await new Promise(r=>w.requestAnimationFrame(r));movements.length=0;fill('profileAge','51');$('saveAthleteProfile').click();await new Promise(r=>w.requestAnimationFrame(r));assert.equal(movements.length,0);
+ }finally{dom.window.close()}
+});
+test('focus Back and Android navigation return to the originating section and scroll position',async()=>{
+ const {dom,w,$}=await app();try{
+  let restored;w.scrollTo=options=>restored=options.top;Object.defineProperty(w,'scrollY',{value:730,configurable:true});
+  $('nextStepAction').click();assert.equal($('meetFocus').hidden,false);$('focusBack').click();await new Promise(r=>w.requestAnimationFrame(r));
+  assert.equal($('tab-dashboard').hidden,false);assert.equal($('meetFocus').hidden,true);assert.equal(restored,730);
+  w.navigateTab('meetday');$('toggleMeetFocus').click();assert.equal(w.PPHNavigation.back(),true);assert.equal($('tab-meetday').hidden,false);assert.equal(w.PPHNavigation.back(),false);
+ }finally{dom.window.close()}
+});
+test('support reports are reviewed and exclude profile, session and saved location data',async()=>{
+ const {dom,w,$,fill}=await app();try{
+  w.localStorage.setItem('private-session-test',JSON.stringify({token:'SECRET_SESSION',email:'private@example.com'}));w.cloudPayload().preferences.homeCity='Private City';w.cloudPayload().preferences.latitude=48.123456;
+  fill('problemDescription','Filters failed after selecting my federation.');$('prepareProblemReport').click();
+  const report=$('problemReportPreview').value;assert.match(report,/0.16.0/);assert.match(report,/Filters failed/);assert.doesNotMatch(report,/UI Athlete|83.5|SECRET_SESSION|private@example|Private City|48.123456/);
+  assert.match($('emailProblemReport').href,/mailto:contact@powerlifting-calculator.com/);assert.equal($('problemReportActions').hidden,false);
+  $('includeDiagnostics').checked=false;$('includeDiagnostics').dispatchEvent(new w.Event('change'));assert.equal($('problemReportActions').hidden,true);$('prepareProblemReport').click();assert.equal($('problemReportPreview').value,'Filters failed after selecting my federation.');
+ }finally{dom.window.close()}
+});
+test('native Google button uses an ID token with the existing server verifier and preserves email fallback on failure',async()=>{
+ const {dom,w,$}=await app(true);try{
+  let calls=0;w.PPHNative.googleSignIn=async()=>{calls++;throw {code:'USER_CANCELLED'}};
+  $('topAccountCta').click();await w.initGoogleSignIn();assert.equal($('nativeGoogleSignIn').hidden,false);assert.equal($('nativeGoogleSignIn').disabled,false);
+  $('nativeGoogleSignIn').click();await new Promise(r=>setImmediate(r));assert.equal(calls,1);assert.equal($('nativeGoogleSignIn').disabled,false);assert.match($('googleStatus').textContent,/cancelled/);
+  let submitted;w.PPHNative.googleSignIn=async()=>'google-id-token';w.fetch=async(url,options)=>{submitted={url,body:String(options.body)};return{ok:true,json:async()=>({session_token:'verified-session',email:'verified@example.com'})}};
+  w.completeHubSignIn=async()=>{};$('nativeGoogleSignIn').click();await new Promise(r=>setImmediate(r));assert.match(submitted.url,/auth\/google$/);assert.equal(submitted.body,'credential=google-id-token');assert.equal($('legacyEmailForm').hidden,false);
+  assert.equal(w.document.querySelector('script[data-pph-google-identity]'),null);
+ }finally{dom.window.close()}
+});
