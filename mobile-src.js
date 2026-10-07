@@ -1,4 +1,5 @@
-import { Capacitor } from "@capacitor/core";
+import { Capacitor, CapacitorHttp } from "@capacitor/core";
+import { Geolocation } from "@capacitor/geolocation";
 import { App } from "@capacitor/app";
 import { Filesystem, Directory, Encoding } from "@capacitor/filesystem";
 import { Share } from "@capacitor/share";
@@ -7,6 +8,19 @@ import { createAdController } from "./native-ads.mjs";
 
 if (Capacitor.isNativePlatform()) {
   window.PPHNative = {
+    async getPublicJSON(url){
+      const parsed=new URL(url);
+      if(parsed.origin!=='https://powerlifting-calculator.com'||!/^\/wp-json\/plc-radar\/v1\/(hub\/(competitions|geocode)|performance-reference)$/.test(parsed.pathname))throw new Error('Unsupported public endpoint');
+      const response=await CapacitorHttp.get({url,headers:{Accept:'application/json'},responseType:'json',connectTimeout:15000,readTimeout:20000});
+      if(response.status<200||response.status>=300)throw new Error('HTTP '+response.status);
+      return typeof response.data==='string'?JSON.parse(response.data):response.data;
+    },
+    async getLocation(){
+      let permission=await Geolocation.checkPermissions();
+      if(permission.coarseLocation!=='granted')permission=await Geolocation.requestPermissions({permissions:['coarseLocation']});
+      if(permission.coarseLocation!=='granted')throw Object.assign(new Error('Location permission denied'),{code:'OS-PLUG-GLOC-0003'});
+      return Geolocation.getCurrentPosition({enableHighAccuracy:false,timeout:15000,maximumAge:300000});
+    },
     async exportFile(text,name){
       const file=await Filesystem.writeFile({path:name.replace(/[^a-zA-Z0-9._-]/g,'_'),data:text,directory:Directory.Cache,encoding:Encoding.UTF8});
       await Share.share({title:'Powerlifting Hub backup',files:[file.uri],dialogTitle:'Save or share backup'});

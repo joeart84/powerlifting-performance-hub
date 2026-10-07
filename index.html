@@ -6,15 +6,15 @@
   <meta name="theme-color" content="#171d25">
   <meta name="description" content="Powerlifting athlete dashboard, meet planner and meet-day companion.">
   <title>Powerlifting Performance Hub</title>
-  <link rel="manifest" href="./manifest.webmanifest?v=14.3">
-  <link rel="icon" href="./icon.svg?v=14.3" type="image/svg+xml">
-  <link rel="apple-touch-icon" href="./icon-192.png?v=14.3">
-  <link rel="stylesheet" href="./app.css?v=14.3">
+  <link rel="manifest" href="./manifest.webmanifest?v=15.0">
+  <link rel="icon" href="./icon.svg?v=15.0" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="./icon-192.png?v=15.0">
+  <link rel="stylesheet" href="./app.css?v=15.0">
 </head>
 <body>
   <header class="topbar">
     <div class="brandLockup">
-      <a class="brandHome" href="https://powerlifting-calculator.com/" aria-label="Powerlifting Calculator home"><img class="brandMark" src="./mark.svg?v=14.3" width="40" height="40" alt=""></a>
+      <a class="brandHome" href="https://powerlifting-calculator.com/" aria-label="Powerlifting Calculator home"><img class="brandMark" src="./mark.svg?v=15.0" width="40" height="40" alt=""></a>
       <div>
         <div class="eyebrow">POWERLIFTING CALCULATOR</div>
         <h1 data-i18n="app.title">Performance Hub</h1>
@@ -70,14 +70,15 @@
       <div id="onboardingOrDivider" class="orDivider"><span data-i18n="onboarding.or">or enter your details manually</span></div>
 
       <div class="grid two">
+        <label><span data-i18n="ux.units">Weight units</span><select id="onboardingUnits"><option value="auto" data-i18n="ux.auto_units">Automatic (device region)</option><option value="kg">kg</option><option value="lbs">lbs</option></select></label>
         <label><span data-i18n="profile.name">Name</span><input id="name" placeholder="Joe Lifter"></label>
         <label><span data-i18n="profile.sex">Sex</span><select id="sex"><option value="M" data-i18n="profile.male">Male</option><option value="F" data-i18n="profile.female">Female</option></select></label>
-        <label><span data-i18n="profile.bodyweight">Bodyweight (kg)</span><input id="bodyweight" type="text" inputmode="decimal" data-decimal="true" pattern="[0-9]+([.,][0-9]+)?" data-min="0.1" data-step="0.1" placeholder="83"></label>
+        <label><span data-i18n="profile.bodyweight">Bodyweight (kg)</span><input id="bodyweight" data-weight type="text" inputmode="decimal" data-decimal="true" pattern="[0-9]+([.,][0-9]+)?" data-min="0.1" data-step="0.1" placeholder="83"></label>
         <label><span data-i18n="profile.age">Age</span><input id="age" type="number" inputmode="numeric" min="13" max="100" step="1" placeholder="40"></label>
         <label><span data-i18n="profile.next_meet_date">Next meet date</span><input id="meetDate" type="date"></label>
-        <label><span data-i18n="profile.squat_best">Squat best (kg)</span><input id="squatBest" type="text" inputmode="decimal" data-decimal="true" pattern="[0-9]+([.,][0-9]+)?" data-min="0" data-step="0.5" placeholder="180"></label>
-        <label><span data-i18n="profile.bench_best">Bench best (kg)</span><input id="benchBest" type="text" inputmode="decimal" data-decimal="true" pattern="[0-9]+([.,][0-9]+)?" data-min="0" data-step="0.5" placeholder="120"></label>
-        <label><span data-i18n="profile.deadlift_best">Deadlift best (kg)</span><input id="deadliftBest" type="text" inputmode="decimal" data-decimal="true" pattern="[0-9]+([.,][0-9]+)?" data-min="0" data-step="0.5" placeholder="220"></label>
+        <label><span data-i18n="profile.squat_best">Squat best (kg)</span><input id="squatBest" data-weight type="text" inputmode="decimal" data-decimal="true" pattern="[0-9]+([.,][0-9]+)?" data-min="0" data-step="0.5" placeholder="180"></label>
+        <label><span data-i18n="profile.bench_best">Bench best (kg)</span><input id="benchBest" data-weight type="text" inputmode="decimal" data-decimal="true" pattern="[0-9]+([.,][0-9]+)?" data-min="0" data-step="0.5" placeholder="120"></label>
+        <label><span data-i18n="profile.deadlift_best">Deadlift best (kg)</span><input id="deadliftBest" data-weight type="text" inputmode="decimal" data-decimal="true" pattern="[0-9]+([.,][0-9]+)?" data-min="0" data-step="0.5" placeholder="220"></label>
       </div>
 
       <div id="profileValidationStatus" class="authStatus" role="alert"></div>
@@ -115,7 +116,7 @@
           <div class="heroScore">
             <span data-i18n="dashboard.current_total">Current total</span> <button class="scoreInfo" type="button" data-score="total" data-i18n-aria="ux.score_info" aria-label="Explain score">ⓘ</button>
             <strong id="currentTotal">0</strong>
-            <small>kg</small>
+            <small data-unit>kg</small>
           </div>
           <div class="heroScore">
             <span data-i18n="dashboard.current_dots">Current DOTS</span> <button class="scoreInfo" type="button" data-score="dots" data-i18n-aria="ux.score_info" aria-label="Explain score">ⓘ</button>
@@ -123,7 +124,7 @@
             <small data-i18n="common.score">score</small>
           </div>
           <div class="heroScore">
-            <span data-i18n="score.reshel_label">Reshel · legacy</span> <button class="scoreInfo" type="button" data-score="reshel" data-i18n-aria="ux.score_info" aria-label="Explain score">ⓘ</button>
+            <span data-i18n="score.reshel_label">Reshel</span> <button class="scoreInfo" type="button" data-score="reshel" data-i18n-aria="ux.score_info" aria-label="Explain score">ⓘ</button>
             <strong id="currentReshel">—</strong>
           </div>
           <div class="heroScore">
@@ -135,6 +136,7 @@
         </div>
       </section>
 
+      <div class="scoreChoice"><label><span data-i18n="ux.score_choice">Preferred score</span><select id="scoreSelect"><option value="dots">DOTS</option><option value="reshel">Reshel</option></select></label></div>
       <details class="scoreDetails"><summary data-i18n="ux.score_details">About these scores</summary><p id="scoringNotes" class="scoreDisclaimer"></p></details>
       <nav class="tabs primaryNav" aria-label="Performance Hub">
         <button data-tab="dashboard" class="active"><span class="navIcon">⌂</span><span data-i18n="nav.dashboard">Dashboard</span></button>
@@ -155,10 +157,10 @@
           <div class="eyebrow" data-i18n="dashboard.current_form">CURRENT FORM</div>
         </div>
         <div class="cards metricStrip">
-          <article class="metric"><span data-i18n="dashboard.bodyweight">Bodyweight</span><strong id="metricBw">—</strong><small>kg</small></article>
-          <article class="metric"><span data-i18n="progress.squat">Squat</span><strong id="metricSq">—</strong><small>kg</small></article>
-          <article class="metric"><span data-i18n="progress.bench">Bench</span><strong id="metricBp">—</strong><small>kg</small></article>
-          <article class="metric"><span data-i18n="progress.deadlift">Deadlift</span><strong id="metricDl">—</strong><small>kg</small></article>
+          <article class="metric"><span data-i18n="dashboard.bodyweight">Bodyweight</span><strong id="metricBw">—</strong><small data-unit>kg</small></article>
+          <article class="metric"><span data-i18n="progress.squat">Squat</span><strong id="metricSq">—</strong><small data-unit>kg</small></article>
+          <article class="metric"><span data-i18n="progress.bench">Bench</span><strong id="metricBp">—</strong><small data-unit>kg</small></article>
+          <article class="metric"><span data-i18n="progress.deadlift">Deadlift</span><strong id="metricDl">—</strong><small data-unit>kg</small></article>
         </div>
 
         <div class="dashboardGrid">
@@ -199,6 +201,7 @@
             <button id="useCurrentLocation" class="ghost" data-i18n="finder.use_location">Use my location</button>
           </div>
 
+          <details id="finderLocation" class="finderLocation"><summary data-i18n="ux.manual_location">Set city and country manually</summary><div class="grid two"><label><span data-i18n="settings.home_country">Country</span><input id="finderCountry" placeholder="Slovakia"></label><label><span data-i18n="settings.home_city">City</span><input id="finderCity" placeholder="Trnava"></label></div><button id="saveFinderLocation" class="ghost" type="button" data-i18n="settings.save_location">Save home location</button><p id="finderLocationStatus" class="muted small" role="status"></p></details>
           <input id="competitionSearch" aria-label="Search" data-i18n-aria="finder.search" class="finderSearch" placeholder="Search competition, city or federation…" data-i18n-placeholder="finder.search">
 
           <div class="scopeChips" id="competitionScopes">
@@ -229,11 +232,12 @@
             </label>
           </div>
 
-          <div id="competitionStatus" class="muted small"></div>
+          <div class="buttonRow"><button id="retryCompetitions" type="button" class="ghost" data-i18n="ux.refresh_events">Refresh events</button><button id="resetCompetitionFilters" type="button" class="ghost" data-i18n="ux.reset_filters">Show all upcoming events</button></div>
+          <div id="competitionStatus" role="status" class="muted small"></div>
           <div id="competitionResults" class="competitionResults"></div>
         </div>
 
-        <div id="plannerRows"></div>
+        <p id="recordAttemptNote" class="muted small"></p><div id="plannerRows"></div>
         <div class="plannerSummary">
           <span data-i18n="planner.projected_total">Projected total</span>
           <strong id="projectedTotal">0 kg</strong>
@@ -308,10 +312,10 @@
             <div class="grid two">
               <label><span data-i18n="manual.date">Date</span><input id="manualMeetDate" type="date" required></label>
               <label><span data-i18n="manual.name">Meet name</span><input id="manualMeetName" type="text" required data-i18n-placeholder="manual.name_placeholder" placeholder="Competition name"></label>
-              <label><span data-i18n="manual.bodyweight">Bodyweight (kg)</span><input id="manualMeetBw" type="text" inputmode="decimal" data-decimal="true" pattern="[0-9]+([.,][0-9]+)?" data-min="1" data-step="0.1" required></label>
-              <label><span data-i18n="manual.squat">Best squat (kg)</span><input id="manualMeetSquat" type="text" inputmode="decimal" data-decimal="true" pattern="[0-9]+([.,][0-9]+)?" data-min="0" data-step="0.5" required></label>
-              <label><span data-i18n="manual.bench">Best bench (kg)</span><input id="manualMeetBench" type="text" inputmode="decimal" data-decimal="true" pattern="[0-9]+([.,][0-9]+)?" data-min="0" data-step="0.5" required></label>
-              <label><span data-i18n="manual.deadlift">Best deadlift (kg)</span><input id="manualMeetDeadlift" type="text" inputmode="decimal" data-decimal="true" pattern="[0-9]+([.,][0-9]+)?" data-min="0" data-step="0.5" required></label>
+              <label><span data-i18n="manual.bodyweight">Bodyweight (kg)</span><input id="manualMeetBw" data-weight type="text" inputmode="decimal" data-decimal="true" pattern="[0-9]+([.,][0-9]+)?" data-min="1" data-step="0.1" required></label>
+              <label><span data-i18n="manual.squat">Best squat (kg)</span><input id="manualMeetSquat" data-weight type="text" inputmode="decimal" data-decimal="true" pattern="[0-9]+([.,][0-9]+)?" data-min="0" data-step="0.5" required></label>
+              <label><span data-i18n="manual.bench">Best bench (kg)</span><input id="manualMeetBench" data-weight type="text" inputmode="decimal" data-decimal="true" pattern="[0-9]+([.,][0-9]+)?" data-min="0" data-step="0.5" required></label>
+              <label><span data-i18n="manual.deadlift">Best deadlift (kg)</span><input id="manualMeetDeadlift" data-weight type="text" inputmode="decimal" data-decimal="true" pattern="[0-9]+([.,][0-9]+)?" data-min="0" data-step="0.5" required></label>
             </div>
             <div class="manualMeetPreview">
               <span data-i18n="manual.total">Calculated total</span>
@@ -334,9 +338,9 @@
               </div>
               <p class="muted small" data-i18n="manual.attempt_note">Optional attempt details. Leave blank if you only know the best lifts.</p>
               <div class="manualAttempts">
-                <div><strong data-i18n="progress.squat">Squat</strong><input id="manualSq1" type="text" inputmode="decimal" data-decimal="true" pattern="[0-9]+([.,][0-9]+)?" data-step="0.5" placeholder="1"><input id="manualSq2" type="text" inputmode="decimal" data-decimal="true" pattern="[0-9]+([.,][0-9]+)?" data-step="0.5" placeholder="2"><input id="manualSq3" type="text" inputmode="decimal" data-decimal="true" pattern="[0-9]+([.,][0-9]+)?" data-step="0.5" placeholder="3"></div>
-                <div><strong data-i18n="progress.bench">Bench</strong><input id="manualBp1" type="text" inputmode="decimal" data-decimal="true" pattern="[0-9]+([.,][0-9]+)?" data-step="0.5" placeholder="1"><input id="manualBp2" type="text" inputmode="decimal" data-decimal="true" pattern="[0-9]+([.,][0-9]+)?" data-step="0.5" placeholder="2"><input id="manualBp3" type="text" inputmode="decimal" data-decimal="true" pattern="[0-9]+([.,][0-9]+)?" data-step="0.5" placeholder="3"></div>
-                <div><strong data-i18n="progress.deadlift">Deadlift</strong><input id="manualDl1" type="text" inputmode="decimal" data-decimal="true" pattern="[0-9]+([.,][0-9]+)?" data-step="0.5" placeholder="1"><input id="manualDl2" type="text" inputmode="decimal" data-decimal="true" pattern="[0-9]+([.,][0-9]+)?" data-step="0.5" placeholder="2"><input id="manualDl3" type="text" inputmode="decimal" data-decimal="true" pattern="[0-9]+([.,][0-9]+)?" data-step="0.5" placeholder="3"></div>
+                <div><strong data-i18n="progress.squat">Squat</strong><input id="manualSq1" data-weight type="text" inputmode="decimal" data-decimal="true" pattern="[0-9]+([.,][0-9]+)?" data-step="0.5" placeholder="1"><input id="manualSq2" data-weight type="text" inputmode="decimal" data-decimal="true" pattern="[0-9]+([.,][0-9]+)?" data-step="0.5" placeholder="2"><input id="manualSq3" data-weight type="text" inputmode="decimal" data-decimal="true" pattern="[0-9]+([.,][0-9]+)?" data-step="0.5" placeholder="3"></div>
+                <div><strong data-i18n="progress.bench">Bench</strong><input id="manualBp1" data-weight type="text" inputmode="decimal" data-decimal="true" pattern="[0-9]+([.,][0-9]+)?" data-step="0.5" placeholder="1"><input id="manualBp2" data-weight type="text" inputmode="decimal" data-decimal="true" pattern="[0-9]+([.,][0-9]+)?" data-step="0.5" placeholder="2"><input id="manualBp3" data-weight type="text" inputmode="decimal" data-decimal="true" pattern="[0-9]+([.,][0-9]+)?" data-step="0.5" placeholder="3"></div>
+                <div><strong data-i18n="progress.deadlift">Deadlift</strong><input id="manualDl1" data-weight type="text" inputmode="decimal" data-decimal="true" pattern="[0-9]+([.,][0-9]+)?" data-step="0.5" placeholder="1"><input id="manualDl2" data-weight type="text" inputmode="decimal" data-decimal="true" pattern="[0-9]+([.,][0-9]+)?" data-step="0.5" placeholder="2"><input id="manualDl3" data-weight type="text" inputmode="decimal" data-decimal="true" pattern="[0-9]+([.,][0-9]+)?" data-step="0.5" placeholder="3"></div>
               </div>
             </details>
             <div class="buttonRow">
@@ -384,8 +388,8 @@
           <section class="toolCard">
             <h3 data-i18n="tools.simulator">Weight Class Simulator</h3>
             <div class="grid two">
-              <label><span data-i18n="tools.target_bw">Target bodyweight (kg)</span><input id="simBodyweight" type="text" inputmode="decimal" data-decimal="true" pattern="[0-9]+([.,][0-9]+)?" data-step="0.1"></label>
-              <label><span data-i18n="tools.projected_total">Projected total (kg)</span><input id="simTotal" type="text" inputmode="decimal" data-decimal="true" pattern="[0-9]+([.,][0-9]+)?" data-step="0.5"></label>
+              <label><span data-i18n="tools.target_bw">Target bodyweight (kg)</span><input id="simBodyweight" data-weight type="text" inputmode="decimal" data-decimal="true" pattern="[0-9]+([.,][0-9]+)?" data-step="0.1"></label>
+              <label><span data-i18n="tools.projected_total">Projected total (kg)</span><input id="simTotal" data-weight type="text" inputmode="decimal" data-decimal="true" pattern="[0-9]+([.,][0-9]+)?" data-step="0.5"></label>
             </div>
             <button id="runSimulator" class="primary" data-i18n="tools.simulate">Simulate</button>
             <div id="simResult" class="toolResult"></div>
@@ -395,7 +399,7 @@
             <h3 data-i18n="tools.goal">Goal Planner</h3>
             <div class="grid two">
               <label><span data-i18n="tools.target_dots">Target DOTS</span><input id="goalDots" type="text" inputmode="decimal" data-decimal="true" pattern="[0-9]+([.,][0-9]+)?" data-step="1" placeholder="400"></label>
-              <label><span data-i18n="tools.target_bw">Target bodyweight (kg)</span><input id="goalBodyweight" type="text" inputmode="decimal" data-decimal="true" pattern="[0-9]+([.,][0-9]+)?" data-step="0.1"></label>
+              <label><span data-i18n="tools.target_bw">Target bodyweight (kg)</span><input id="goalBodyweight" data-weight type="text" inputmode="decimal" data-decimal="true" pattern="[0-9]+([.,][0-9]+)?" data-step="0.1"></label>
             </div>
             <label><span data-i18n="tools.target_date">Target date</span><input id="goalDate" type="date"></label>
             <div class="buttonRow">
@@ -509,6 +513,7 @@
         <h2 data-i18n="settings.title">App settings</h2>
         <div id="settingsBackupSlot"></div>
         <button id="adPrivacyOptions" class="ghost" type="button" data-i18n="ux.ad_privacy" hidden>Ad privacy options</button>
+        <div class="settingsCard grid two"><label><span data-i18n="ux.units">Weight units</span><select id="unitsSelect"><option value="auto" data-i18n="ux.auto_units">Automatic (device region)</option><option value="kg">kg</option><option value="lbs">lbs</option></select></label><label><span data-i18n="ux.score_choice">Preferred score</span><select id="settingsScoreSelect"><option value="dots">DOTS</option><option value="reshel">Reshel</option></select></label><p class="muted small" data-i18n="ux.units_note">Automatic uses lbs for a US device locale. Data and imports remain stored in kg.</p><p class="muted small" data-i18n="ux.swipe_note">Swipe left or right between the five main sections. Competition focus mode uses the buttons.</p></div>
         <h3 data-i18n="ux.preferences">Language &amp; athlete</h3>
         <div class="settingsCard">
           <label>
@@ -597,10 +602,10 @@
   <dialog id="scoreDialog" aria-labelledby="scoreDialogTitle"><h2 id="scoreDialogTitle"></h2><p id="scoreDialogText"></p><button id="closeScoreDialog" class="primary" type="button" data-i18n="ux.close">Close</button></dialog>
 
   <footer class="appFooter"><span>Powerlifting Calculator · Performance Hub</span><a href="https://powerlifting-calculator.com/methodology/" data-i18n="brand.methodology">Methods &amp; scoring</a><a href="./app-privacy.html" data-i18n="brand.privacy">Privacy</a><a href="https://powerlifting-calculator.com/contact/" data-i18n="brand.contact">Help &amp; feedback</a></footer>
-  <script src="./ux.js?v=14.3"></script>
-  <script src="./scoring.js?v=14.3"></script>
-  <script src="./hub-data.js?v=14.3"></script>
-  <script src="./app.js?v=14.3"></script>
+  <script src="./ux.js?v=15.0"></script>
+  <script src="./scoring.js?v=15.0"></script>
+  <script src="./hub-data.js?v=15.0"></script>
+  <script src="./app.js?v=15.0"></script>
   <script src="./firebase-config.js"></script>
   <script type="module" src="./firebase-auth.js"></script>
 </body>

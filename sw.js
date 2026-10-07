@@ -1,4 +1,4 @@
-const CACHE="plc-performance-hub-v14.3-ux-play";
+const CACHE="plc-performance-hub-v15.0-ux-play";
 const CACHE_PREFIX="plc-performance-hub-";
 const ASSETS=["./","./index.html","./app.css","./app.js","./hub-data.js","./scoring.js","./ux.js","./account-deletion.html","./app-privacy.html","./firebase-config.js","./firebase-auth.js","./manifest.webmanifest","./mark.svg","./logo.svg","./icon.svg","./icon-192.png","./icon-512.png","./locales/en.json","./locales/sk.json","./locales/cs.json","./locales/de.json","./locales/es.json","./locales/pl.json"];
 const ASSET_URLS=new Set(ASSETS.map(path=>new URL(path,self.location.href).href));

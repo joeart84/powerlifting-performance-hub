@@ -25,20 +25,23 @@
       if(input.profile.name!=null&&typeof input.profile.name!=='string')invalid();
     }
     for(const lift of LIFTS){
-      if(!object(input.plan)||!Array.isArray(input.plan[lift])||input.plan[lift].length!==3||!input.plan[lift].every(value=>numeric(value)))invalid();
-      if(!object(input.results)||!Array.isArray(input.results[lift])||input.results[lift].length!==3||!input.results[lift].every(value=>['','good','miss'].includes(value)))invalid();
+      if(!object(input.plan)||!Array.isArray(input.plan[lift])||![3,4].includes(input.plan[lift].length)||!input.plan[lift].every(value=>numeric(value)))invalid();
+      if(!object(input.results)||!Array.isArray(input.results[lift])||input.results[lift].length!==input.plan[lift].length||!input.results[lift].every(value=>['','good','miss'].includes(value)))invalid();
     }
     if(!Array.isArray(input.meets)||input.meets.length>10000)invalid();
     for(const meet of input.meets){
       if(!object(meet)||typeof meet.date!=='string'||typeof meet.meet!=='string')invalid();
       for(const field of ['bodyweight','squat','bench','deadlift','total','dots'])if(!numeric(meet[field],['squat','bench','deadlift'].includes(field)?-100000:0))invalid();
-      if(meet.attempts)for(const lift of LIFTS)if(!Array.isArray(meet.attempts[lift])||meet.attempts[lift].length!==3||!meet.attempts[lift].every(value=>['','good','miss'].includes(value)))invalid();
+      if(meet.attempts)for(const lift of LIFTS)if(!Array.isArray(meet.attempts[lift])||meet.attempts[lift].length>4||!meet.attempts[lift].every(value=>['','good','miss'].includes(value)||numeric(value,-100000)))invalid();
+      if(meet.recordAttempts)for(const entry of Object.values(meet.recordAttempts))if(!object(entry)||!numeric(entry.weight)||!['','good','miss'].includes(entry.result))invalid();
     }
     if(input.goal!==null){
       if(!object(input.goal)||!numeric(input.goal.targetTotal))invalid();
-      for(const field of ['targetDots','targetBodyweight'])if(input.goal[field]!=null&&!numeric(input.goal[field]))invalid();
+      for(const field of ['targetDots','targetReshel','targetBodyweight'])if(input.goal[field]!=null&&!numeric(input.goal[field]))invalid();
     }
     if(!object(input.preferences))invalid();
+    if(input.preferences.units!=null&&!['auto','kg','lbs'].includes(input.preferences.units))invalid();
+    if(input.preferences.scoreType!=null&&!['dots','reshel'].includes(input.preferences.scoreType))invalid();
     for(const [field,min,max] of [['homeLat',-90,90],['homeLon',-180,180]])if(input.preferences[field]!=null&&!numeric(input.preferences[field],min,max))invalid();
     const result={schema_version:1};
     for(const field of fields)result[field]=JSON.parse(JSON.stringify(input[field]));

@@ -63,6 +63,7 @@ variables=variables.replace(/compileSdkVersion = \d+/,`compileSdkVersion = ${rel
 await writeFile(new URL('../android/variables.gradle',import.meta.url),variables);
 let configuredManifest=await readFile(manifestPath,'utf8');
 configuredManifest=configuredManifest.replace('android:allowBackup="true"','android:allowBackup="false"').replace(/android:icon="[^"]+"/,'android:icon="@drawable/hub_icon"').replace(/android:roundIcon="[^"]+"/,'android:roundIcon="@drawable/hub_icon"');
+if(!configuredManifest.includes('android.permission.ACCESS_COARSE_LOCATION'))configuredManifest=configuredManifest.replace('</manifest>','    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />\n</manifest>');
 await writeFile(manifestPath,configuredManifest);
 await cp(new URL('../icon-512.png',import.meta.url),new URL('../android/app/src/main/res/drawable/hub_icon.png',import.meta.url));
 await cp(new URL('../native/hub-release.gradle',import.meta.url),new URL('../android/app/hub-release.gradle',import.meta.url));

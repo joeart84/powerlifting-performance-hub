@@ -106,6 +106,33 @@ function save(){
 }
 function saveSession(){localStorage.setItem(SESSION_KEY,JSON.stringify(session))}
 function num(v){const n=Number(String(v??"").replace(",",".").trim());return Number.isFinite(n)?n:0}
+
+function weightUnit(){return PPHUX.unit(state.preferences?.units||'auto',navigator.language)}
+function displayWeight(kg){return round(PPHUX.fromKg(num(kg),weightUnit()),3)}
+function weightText(kg){return displayWeight(kg)+' '+weightUnit()}
+function inputKg(id){const el=typeof id==='string'?$(id):id;if(!el)return 0;return el.dataset.displayValue===el.value&&el.dataset.kgValue!==undefined?num(el.dataset.kgValue):PPHUX.toKg(num(el.value),weightUnit())}
+function setWeightInput(el,kg){if(typeof el==='string')el=$(el);el.value=kg?String(displayWeight(kg)):'';el.dataset.kgValue=String(kg||0);el.dataset.displayValue=el.value}
+function scoreType(){return state.preferences?.scoreType==='reshel'?'reshel':'dots'}
+function scoreName(){return scoreType()==='reshel'?'Reshel':'DOTS'}
+function chosenScore(sex,bw,total){return scoreType()==='reshel'?reshelScore(sex,bw,total):dotsScore(sex,bw,total)}
+function meetScore(m){const sex=m.athleteSex||state.profile?.sex;return scoreType()==='reshel'?reshelScore(sex,m.bodyweight,m.total):['M','F'].includes(sex)?dotsScore(sex,m.bodyweight,m.total):num(m.dots)||null}
+function totalForScore(sex,bw,target){if(scoreType()==='dots')return totalForDots(sex,bw,target);const c=reshelCoefficient(sex,bw);return c?round(target/c,1):null}
+function updateDisplayLabels(){
+ document.querySelectorAll('[data-weight]').forEach(el=>{if(el.dataset.kgValue!==undefined&&el.dataset.displayValue===el.value)setWeightInput(el,num(el.dataset.kgValue))});
+ document.querySelectorAll('[data-unit]').forEach(el=>el.textContent=weightUnit());
+ document.querySelectorAll('label > [data-i18n]').forEach(el=>{if(/\(kg\)|\(lbs\)/.test(el.textContent))el.textContent=el.textContent.replace(/\((kg|lbs)\)/g,'('+weightUnit()+')')});
+ for(const key of ['progress.dots_chart','progress.dots','tools.target_dots','manual.dots'])document.querySelectorAll('[data-i18n="'+key+'"]').forEach(el=>el.textContent=t(key).replace(/DOTS/g,scoreName()));
+ $('currentDots').closest('.heroScore').hidden=scoreType()!=='dots';$('currentReshel').closest('.heroScore').hidden=scoreType()!=='reshel';$('focusMinus').textContent='−'+weightText(2.5);$('focusPlus').textContent='+'+weightText(2.5);
+ $('onboardingUnits').value=state.preferences?.units||'auto';$('unitsSelect').value=state.preferences?.units||'auto';$('scoreSelect').value=scoreType();$('settingsScoreSelect').value=scoreType();
+}
+async function publicJSON(url){
+ if(window.Capacitor?.isNativePlatform?.()&&!window.PPHNative?.getPublicJSON)await new Promise(resolve=>{const finish=()=>{clearTimeout(timer);window.removeEventListener('pph:native-ready',finish);resolve()};const timer=setTimeout(finish,5000);window.addEventListener('pph:native-ready',finish,{once:true})});
+ if(window.PPHNative?.getPublicJSON)return window.PPHNative.getPublicJSON(url);
+ const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),20000);
+ try{const res=await fetch(url,{headers:{Accept:'application/json'},signal:controller.signal});if(!res.ok)throw new Error('HTTP '+res.status);return await res.json()}finally{clearTimeout(timer)}
+}
+function coordinatesValid(lat,lon){return lat!==null&&lat!==undefined&&lon!==null&&lon!==undefined&&Number.isFinite(Number(lat))&&Number.isFinite(Number(lon))&&Math.abs(Number(lat))<=90&&Math.abs(Number(lon))<=180}
+
 function blankPlan(){return {squat:[0,0,0],bench:[0,0,0],deadlift:[0,0,0]}}
 function blankResults(){return {squat:["","",""],bench:["","",""],deadlift:["","",""]}}
 function ensureState(){
@@ -121,11 +148,11 @@ function ensureState(){
     locationSource:""
   };
 }
-function totalFromPlan(){return lifts.reduce((sum,l)=>sum+Math.max.apply(null,state.plan[l].map(num)),0)}
+function totalFromPlan(){return lifts.reduce((sum,l)=>sum+Math.max.apply(null,state.plan[l].slice(0,3).map(num)),0)}
 function currentBestTotal(){const p=state.profile||{};return num(p.squatBest)+num(p.benchBest)+num(p.deadliftBest)}
-function bestMade(lift){let best=0;(state.results[lift]||[]).forEach((r,i)=>{if(r==="good")best=Math.max(best,num(state.plan[lift][i]))});return best}
+function bestMade(lift){let best=0;(state.results[lift]||[]).slice(0,3).forEach((r,i)=>{if(r==="good")best=Math.max(best,num(state.plan[lift][i]))});return best}
 function liveTotal(){return lifts.reduce((s,l)=>s+bestMade(l),0)}
-function madeMiss(){let made=0,miss=0;lifts.forEach(l=>(state.results[l]||[]).forEach(r=>{if(r==="good")made++;if(r==="miss")miss++}));return{made,miss}}
+function madeMiss(){let made=0,miss=0;lifts.forEach(l=>(state.results[l]||[]).slice(0,3).forEach(r=>{if(r==="good")made++;if(r==="miss")miss++}));return{made,miss}}
 function suggestPlan(){ensureState();const p=state.profile||{};const ratios=[.90,.96,1.01];lifts.forEach(l=>{const best=num(p[l+"Best"]);if(best&&!state.plan[l].some(num)){state.plan[l]=ratios.map(r=>Math.round(best*r/2.5)*2.5)}})}
 function daysUntil(date){if(!date)return null;const d=new Date(date+"T12:00:00"),now=new Date();return Math.ceil((d-now)/86400000)}
 function esc(v){return String(v==null?"":v).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c]))}
@@ -162,7 +189,7 @@ function goalProgress(){
   if(!target)return null;
   const gap=round(target-current,1);
   const pct=Math.max(0,Math.min(100,round(current/target*100,0)));
-  return {current,target,gap,pct,targetDots:num(g.targetDots),targetBodyweight:num(g.targetBodyweight),targetDate:g.targetDate||""};
+  return {current,target,gap,pct,targetDots:num(g.targetDots),targetReshel:num(g.targetReshel),targetBodyweight:num(g.targetBodyweight),targetDate:g.targetDate||""};
 }
 function cloudPayload(){
   return {
@@ -285,7 +312,7 @@ function parseMeetRows(text){
     let total=num(pick(obj,["TotalKg","Total"]));
     if(!total&&squat&&bench&&deadlift)total=squat+bench+deadlift;
     let dots=num(pick(obj,["Dots","DOTS"]));
-    if(!dots&&bw&&total)dots=dotsScore((state.profile||{}).sex||"M",bw,total)||0;
+    if(!dots&&bw&&total)dots=dotsScore(athleteSex||(state.profile||{}).sex||"M",bw,total)||0;
     if(!date&&!meet&&!total)continue;
     out.push({
       date:String(date||"").slice(0,10),
@@ -494,9 +521,7 @@ function referenceWindowText(value){
 async function loadReference(){
   if(performanceReference)return performanceReference;
   try{
-    const res=await fetch(REFERENCE_API,{headers:{"Accept":"application/json"}});
-    if(!res.ok)throw new Error(t("dynamic.reference_unavailable"));
-    performanceReference=await res.json();
+    performanceReference=await publicJSON(REFERENCE_API);
     renderTools();
     return performanceReference;
   }catch(e){
@@ -523,15 +548,15 @@ function renderTools(){
     if(!ctx)box.innerHTML='<div class="muted">'+esc(t("dynamic.no_reference"))+'</div>';
     else{
       const pct=percentileValueText(ctx.percentile);
-      box.innerHTML='<div class="contextHero"><div><span class="muted">'+esc(t("dynamic.estimated_percentile"))+'</span><strong>'+esc(pct)+'</strong></div><div><span class="muted">'+esc(t("dynamic.context"))+'</span><strong>'+esc(ctx.label)+'</strong></div></div><div class="contextScale"><span style="width:'+Math.max(2,ctx.percentile||0)+'%"></span></div><div class="contextMeta">'+esc(t("dynamic.reference_class"))+': '+esc(ctx.row.weight_class_kg)+' kg · n='+Number(ctx.row.n).toLocaleString()+' · '+esc(t("dynamic.raw_full_power"))+' · '+esc(referenceWindowText(performanceReference.analysis_window))+'</div>'+(ctx.percentile==null?'':'<div class="contextExplanation"><p>'+esc(t("dynamic.percentile_explain",{pct:ctx.percentile}))+'</p><p>'+esc(t("dynamic.context_explain",{above:100-ctx.percentile,label:ctx.label,pct:ctx.percentile}))+'</p><p>'+esc(t("dynamic.reference_explain"))+'</p></div>');
+      box.innerHTML='<div class="contextHero"><div><span class="muted">'+esc(t("dynamic.estimated_percentile"))+'</span><strong>'+esc(pct)+'</strong></div><div><span class="muted">'+esc(t("dynamic.context"))+'</span><strong>'+esc(ctx.label)+'</strong></div></div><div class="contextScale"><span style="width:'+Math.max(2,ctx.percentile||0)+'%"></span></div><div class="contextMeta">'+esc(t("dynamic.reference_class"))+': '+esc(ctx.row.weight_class_kg)+' kg · DOTS · n='+Number(ctx.row.n).toLocaleString()+' · '+esc(t("dynamic.raw_full_power"))+' · '+esc(referenceWindowText(performanceReference.analysis_window))+'</div>'+(ctx.percentile==null?'':'<div class="contextExplanation"><p>'+esc(t("dynamic.percentile_explain",{pct:ctx.percentile}))+'</p><p>'+esc(t("dynamic.context_explain",{above:100-ctx.percentile,label:ctx.label,pct:ctx.percentile}))+'</p><p>'+esc(t("dynamic.reference_explain"))+'</p></div>');
     }
   }
-  if(!$("simBodyweight").value)$("simBodyweight").value=p.bodyweight||"";
-  if(!$("simTotal").value)$("simTotal").value=total||"";
-  if(!$("goalBodyweight").value)$("goalBodyweight").value=p.bodyweight||"";
+  if(!$("simBodyweight").value)setWeightInput("simBodyweight",p.bodyweight);
+  if(!$("simTotal").value)setWeightInput("simTotal",total);
+  if(!$("goalBodyweight").value)setWeightInput("goalBodyweight",p.bodyweight);
   if(state.goal){
-    if(!$("goalDots").value)$("goalDots").value=state.goal.targetDots||"";
-    if(!$("goalBodyweight").value)$("goalBodyweight").value=state.goal.targetBodyweight||"";
+    if(!$("goalDots").value)$("goalDots").value=(scoreType()==="reshel"?state.goal.targetReshel:state.goal.targetDots)||"";
+    if(!$("goalBodyweight").value)setWeightInput("goalBodyweight",state.goal.targetBodyweight);
     if(!$("goalDate").value)$("goalDate").value=state.goal.targetDate||"";
   }
 }
@@ -559,22 +584,23 @@ function render(){
   if($("profileFormNote"))$("profileFormNote").textContent=t(profileEditMode?"profile.edit_note":"onboarding.note");
   if($("saveProfile"))$("saveProfile").textContent=t(profileEditMode?"profile.save_changes":"profile.create");
   $("accountBackToProfile").hidden=!!p;
+  updateDisplayLabels();
   if(!p){
     if(accountOnly)document.querySelectorAll(".tab").forEach(tab=>tab.hidden=tab.id!=="tab-account");
     renderAccount();return;
   }
   ensureState();suggestPlan();
   $("athleteName").textContent=p.name||t("dashboard.your_dashboard");
-  setAnimatedMetric("metricBw",p.bodyweight||"—");setAnimatedMetric("metricSq",p.squatBest||"—");setAnimatedMetric("metricBp",p.benchBest||"—");setAnimatedMetric("metricDl",p.deadliftBest||"—");
-  $("currentTotal").textContent=currentBestTotal();
+  setAnimatedMetric("metricBw",p.bodyweight?displayWeight(p.bodyweight):"—");setAnimatedMetric("metricSq",p.squatBest?displayWeight(p.squatBest):"—");setAnimatedMetric("metricBp",p.benchBest?displayWeight(p.benchBest):"—");setAnimatedMetric("metricDl",p.deadliftBest?displayWeight(p.deadliftBest):"—");
+  $("currentTotal").textContent=displayWeight(currentBestTotal());
   const currentDots=dotsScore(p.sex,p.bodyweight,currentBestTotal());
   const currentReshel=reshelScore(p.sex,p.bodyweight,currentBestTotal());
   const currentAge=profileAge(p);
   const currentMcculloch=mccullochScore(p.sex,p.bodyweight,currentBestTotal(),currentAge);
   $("currentDots").textContent=currentDots?currentDots.toFixed(2):"—";
   $("currentReshel").textContent=currentReshel?currentReshel.toFixed(2):"—";
-  $("currentMcculloch").textContent=currentMcculloch?currentMcculloch.toFixed(1):"—";
-  $("mccullochNote").textContent=currentMcculloch?t("score.age_factor",{factor:PPHScoring.ageMultiplier(currentAge).toFixed(3)}):t("score.age_range");
+  $("currentMcculloch").textContent=currentMcculloch?displayWeight(currentMcculloch):"—";
+  $("mccullochNote").textContent=currentMcculloch?t("score.age_factor",{factor:PPHScoring.ageMultiplier(currentAge).toFixed(3)}).replace("kg",weightUnit()):t("score.age_range");
   const scoringNotes=[t("score.legacy_note")];
   if(p.bodyweight&&PPHScoring.dotsBodyweight(p.sex,num(p.bodyweight))!==num(p.bodyweight))scoringNotes.push(t("score.dots_boundary",{weight:PPHScoring.dotsBodyweight(p.sex,num(p.bodyweight))}));
   $("scoringNotes").textContent=scoringNotes.join(" ");
@@ -582,8 +608,8 @@ function render(){
   $("mccullochSetup").textContent=t("dynamic.add_birth_date");
   const d=daysUntil(p.meetDate);
   $("countdown").textContent=p.meetDate?(d>=0?t("dynamic.days_until",{days:d}):t("dynamic.meet_passed")):t("dynamic.add_meet_date");
-  $("meetSnapshot").innerHTML="<div><strong>"+esc(t("dynamic.meet_label"))+":</strong> "+esc(p.meetName||t("common.not_set"))+"</div><div><strong>"+esc(t("dynamic.date_label"))+":</strong> "+esc(p.meetDate||t("common.not_set"))+"</div><div><strong>"+esc(t("planner.projected_total"))+":</strong> "+totalFromPlan()+" kg</div><div><strong>"+esc(t("dynamic.current_best"))+":</strong> "+currentBestTotal()+" kg</div><div><strong>"+esc(t("dynamic.current_dots"))+":</strong> "+(currentDots?currentDots.toFixed(2):"—")+"</div>";
-  renderGoalSnapshot();renderNextStep();renderSaveStatus();
+  $("meetSnapshot").innerHTML="<div><strong>"+esc(t("dynamic.meet_label"))+":</strong> "+esc(p.meetName||t("common.not_set"))+"</div><div><strong>"+esc(t("dynamic.date_label"))+":</strong> "+esc(p.meetDate||t("common.not_set"))+"</div><div><strong>"+esc(t("planner.projected_total"))+":</strong> "+weightText(totalFromPlan())+"</div><div><strong>"+esc(t("dynamic.current_best"))+":</strong> "+weightText(currentBestTotal())+"</div><div><strong>"+esc(t("dynamic.current_dots").replace("DOTS",scoreName()))+":</strong> "+(chosenScore(p.sex,p.bodyweight,currentBestTotal())?.toFixed(2)||"—")+"</div>";
+  updateDisplayLabels();renderGoalSnapshot();renderNextStep();renderSaveStatus();
   renderPlanner();renderMeetDay();renderProgress();renderTools();renderReport();renderAccount();populateLocationSettings();populateAthleteProfileSettings();renderCompetitionFinder();
 }
 
@@ -591,38 +617,40 @@ function renderGoalSnapshot(){
   const root=$("goalSnapshot");if(!root)return;
   const gp=goalProgress();
   if(!gp){root.innerHTML='<div class="muted">'+esc(t("dynamic.no_goal"))+'</div>';return}
-  root.innerHTML='<div><strong>'+esc(t("dynamic.target"))+':</strong> '+(gp.targetDots?gp.targetDots+" DOTS · ":"")+gp.target+' '+esc(t("dynamic.kg_total"))+'</div>'
-    +'<div><strong>'+esc(t("dynamic.target_bw"))+':</strong> '+(gp.targetBodyweight||"—")+' kg</div>'
+  root.innerHTML='<div><strong>'+esc(t("dynamic.target"))+':</strong> '+(gp.targetReshel?gp.targetReshel+" Reshel · ":gp.targetDots?gp.targetDots+" DOTS · ":"")+weightText(gp.target)+'</div>'
+    +'<div><strong>'+esc(t("dynamic.target_bw"))+':</strong> '+(gp.targetBodyweight?weightText(gp.targetBodyweight):"—")+'</div>'
     +(gp.targetDate?'<div><strong>'+esc(t("dynamic.target_date"))+':</strong> '+esc(gp.targetDate)+'</div>':'')
     +'<div class="goalProgress"><span style="width:'+gp.pct+'%"></span></div>'
-    +'<div><strong>'+esc(t("dynamic.of_target",{pct:gp.pct}))+'</strong> · '+esc(gp.gap>0?t("dynamic.to_go",{gap:gp.gap}):t("dynamic.goal_reached"))+'</div>';
+    +'<div><strong>'+esc(t("dynamic.of_target",{pct:gp.pct}))+'</strong> · '+esc(gp.gap>0?t("dynamic.to_go",{gap:displayWeight(gp.gap)}).replace("kg",weightUnit()):t("dynamic.goal_reached"))+'</div>';
 }
 
 function renderPlanner(){
   const root=$("plannerRows");root.innerHTML="";
   lifts.forEach(l=>{
     const g=document.createElement("div");g.className="liftGroup";g.innerHTML="<h3>"+esc(t("progress."+l))+"</h3>";
+    const toggle=document.createElement("label");toggle.className="recordToggle";toggle.innerHTML='<input type="checkbox" data-fourth="'+l+'" '+(state.plan[l].length===4?'checked':'')+'> <span>'+esc(t("ux.fourth"))+'</span>';toggle.querySelector("input").addEventListener("change",e=>toggleFourth(l,e.target.checked));g.appendChild(toggle);
     state.plan[l].forEach((v,i)=>{
       const row=document.createElement("div");row.className="attemptRow";
-      const label=t("progress."+l)+" · "+t("planner.attempt")+" "+(i+1);
-      row.innerHTML='<label for="weight-'+l+'-'+i+'">'+esc(t("planner.attempt"))+' '+(i+1)+'</label><div class="weightStepper"><button class="ghost" type="button" data-delta="-2.5" aria-label="'+esc(t("ux.decrease",{attempt:label}))+'">−</button><input id="weight-'+l+'-'+i+'" type="text" inputmode="decimal" data-decimal data-min="0" pattern="[0-9]+([.,][0-9]+)?" data-lift="'+l+'" data-idx="'+i+'" value="'+(v||'')+'" placeholder="kg" aria-label="'+esc(label)+'"><button class="ghost" type="button" data-delta="2.5" aria-label="'+esc(t("ux.increase",{attempt:label}))+'">+</button></div>';
+      const label=t("progress."+l)+" · "+t(i===3?"ux.record_attempt":"planner.attempt")+" "+(i+1);
+      row.innerHTML='<label for="weight-'+l+'-'+i+'">'+esc(i===3?t("ux.record_attempt"):t("planner.attempt"))+' '+(i+1)+'</label><div class="weightStepper"><button class="ghost" type="button" data-delta="-2.5" aria-label="'+esc(t("ux.decrease",{attempt:label}).replace("2.5 kg",weightText(2.5)))+'">−</button><input id="weight-'+l+'-'+i+'" type="text" inputmode="decimal" data-decimal data-min="0" pattern="[0-9]+([.,][0-9]+)?" data-lift="'+l+'" data-idx="'+i+'" value="'+(v?displayWeight(v):'')+'" data-weight data-kg-value="'+v+'" data-display-value="'+(v?displayWeight(v):'')+'" placeholder="'+weightUnit()+'" aria-label="'+esc(label)+'"><button class="ghost" type="button" data-delta="2.5" aria-label="'+esc(t("ux.increase",{attempt:label}).replace("2.5 kg",weightText(2.5)))+'">+</button></div>';
       const input=row.querySelector("input");
-      const commit=()=>{if(!validateDecimalInput(input))return;clearAttemptUndo();state.plan[l][i]=num(input.value);save();$("projectedTotal").textContent=totalFromPlan()+" kg";renderMeetDay();renderReport();renderNextStep()};
+      const commit=()=>{if(!validateDecimalInput(input))return;clearAttemptUndo();state.plan[l][i]=inputKg(input);save();$("projectedTotal").textContent=weightText(totalFromPlan());$("recordAttemptNote").textContent=t("ux.fourth_note");renderMeetDay();renderReport();renderNextStep()};
       input.addEventListener("input",commit);
-      row.querySelectorAll('[data-delta]').forEach(button=>button.addEventListener("click",()=>{if(!validateDecimalInput(input))return;input.value=PPHUX.adjust(input.value,Number(button.dataset.delta));commit()}));
+      row.querySelectorAll('[data-delta]').forEach(button=>button.addEventListener("click",()=>{if(!validateDecimalInput(input))return;setWeightInput(input,Math.max(0,inputKg(input)+Number(button.dataset.delta)));commit()}));
       g.appendChild(row);
     });root.appendChild(g);
   });
-  $("projectedTotal").textContent=totalFromPlan()+" kg";
+  $("projectedTotal").textContent=weightText(totalFromPlan());$("recordAttemptNote").textContent=t("ux.fourth_note");
 }
 
 function renderMeetDay(){
   const root=$("meetDayRows");root.innerHTML="";
   lifts.forEach(l=>{
     const g=document.createElement("div");g.className="liftGroup";g.innerHTML="<h3>"+esc(t("progress."+l))+"</h3>";
+    const toggle=document.createElement("label");toggle.className="recordToggle";toggle.innerHTML='<input type="checkbox" data-fourth="'+l+'" '+(state.plan[l].length===4?'checked':'')+'> <span>'+esc(t("ux.fourth"))+'</span>';toggle.querySelector("input").addEventListener("change",e=>toggleFourth(l,e.target.checked));g.appendChild(toggle);
     state.plan[l].forEach((v,i)=>{
       const val=state.results[l][i],row=document.createElement("div");row.className="attemptRow";
-      row.innerHTML="<span>#"+(i+1)+" · "+(v||"—")+" kg</span><div class=\"attemptActions\"><button class=\"good "+(val==="good"?"active":"")+"\" data-r=\"good\" data-lift=\""+l+"\" data-idx=\""+i+"\">"+esc(t("meetday.good"))+"</button><button class=\"miss "+(val==="miss"?"active":"")+"\" data-r=\"miss\" data-lift=\""+l+"\" data-idx=\""+i+"\">"+esc(t("meetday.miss"))+"</button></div>";
+      row.innerHTML="<span>#"+(i+1)+" · "+(i===3?esc(t("ux.record_attempt"))+" · ":"")+(v?weightText(v):"—")+"</span><div class=\"attemptActions\"><button class=\"good "+(val==="good"?"active":"")+"\" data-r=\"good\" data-lift=\""+l+"\" data-idx=\""+i+"\">"+esc(t("meetday.good"))+"</button><button class=\"miss "+(val==="miss"?"active":"")+"\" data-r=\"miss\" data-lift=\""+l+"\" data-idx=\""+i+"\">"+esc(t("meetday.miss"))+"</button></div>";
       g.appendChild(row);
     });root.appendChild(g);
   });
@@ -630,7 +658,7 @@ function renderMeetDay(){
     const lift=e.target.dataset.lift,idx=Number(e.target.dataset.idx),r=e.target.dataset.r;
     updateAttempt(lift,idx,r);
   }));
-  const mm=madeMiss();$("madeCount").textContent=mm.made;$("missCount").textContent=mm.miss;$("liveTotal").textContent=liveTotal()+" kg";renderMeetFocus();
+  const mm=madeMiss();$("madeCount").textContent=mm.made;$("missCount").textContent=mm.miss;$("liveTotal").textContent=weightText(liveTotal());renderMeetFocus();
 }
 
 function svgChart(rows,key){
@@ -655,18 +683,18 @@ function renderProgress(){
   status.textContent=meets.length?t("dynamic.results_stored",{count:meets.length}):t("progress.empty");
   const pr=meetPrs();
   summary.innerHTML=[
-    [t("dynamic.best_total"),pr.total?pr.total+" kg":"—"],
-    [t("dynamic.best_dots"),pr.dots||"—"],
-    [t("dynamic.best_squat"),pr.squat?pr.squat+" kg":"—"],
-    [t("dynamic.best_bench"),pr.bench?pr.bench+" kg":"—"],
-    [t("dynamic.best_deadlift"),pr.deadlift?pr.deadlift+" kg":"—"]
+    [t("dynamic.best_total"),pr.total?weightText(pr.total):"—"],
+    [t("dynamic.best_dots").replace("DOTS",scoreName()),Math.max(0,...meets.map(m=>meetScore(m)||0)).toFixed(2)],
+    [t("dynamic.best_squat"),pr.squat?weightText(pr.squat):"—"],
+    [t("dynamic.best_bench"),pr.bench?weightText(pr.bench):"—"],
+    [t("dynamic.best_deadlift"),pr.deadlift?weightText(pr.deadlift):"—"]
   ].map(x=>'<article class="metric"><span>'+x[0]+'</span><strong>'+x[1]+'</strong></article>').join("");
-  $("totalChart").innerHTML=svgChart(meets,"total");
-  $("dotsChart").innerHTML=svgChart(meets,"dots");
+  $("totalChart").innerHTML=svgChart(meets.map(m=>({...m,total:displayWeight(m.total)})),"total");
+  $("dotsChart").innerHTML=svgChart(meets.map(m=>({...m,dots:meetScore(m)})),"dots");
   rows.innerHTML=meets.slice().reverse().map(m=>{
     const source=String(m.source||"");
     const badge=source.toLowerCase()==="manual"?'<span class="meetSourceBadge">'+esc(t("manual.badge"))+'</span>':"";
-    return '<tr><td>'+esc(m.date||"—")+'</td><td>'+esc(m.meet||"—")+badge+'</td><td>'+fmt(m.bodyweight)+'</td><td>'+fmt(m.squat)+'</td><td>'+fmt(m.bench)+'</td><td>'+fmt(m.deadlift)+'</td><td><strong>'+fmt(m.total)+'</strong></td><td>'+fmt(m.dots,2)+'</td></tr>';
+    return '<tr><td>'+esc(m.date||"—")+'</td><td>'+esc(m.meet||"—")+badge+'</td><td>'+fmt(displayWeight(m.bodyweight))+'</td><td>'+fmt(displayWeight(m.squat))+'</td><td>'+fmt(displayWeight(m.bench))+'</td><td>'+fmt(displayWeight(m.deadlift))+'</td><td><strong>'+fmt(displayWeight(m.total))+'</strong></td><td>'+(meetScore(m)?.toFixed(2)||"—")+'</td></tr>';
   }).join("");
   if(!meets.length)rows.innerHTML='<tr><td colspan="8" class="muted">'+esc(t("dynamic.no_history"))+'</td></tr>';
 }
@@ -721,7 +749,7 @@ function haversineKm(lat1,lon1,lat2,lon2){
 }
 function eventDistance(m){
   const p=state.preferences||{},lat=num(m.latitude),lon=num(m.longitude);
-  if(!num(p.homeLat)||!num(p.homeLon)||!lat||!lon)return null;
+  if(!coordinatesValid(p.homeLat,p.homeLon)||!coordinatesValid(m.latitude,m.longitude))return null;
   return haversineKm(num(p.homeLat),num(p.homeLon),lat,lon);
 }
 function nearbyCountryFallback(country){
@@ -731,7 +759,7 @@ function nearbyCountryFallback(country){
   return (NEIGHBORS[home]||[]).some(x=>countryMatches(country,x));
 }
 function competitionSearchText(m){
-  return [m.event,m.city,m.region,m.country,m.federation,m.venue,m.event_disciplines,m.equipment_categories].filter(Boolean).join(" ").toLowerCase();
+  return normText([m.event,m.city,m.region,m.country,m.federation,m.venue,m.event_disciplines,m.equipment_categories].filter(Boolean).join(" "));
 }
 function competitionMatchesScope(m,scope,radius){
   const p=state.preferences||{},distance=eventDistance(m);
@@ -775,25 +803,25 @@ function filteredCompetitions(){
   });
   return rows;
 }
+const FEED_CACHE_KEY=KEY+'-competition-feed';
+let feedRequest=0,competitionCached=false;
 async function loadCompetitions(){
-  competitionFeedError="";
-  try{
-    const res=await fetch(HUB_API+"/competitions",{headers:{"Accept":"application/json"}});
-    if(!res.ok)throw new Error("Competition feed unavailable ("+res.status+")");
-    const data=await res.json();
-    upcomingCompetitions=Array.isArray(data.competitions)?data.competitions:[];
-    competitionFeedMeta=data&&typeof data.meta==="object"&&data.meta?data.meta:{};
-    console.info("[Competitions] feed loaded",{
-      returned:upcomingCompetitions.length,
-      meta:competitionFeedMeta
-    });
-  }catch(e){
-    console.error("[Competitions] feed load failed",e);
-    upcomingCompetitions=[];
-    competitionFeedMeta={};
-    competitionFeedError=e?.message||String(e);
-  }
-  renderCompetitionFinder();
+ const request=++feedRequest;competitionFeedError='';$('competitionStatus').textContent=t('ux.loading_events');
+ try{
+  const data=await publicJSON(HUB_API+'/competitions');
+  if(request!==feedRequest)return;
+  if(!Array.isArray(data.competitions))throw new Error(t('ux.invalid_feed'));
+  upcomingCompetitions=data.competitions;competitionFeedMeta=data.meta||{};competitionCached=false;
+  try{localStorage.setItem(FEED_CACHE_KEY,JSON.stringify({competitions:upcomingCompetitions,meta:competitionFeedMeta}))}catch{}
+ }catch(error){
+  if(request!==feedRequest)return;
+  competitionFeedError=error.message||String(error);
+  const cached=readStoredObject(FEED_CACHE_KEY,{});
+  upcomingCompetitions=Array.isArray(cached.competitions)?cached.competitions:[];competitionFeedMeta=cached.meta||{};competitionCached=upcomingCompetitions.length>0;
+ }
+ const p=state.preferences||{};
+ if(competitionScope==='nearby'&&!coordinatesValid(p.homeLat,p.homeLon)&&!p.homeCountry)competitionScope='world';
+ renderCompetitionFinder();
 }
 function renderFederationOptions(){
   const sel=$("competitionFederation");if(!sel)return;
@@ -809,9 +837,9 @@ function renderCompetitionFinder(){
   const p=state.preferences||{};
   document.querySelectorAll("#competitionScopes button").forEach(btn=>btn.classList.toggle("active",btn.dataset.scope===competitionScope));
   const rows=filteredCompetitions();
-  const hasLocation=num(p.homeLat)&&num(p.homeLon);
+  const hasLocation=coordinatesValid(p.homeLat,p.homeLon);
   if(competitionFeedError){
-    status.textContent="Competition feed unavailable · "+competitionFeedError;
+    status.textContent=t(competitionCached?"ux.cached_events":"finder.feed_failed")+" · "+competitionFeedError;
   }else if(!upcomingCompetitions.length){
     const synced=competitionFeedMeta.synced_at?(" · last sync "+competitionFeedMeta.synced_at):"";
     status.textContent=t("finder.feed_zero")+synced;
@@ -861,10 +889,10 @@ function selectCompetition(m){
   $("competitionStatus").textContent=t("dynamic.meet_saved",{meet:p.meetName});
   renderCompetitionFinder();
 }
-async function saveHomeLocation(){
-  const country=$("homeCountry").value.trim(),city=$("homeCity").value.trim(),status=$("locationStatus");
+async function saveHomeLocation(countryId="homeCountry",cityId="homeCity",statusId="locationStatus"){
+  const country=$(countryId).value.trim(),city=$(cityId).value.trim(),status=$(statusId);
   state.preferences=state.preferences||{};
-  state.preferences.homeCountry=country;state.preferences.homeCity=city;
+  state.preferences.homeCountry=country;state.preferences.homeCity=city;state.preferences.homeLat=null;state.preferences.homeLon=null;
   if(!city){
     state.preferences.homeLat=null;state.preferences.homeLon=null;state.preferences.locationSource="country";
     save();status.textContent=t("finder.location_saved");renderCompetitionFinder();return;
@@ -872,35 +900,33 @@ async function saveHomeLocation(){
   status.textContent=t("finder.resolving_location");
   try{
     const url=HUB_API+"/geocode?city="+encodeURIComponent(city)+"&country="+encodeURIComponent(country);
-    const res=await fetch(url,{headers:{"Accept":"application/json"}});
-    const data=await res.json();
-    if(!res.ok)throw new Error(data.message||t("finder.location_lookup_failed"));
+    const data=await publicJSON(url);
+    if(!coordinatesValid(data.latitude,data.longitude))throw new Error(t("finder.location_lookup_failed"));
     state.preferences.homeLat=num(data.latitude);state.preferences.homeLon=num(data.longitude);
-    state.preferences.locationSource="manual";save();
+    state.preferences.locationSource="manual";competitionScope="nearby";save();populateLocationSettings();
     status.textContent=t("finder.location_resolved",{place:data.display_name||[city,country].filter(Boolean).join(", ")});
     renderCompetitionFinder();
-  }catch(err){status.textContent=t("finder.location_error",{message:err.message})}
+  }catch(err){save();renderCompetitionFinder();status.textContent=t("finder.location_error",{message:err.message})}
 }
-function useBrowserLocation(statusId="competitionStatus"){
-  const status=$(statusId)||$("competitionStatus");
-  if(!navigator.geolocation){status.textContent=t("finder.location_unsupported");return}
-  status.textContent=t("finder.getting_location");
-  navigator.geolocation.getCurrentPosition(pos=>{
-    state.preferences=state.preferences||{};
-    state.preferences.homeLat=pos.coords.latitude;
-    state.preferences.homeLon=pos.coords.longitude;
-    state.preferences.locationSource="device";
-    save();status.textContent=t("finder.location_ready");competitionScope="nearby";renderCompetitionFinder();
-  },()=>{status.textContent=t("finder.location_denied")},{enableHighAccuracy:false,timeout:10000,maximumAge:3600000});
+async function useBrowserLocation(statusId='competitionStatus'){
+ const status=$(statusId)||$('competitionStatus');status.textContent=t('finder.getting_location');
+ $('useCurrentLocation').disabled=true;$('settingsUseLocation').disabled=true;
+ try{
+  const pos=window.PPHNative?.getLocation?await window.PPHNative.getLocation():await new Promise((resolve,reject)=>{if(!navigator.geolocation){reject(new Error('unsupported'));return}navigator.geolocation.getCurrentPosition(resolve,reject,{enableHighAccuracy:false,timeout:15000,maximumAge:300000})});
+  if(!coordinatesValid(pos.coords.latitude,pos.coords.longitude))throw new Error('invalid');
+  state.preferences.homeLat=pos.coords.latitude;state.preferences.homeLon=pos.coords.longitude;state.preferences.locationSource='device';
+  save();competitionScope='nearby';renderCompetitionFinder();if(statusId!=='competitionStatus')status.textContent=t('finder.location_ready');
+ }catch(error){status.textContent=t(error.code===1||error.code==='OS-PLUG-GLOC-0003'?'ux.location_permission':error.code==='OS-PLUG-GLOC-0007'||error.code==='OS-PLUG-GLOC-0009'||error.code==='OS-PLUG-GLOC-0017'?'ux.location_off':error.code===3||error.code==='OS-PLUG-GLOC-0010'?'ux.location_timeout':'ux.location_manual');$('finderLocation').open=true;}
+ finally{$('useCurrentLocation').disabled=false;$('settingsUseLocation').disabled=false;}
 }
 function manualAttemptValues(prefix){
-  return [1,2,3].map(i=>num($(prefix+i)?.value)).filter(v=>v!==0);
+  return [1,2,3].map(i=>inputKg(prefix+i)).filter(v=>v!==0);
 }
 function updateManualMeetPreview(){
-  const sq=num($("manualMeetSquat")?.value),bp=num($("manualMeetBench")?.value),dl=num($("manualMeetDeadlift")?.value);
-  const bw=num($("manualMeetBw")?.value),total=sq+bp+dl;
-  if($("manualMeetTotal"))$("manualMeetTotal").textContent=total?round(total,1)+" kg":"0 kg";
-  const dots=total&&bw?dotsScore((state.profile||{}).sex||"M",bw,total):0;
+  const sq=inputKg("manualMeetSquat"),bp=inputKg("manualMeetBench"),dl=inputKg("manualMeetDeadlift");
+  const bw=inputKg("manualMeetBw"),total=sq+bp+dl;
+  if($("manualMeetTotal"))$("manualMeetTotal").textContent=weightText(total);
+  const dots=total&&bw?chosenScore((state.profile||{}).sex||"M",bw,total):0;
   if($("manualMeetDots"))$("manualMeetDots").textContent=dots?dots.toFixed(2):"—";
 }
 function setManualMeetOpen(open){
@@ -919,8 +945,8 @@ function saveManualMeet(event){
   if(!form.checkValidity()){form.reportValidity();return}
   const date=$("manualMeetDate").value;
   const meet=$("manualMeetName").value.trim();
-  const bw=num($("manualMeetBw").value);
-  const squat=num($("manualMeetSquat").value),bench=num($("manualMeetBench").value),deadlift=num($("manualMeetDeadlift").value);
+  const bw=inputKg("manualMeetBw");
+  const squat=inputKg("manualMeetSquat"),bench=inputKg("manualMeetBench"),deadlift=inputKg("manualMeetDeadlift");
   const total=squat+bench+deadlift;
   if(!date||!meet||!bw||!total){
     status.textContent=t("manual.invalid");
@@ -972,6 +998,7 @@ function populateLocationSettings(){
   const p=state.preferences||{};
   if($("homeCountry")&&!$("homeCountry").value)$("homeCountry").value=p.homeCountry||"";
   if($("homeCity")&&!$("homeCity").value)$("homeCity").value=p.homeCity||"";
+  if(!$("finderCountry").value)$("finderCountry").value=p.homeCountry||"";if(!$("finderCity").value)$("finderCity").value=p.homeCity||"";
 }
 function populateAthleteProfileSettings(){
   const p=state.profile||{};
@@ -1010,12 +1037,12 @@ function openAthleteProfileSettings(){
 }
 
 function saveCurrentGoal(){
-  const p=state.profile||{},targetDots=num($("goalDots").value),bw=num($("goalBodyweight").value);
-  const targetTotal=totalForDots(p.sex,bw,targetDots);
+  const p=state.profile||{},targetDots=num($("goalDots").value),bw=inputKg("goalBodyweight");
+  const targetTotal=totalForScore(p.sex,bw,targetDots);
   if(!targetDots||!bw||!targetTotal){$("goalResult").textContent=t("dynamic.valid_goal");return}
-  state.goal={targetDots,targetBodyweight:bw,targetTotal,targetDate:$("goalDate").value||""};
+  state.goal={targetDots:scoreType()==="dots"?targetDots:0,targetReshel:scoreType()==="reshel"?targetDots:0,targetBodyweight:bw,targetTotal,targetDate:$("goalDate").value||""};
   save();renderGoalSnapshot();
-  $("goalResult").innerHTML='<strong class="big">'+esc(t("dynamic.goal_saved"))+'</strong><p>'+esc(t("dynamic.goal_saved_text",{dots:targetDots,bw:bw,total:targetTotal}))+'</p>';
+  $("goalResult").innerHTML='<strong class="big">'+esc(t("dynamic.goal_saved"))+'</strong><p>'+esc(targetDots+" "+scoreName()+" · "+weightText(bw)+" · "+weightText(targetTotal))+'</p>';
 }
 function buildMeetRecord(){
   const p=state.profile||{},total=liveTotal();
@@ -1035,7 +1062,8 @@ function buildMeetRecord(){
     total,
     dots:dotsScore(p.sex,p.bodyweight,total)||0,
     source:"Performance Hub",
-    attempts:JSON.parse(JSON.stringify(state.results||{}))
+    attempts:Object.fromEntries(lifts.map(l=>[l,state.results[l].slice(0,3)])),
+    recordAttempts:Object.fromEntries(lifts.filter(l=>state.plan[l].length===4).map(l=>[l,{weight:state.plan[l][3],result:state.results[l][3]}]))
   };
 }
 function saveMeetToHistory(){
@@ -1063,8 +1091,8 @@ async function makeResultCardBlob(){
   ctx.fillStyle="#ffffff";ctx.font="800 64px system-ui";ctx.fillText((p.name||"Athlete").slice(0,24),70,180);
   ctx.fillStyle="#a0a7af";ctx.font="500 30px system-ui";ctx.fillText((record.meet||"Meet Day").slice(0,42),70,230);
   const boxes=[
-    ["SQUAT",record.squat+" kg"],["BENCH",record.bench+" kg"],["DEADLIFT",record.deadlift+" kg"],
-    ["TOTAL",record.total+" kg"],["DOTS",record.dots?Number(record.dots).toFixed(2):"—"],["ATTEMPTS",madeMiss().made+"/"+(madeMiss().made+madeMiss().miss)]
+    ["SQUAT",weightText(record.squat)],["BENCH",weightText(record.bench)],["DEADLIFT",weightText(record.deadlift)],
+    ["TOTAL",weightText(record.total)],[scoreName(),meetScore(record)?.toFixed(2)||"—"],["ATTEMPTS",madeMiss().made+"/"+(madeMiss().made+madeMiss().miss)]
   ];
   boxes.forEach((b,i)=>{
     const col=i%3,row=Math.floor(i/3),x=70+col*320,y=320+row*230;
@@ -1080,7 +1108,7 @@ async function shareResultCard(){
     const blob=await makeResultCardBlob();
     const file=new File([blob],"powerlifting-meet-report.png",{type:"image/png"});
     const record=buildMeetRecord(),p=state.profile||{};
-    const text=(p.name||"Athlete")+" · "+record.total+" kg total · "+(record.dots?Number(record.dots).toFixed(2)+" DOTS":"Powerlifting meet");
+    const text=(p.name||"Athlete")+" · "+weightText(record.total)+" total · "+(meetScore(record)?.toFixed(2)+" "+scoreName());
     if(window.PPHNative?.shareImage){await window.PPHNative.shareImage(blob,file.name,text);return}
     if(navigator.share&&navigator.canShare&&navigator.canShare({files:[file]})){
       await navigator.share({title:"Powerlifting Meet Report",text,files:[file]});
@@ -1287,7 +1315,7 @@ let backupReadId=0;
 let cloudBusy=false;
 let pendingCloudChange=null;
 function dataMessage(error){return messages[error?.message]!==undefined?t(error.message):error.message||t("data.invalid")}
-function backupSummary(data){return t("backup.summary",{name:data.profile?.name||t("profile.athlete"),meets:data.meets.length,total:num(data.profile?.squatBest)+num(data.profile?.benchBest)+num(data.profile?.deadliftBest)})}
+function backupSummary(data){return t("backup.summary",{name:data.profile?.name||t("profile.athlete"),meets:data.meets.length,total:displayWeight(num(data.profile?.squatBest)+num(data.profile?.benchBest)+num(data.profile?.deadliftBest))}).replace("kg",weightUnit())}
 function rememberDevice(){
   const copy=PPHData.backup(cloudPayload(),languagePreference());
   localStorage.setItem(RESTORE_KEY,JSON.stringify(copy));
@@ -1458,20 +1486,20 @@ function renderReport(){
   const mm=madeMiss(),attempts=mm.made+mm.miss,body=$("reportBody");
   $("reportTitle").textContent=attempts?t("dynamic.attempts_made",{made:mm.made,attempts:attempts}):t("report.empty");
   const total=liveTotal(),success=attempts?Math.round(mm.made/attempts*1000)/10:0;
-  const p=state.profile||{},dots=total?dotsScore(p.sex,p.bodyweight,total):null;
-  body.innerHTML="<div class=\"reportCard\"><h3>"+esc(p.meetName||t("nav.meetday"))+"</h3><div class=\"reportGrid\"><div><span>"+esc(t("ux.success_rate"))+"</span><strong>"+success+"%</strong></div><div><span>"+esc(t("meetday.best_total"))+"</span><strong>"+total+" kg</strong></div><div><span>DOTS</span><strong>"+(dots?dots.toFixed(2):"—")+"</strong></div></div><p style=\"margin-top:14px\">"+esc(t("progress.squat"))+" "+(bestMade("squat")||"—")+" · "+esc(t("progress.bench"))+" "+(bestMade("bench")||"—")+" · "+esc(t("progress.deadlift"))+" "+(bestMade("deadlift")||"—")+"</p></div>";
+  const p=state.profile||{},dots=total?chosenScore(p.sex,p.bodyweight,total):null;
+  body.innerHTML="<div class=\"reportCard\"><h3>"+esc(p.meetName||t("nav.meetday"))+"</h3><div class=\"reportGrid\"><div><span>"+esc(t("ux.success_rate"))+"</span><strong>"+success+"%</strong></div><div><span>"+esc(t("meetday.best_total"))+"</span><strong>"+weightText(total)+"</strong></div><div><span>"+scoreName()+"</span><strong>"+(dots?dots.toFixed(2):"—")+"</strong></div></div><p style=\"margin-top:14px\">"+esc(t("progress.squat"))+" "+(bestMade("squat")?weightText(bestMade("squat")):"—")+" · "+esc(t("progress.bench"))+" "+(bestMade("bench")?weightText(bestMade("bench")):"—")+" · "+esc(t("progress.deadlift"))+" "+(bestMade("deadlift")?weightText(bestMade("deadlift")):"—")+"</p>"+recordSummary()+"</div>";
 }
 
 function populateProfileForm(){
   const p=state.profile||{};
   $("name").value=p.name||"";
   $("sex").value=p.sex||"M";
-  $("bodyweight").value=p.bodyweight||"";
+  setWeightInput("bodyweight",p.bodyweight);
   $("age").value=profileAge(p)||p.age||"";
   $("meetDate").value=p.meetDate||"";
-  $("squatBest").value=p.squatBest||"";
-  $("benchBest").value=p.benchBest||"";
-  $("deadliftBest").value=p.deadliftBest||"";
+  setWeightInput("squatBest",p.squatBest);
+  setWeightInput("benchBest",p.benchBest);
+  setWeightInput("deadliftBest",p.deadliftBest);
 }
 function closeProfileEdit(){
   if(!profileEditMode)return;
@@ -1498,12 +1526,12 @@ $("saveProfile").addEventListener("click",()=>{
     ...existing,
     name:$("name").value.trim()||existing.name||t("profile.athlete"),
     sex:$("sex").value,
-    bodyweight:num($("bodyweight").value),
+    bodyweight:inputKg("bodyweight"),
     age:parseAge($("age").value),
     meetDate:$("meetDate").value,
-    squatBest:num($("squatBest").value),
-    benchBest:num($("benchBest").value),
-    deadliftBest:num($("deadliftBest").value)
+    squatBest:inputKg("squatBest"),
+    benchBest:inputKg("benchBest"),
+    deadliftBest:inputKg("deadliftBest")
   };
   if(!wasEditing){
     state.plan=blankPlan();
@@ -1525,7 +1553,7 @@ $("onboardingImport").addEventListener("click",()=>importAthlete($("onboardingLi
 $("progressImport").addEventListener("click",()=>importAthlete($("progressLifter").value,$("importStatus"),$("progressCandidates")));
 $("onboardingLifter").addEventListener("keydown",e=>{if(e.key==="Enter")$("onboardingImport").click()});
 $("progressLifter").addEventListener("keydown",e=>{if(e.key==="Enter")$("progressImport").click()});
-$("resetMeet").addEventListener("click",()=>{if(confirm(t("dynamic.confirm_reset"))){clearAttemptUndo();state.results=blankResults();save();renderMeetDay();renderReport();renderNextStep()}});
+$("resetMeet").addEventListener("click",()=>{if(confirm(t("dynamic.confirm_reset"))){clearAttemptUndo();state.results=Object.fromEntries(lifts.map(l=>[l,state.plan[l].map(()=>"")]));save();renderMeetDay();renderReport();renderNextStep()}});
 $("oplCsv").addEventListener("change",async e=>{
   const file=e.target.files&&e.target.files[0];if(!file)return;
   $("importStatus").textContent=t("dynamic.reading_file",{name:file.name});
@@ -1586,20 +1614,23 @@ $("profileAge").addEventListener("input",()=>{
   $("ageInputHint").textContent=t("settings.age_manual");
 });
 if($("mccullochSetup"))$("mccullochSetup").addEventListener("click",openAthleteProfileSettings);
-$("saveHomeLocation").addEventListener("click",saveHomeLocation);
+$("saveHomeLocation").addEventListener("click",()=>saveHomeLocation());
+$("saveFinderLocation").addEventListener("click",()=>saveHomeLocation("finderCountry","finderCity","finderLocationStatus"));
+$("retryCompetitions").addEventListener("click",loadCompetitions);
+$("resetCompetitionFilters").addEventListener("click",()=>{$("competitionSearch").value="";$("competitionDateRange").value="9999";$("competitionFederation").value="";competitionScope="world";renderCompetitionFinder()});
 $("runSimulator").addEventListener("click",()=>{
-  const p=state.profile||{},bw=num($("simBodyweight").value),total=num($("simTotal").value);
-  const currentDots=dotsScore(p.sex,p.bodyweight,currentBestTotal()),simDots=dotsScore(p.sex,bw,total);
+  const p=state.profile||{},bw=inputKg("simBodyweight"),total=inputKg("simTotal");
+  const currentDots=chosenScore(p.sex,p.bodyweight,currentBestTotal()),simDots=chosenScore(p.sex,bw,total);
   if(!bw||!total||!simDots){$("simResult").textContent=t("dynamic.valid_sim");return}
-  const ctx=performanceReference?contextFor(p.sex,bw,simDots):null;
-  $("simResult").innerHTML='<strong class="big">'+simDots.toFixed(2)+' DOTS</strong><div class="toolCompare"><div><span>'+esc(t("dynamic.current"))+'</span><strong>'+(currentDots?currentDots.toFixed(2):"—")+' DOTS</strong></div><div><span>'+esc(t("dynamic.scenario"))+'</span><strong>'+simDots.toFixed(2)+' DOTS</strong></div></div>'+(ctx?'<p class="contextMeta">'+esc(t("dynamic.nearest_reference",{label:ctx.label,weight:ctx.row.weight_class_kg}))+'</p>':'');
+  const ctx=performanceReference&&scoreType()==="dots"?contextFor(p.sex,bw,simDots):null;
+  $("simResult").innerHTML='<strong class="big">'+simDots.toFixed(2)+' '+scoreName()+'</strong><div class="toolCompare"><div><span>'+esc(t("dynamic.current"))+'</span><strong>'+(currentDots?currentDots.toFixed(2):"—")+' '+scoreName()+'</strong></div><div><span>'+esc(t("dynamic.scenario"))+'</span><strong>'+simDots.toFixed(2)+' '+scoreName()+'</strong></div></div>'+(ctx?'<p class="contextMeta">'+esc(t("dynamic.nearest_reference",{label:ctx.label,weight:ctx.row.weight_class_kg}))+'</p>':'');
 });
 $("runGoal").addEventListener("click",()=>{
-  const p=state.profile||{},target=num($("goalDots").value),bw=num($("goalBodyweight").value);
-  const required=totalForDots(p.sex,bw,target);
+  const p=state.profile||{},target=num($("goalDots").value),bw=inputKg("goalBodyweight");
+  const required=totalForScore(p.sex,bw,target);
   if(!target||!bw||!required){$("goalResult").textContent=t("dynamic.valid_goal");return}
   const gap=round(required-currentBestTotal(),1);
-  $("goalResult").innerHTML='<span class="muted">'+esc(t("dynamic.required_total",{bw:bw}))+'</span><strong class="big">'+required+' kg</strong><p>'+esc(gap>0?t("dynamic.above_current",{gap:gap}):t("dynamic.below_current",{gap:Math.abs(gap)}))+'</p>';
+  $("goalResult").innerHTML='<span class="muted">'+esc(t("dynamic.required_total",{bw:displayWeight(bw)}).replace("kg",weightUnit()))+'</span><strong class="big">'+weightText(required)+'</strong><p>'+esc(gap>0?t("dynamic.above_current",{gap:displayWeight(gap)}).replace("kg",weightUnit()):t("dynamic.below_current",{gap:displayWeight(Math.abs(gap))}).replace("kg",weightUnit()))+'</p>';
 });
 $("saveGoal").addEventListener("click",saveCurrentGoal);
 $("saveMeetResult").addEventListener("click",saveMeetToHistory);
@@ -1628,7 +1659,7 @@ document.querySelectorAll("[data-tab]").forEach(b=>b.addEventListener("click",()
   document.dispatchEvent(new Event("pph:tab-change"));
   window.scrollTo({top:0,behavior:reducedMotion()?"auto":"smooth"});
 }));
-$("shareReport").addEventListener("click",async()=>{const mm=madeMiss(),p=state.profile||{},total=liveTotal(),dots=total?dotsScore(p.sex,p.bodyweight,total):null,text=(p.name?p.name+"'s":"My")+" powerlifting meet: "+mm.made+"/"+(mm.made+mm.miss)+" attempts made, "+total+" kg total"+(dots?", "+dots.toFixed(2)+" DOTS":"")+". Built with Powerlifting Performance Hub.";if(navigator.share){await navigator.share({title:"Powerlifting Meet Report",text})}else if(navigator.clipboard){await navigator.clipboard.writeText(text);alert(t("dynamic.report_copied"))}});
+$("shareReport").addEventListener("click",async()=>{const mm=madeMiss(),p=state.profile||{},total=liveTotal(),dots=total?chosenScore(p.sex,p.bodyweight,total):null,text=(p.name?p.name+"'s":"My")+" powerlifting meet: "+mm.made+"/"+(mm.made+mm.miss)+" attempts made, "+weightText(total)+" total"+(dots?", "+dots.toFixed(2)+" "+scoreName():"")+". Built with Powerlifting Performance Hub.";if(navigator.share){await navigator.share({title:"Powerlifting Meet Report",text})}else if(navigator.clipboard){await navigator.clipboard.writeText(text);alert(t("dynamic.report_copied"))}});
 let deferredPrompt;window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();deferredPrompt=e;$("installBtn").hidden=false});
 $("installBtn").addEventListener("click",async()=>{if(!deferredPrompt)return;deferredPrompt.prompt();await deferredPrompt.userChoice;deferredPrompt=null;$("installBtn").hidden=true});
 if("serviceWorker" in navigator&&!window.Capacitor?.isNativePlatform?.())window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js"));
@@ -1684,13 +1715,13 @@ function renderMeetFocus(){
   $("toggleMeetFocus").textContent=t(meetFocus?"ux.exit_focus":"ux.focus");$("toggleMeetFocus").setAttribute("aria-pressed",String(meetFocus));
   $("undoAttempt").disabled=!localStorage.getItem(ATTEMPT_UNDO_KEY);
   const attempt=currentAttempt();
-  $("focusTitle").textContent=attempt?t("progress."+attempt.lift)+" · "+t("planner.attempt")+" "+(attempt.index+1):t("ux.meet_complete");
-  $("focusWeight").textContent=attempt?attempt.weight+" kg":liveTotal()+" kg";
+  $("focusTitle").textContent=attempt?t("progress."+attempt.lift)+" · "+t(attempt.record?"ux.record_attempt":"planner.attempt")+" "+(attempt.index+1):t("ux.meet_complete");
+  $("focusWeight").textContent=attempt?weightText(attempt.weight):weightText(liveTotal());
   const queue=PPHUX.queue(state.plan,state.results).filter(a=>!a.result),next=queue[1];
-  $("focusNext").textContent=next?t("ux.next_attempt",{lift:t("progress."+next.lift),attempt:next.index+1,weight:next.weight}):attempt?t("ux.last_attempt"):t("ux.complete_note");
+  $("focusNext").textContent=next?t("ux.next_attempt",{lift:t("progress."+next.lift),attempt:next.index+1,weight:displayWeight(next.weight)}).replace("kg",weightUnit()):attempt?t("ux.last_attempt"):t("ux.complete_note");
   $("focusAdjust").hidden=!attempt;$("focusGood").hidden=!attempt;$("focusMiss").hidden=!attempt;
   $("focusGood").disabled=!attempt||attempt.weight<=0;$("focusMiss").disabled=!attempt||attempt.weight<=0;
-  $("focusStatus").textContent=attempt&&attempt.weight<=0?t("ux.need_weight"):"";$("focusReport").hidden=!!attempt;
+  $("focusStatus").textContent=attempt&&attempt.weight<=0?t("ux.need_weight"):attempt?.record?t("ux.fourth_note"):"";$("focusReport").hidden=!!attempt;
 }
 function adjustFocusWeight(delta){const attempt=currentAttempt();if(!attempt)return;rememberAttempts();state.plan[attempt.lift][attempt.index]=PPHUX.adjust(String(attempt.weight),delta);save();renderPlanner();renderMeetDay();renderReport();renderNextStep()}
 function validateDecimalInput(input){
@@ -1718,12 +1749,36 @@ function initUX(){
   document.querySelectorAll('[data-score]').forEach(button=>button.addEventListener("click",()=>openScoreInfo(button.dataset.score)));
   $("closeScoreDialog").addEventListener("click",()=>$("scoreDialog").close());
   window.addEventListener("online",renderSaveStatus);window.addEventListener("offline",renderSaveStatus);
-  window.addEventListener("pph:native-ready",()=>{googleButtonRendered=false;renderAccount()});
+  window.addEventListener("pph:native-ready",()=>{googleButtonRendered=false;renderAccount();loadCompetitions()});
+}
+
+
+function toggleFourth(lift,enabled){
+ if(!enabled&&state.results[lift][3]&&!confirm(t('ux.remove_fourth'))){renderPlanner();renderMeetDay();return}
+ clearAttemptUndo();
+ if(enabled){if(state.plan[lift].length===3){state.plan[lift].push(0);state.results[lift].push('')}}else{state.plan[lift]=state.plan[lift].slice(0,3);state.results[lift]=state.results[lift].slice(0,3)}
+ save();renderPlanner();renderMeetDay();renderReport();renderNextStep();
+}
+function recordSummary(){const rows=lifts.filter(l=>state.plan[l].length===4).map(l=>'<li>'+esc(t('progress.'+l))+' · '+weightText(state.plan[l][3])+' · '+esc(t(state.results[l][3]==='good'?'meetday.good':state.results[l][3]==='miss'?'meetday.miss':'common.not_set'))+'</li>');return rows.length?'<div class="recordSummary"><h4>'+esc(t('ux.record_attempt'))+'</h4><ul>'+rows.join('')+'</ul><p class="muted small">'+esc(t('ux.fourth_note'))+'</p></div>':''}
+function changeScore(value){state.preferences.scoreType=value==='reshel'?'reshel':'dots';$('goalDots').value='';$('simResult').textContent='';$('goalResult').textContent='';save();render();updateManualMeetPreview()}
+function changeUnits(value){
+ const invalid=[...document.querySelectorAll('[data-weight]')].find(el=>!validateDecimalInput(el));if(invalid){$('onboardingUnits').value=state.preferences?.units||'auto';$('unitsSelect').value=state.preferences?.units||'auto';invalid.reportValidity();return}
+ const values=[...document.querySelectorAll('[data-weight]')].filter(el=>el.value!=='').map(el=>[el,inputKg(el)]);
+ state.preferences.units=value;values.forEach(([el,kg])=>setWeightInput(el,kg));save();render();updateManualMeetPreview();
+ $('focusMinus').textContent='−'+weightText(2.5);$('focusPlus').textContent='+'+weightText(2.5);
+}
+function initNavigation(){
+ $('unitsSelect').addEventListener('change',e=>changeUnits(e.target.value));$('onboardingUnits').addEventListener('change',e=>changeUnits(e.target.value));
+ $('scoreSelect').addEventListener('change',e=>changeScore(e.target.value));$('settingsScoreSelect').addEventListener('change',e=>changeScore(e.target.value));
+ let start=null;const root=$('app');
+ root.addEventListener('touchstart',e=>{start=null;if(e.touches.length!==1||e.target.closest('input,select,textarea,button,a,dialog,table,.tableWrap,.chartBox,.weightStepper')||document.querySelector('dialog[open]')||meetFocus||profileEditMode)return;const t=e.touches[0];if(t.clientX<24||t.clientX>window.innerWidth-24)return;start={x:t.clientX,y:t.clientY,time:Date.now()}},{passive:true});
+ root.addEventListener('touchend',e=>{if(!start||e.changedTouches.length!==1)return;const t=e.changedTouches[0],direction=PPHUX.swipe(t.clientX-start.x,t.clientY-start.y,Date.now()-start.time);start=null;if(!direction)return;const tabs=['dashboard','progress','planner','meetday','tools'],current=tabs.findIndex(id=>!$('tab-'+id).hidden),target=tabs[current+direction];if(current>=0&&target)document.querySelector('[data-tab="'+target+'"]').click()},{passive:true});
+ root.addEventListener('touchcancel',()=>start=null,{passive:true});
 }
 
 async function initApp(){
   initUX();
-  ensureState();
+  ensureState();initNavigation();
   if(session.expiresAt&&Date.parse(session.expiresAt)<=Date.now())clearSession();
   await initI18n();
   save();render();renderAccount();loadReference();loadCompetitions();
