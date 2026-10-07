@@ -1,14 +1,14 @@
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs');
 const {JSDOM}=require('jsdom');
-async function app(native=false){
+async function app(native=false,blank=false){
  const dom=new JSDOM(fs.readFileSync('index.html','utf8'),{url:'https://app.powerlifting-calculator.com/',runScripts:'outside-only',pretendToBeVisual:true});
  const w=dom.window;w.TextEncoder=TextEncoder;w.HTMLDialogElement.prototype.showModal=function(){this.open=true};w.HTMLDialogElement.prototype.close=function(){this.open=false};w.matchMedia=()=>({matches:true});w.scrollTo=()=>{};w.HTMLElement.prototype.scrollIntoView=()=>{};w.confirm=()=>true;w.queueMicrotask=()=>{};w.fetch=async url=>({ok:true,json:async()=>String(url).includes('locales/')?JSON.parse(fs.readFileSync(String(url).replace('./',''),'utf8')):{events:[]}});
  if(native)w.Capacitor={isNativePlatform:()=>true};
  for(const file of ['scoring.js','hub-data.js','ux.js','app.js'])w.eval(fs.readFileSync(file,'utf8'));
  await new Promise(resolve=>setImmediate(resolve));
  const $=id=>w.document.getElementById(id),fill=(id,value)=>{$(id).value=value;$(id).dispatchEvent(new w.Event('input',{bubbles:true}))};
- for(const [id,value] of Object.entries({name:'UI Athlete',sex:'M',bodyweight:'83,5',age:'50',squatBest:'220',benchBest:'140',deadliftBest:'240',meetDate:'2026-12-01'}))fill(id,value);
- $('saveProfile').click();await new Promise(resolve=>setImmediate(resolve));
+ if(!blank){for(const [id,value] of Object.entries({name:'UI Athlete',sex:'M',bodyweight:'83,5',age:'50',squatBest:'220',benchBest:'140',deadliftBest:'240',meetDate:'2026-12-01'}))fill(id,value);
+ $('saveProfile').click();await new Promise(resolve=>setImmediate(resolve));}
  return {dom,w,$,fill};
 }
 test('profile decimals, planner steps, focus results, undo and reload persistence work together',async()=>{
@@ -25,4 +25,15 @@ test('profile decimals, planner steps, focus results, undo and reload persistenc
 });
 test('Android omits web Google SDK while leaving email login and shared-file export available',async()=>{
  const {dom,w,$}=await app(true);try{$('topAccountCta').click();await w.eval('initGoogleSignIn()');assert.equal($('googleSignInButton').hidden,true);assert.equal(w.document.querySelector('script[data-pph-google-identity]'),null);assert.equal($('legacyEmailForm').hidden,false);let shared;w.PPHNative={exportFile:async(text,name)=>{shared={text,name}}};await w.eval('exportBackup()');assert.equal(JSON.parse(shared.text).data.profile.name,'UI Athlete');assert.match(shared.name,/\.json$/)}finally{dom.window.close()}
+});
+test('OpenPowerlifting import computes Reshel at the exact imported weight before and after adding age',async()=>{
+ const {dom,w,$,fill}=await app(false,true);try{
+  w.applyImportedAthlete([{source:'openpowerlifting',date:'2026-09-01',meet:'Import regression',athleteName:'OPL Athlete',athleteSex:'M',bodyweight:109.37,squat:220,bench:140,deadlift:240,total:600}], 'https://www.openpowerlifting.org/u/test','test');
+  assert.equal(JSON.parse(w.localStorage.getItem('plc-performance-hub-v6')).profile.bodyweight,109.37);
+  assert.equal($('currentTotal').textContent,'600');assert.equal($('currentReshel').textContent,'532.20');
+  $('editProfile').click();fill('age','50');$('saveProfile').click();
+  assert.equal($('currentReshel').textContent,'532.20');
+  const profile=JSON.parse(w.localStorage.getItem('plc-performance-hub-v6')).profile;
+  assert.equal(profile.bodyweight,109.37);assert.equal(profile.age,50);assert.equal(profile.sex,'M');
+ }finally{dom.window.close()}
 });

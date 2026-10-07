@@ -212,3 +212,9 @@ Save status distinguishes device storage from the last explicitly synchronized c
 `npm test` includes DOM integration and native-ad consent tests. The Android workflow builds APK/AAB, runs lint, checks ELF alignment and executes an installed-app smoke test. See [Google Play release preparation](docs/google-play-release.md) for signing, real-account/physical-device tests and current Play requirements. Public privacy/deletion-request pages are bundled with the app; deletion requests require owner processing.
 
 `npm run build:web` stages only public assets. Pages deployment now waits for frontend tests/mobile-bundle validation instead of publishing an unchecked commit.
+
+## Reshel import fix (0.14.1)
+
+Missing interior coefficients caused valid OpenPowerlifting weights to display no Reshel score. Added 57 male and 37 female entries from GPC references, retaining imported bodyweight and the existing quarter-kilogram lookup. Original coefficients, DOTS and age factors remain unchanged. Sources, unresolved source typos and scope are recorded in `scoring-reference/provenance.json`; restored entries are in `reshel-restored.json`. The website parity fixture now retains independent original table snapshots.
+
+Validation: 26 frontend tests pass, including an OpenPowerlifting import at 109.37 kg / 600 kg total (532.20 Reshel), followed by adding age without changing weight. Mobile and public web bundles build. Android instrumentation verifies the previously missing weight interval using decimal-comma input and persistence. Android versionCode 15 / versionName 0.14.1 embeds the updated table; an installed 0.14.0 APK needs an update. Debug builds may have different signing keys between CI runs; export a backup before any uninstall/reinstall.

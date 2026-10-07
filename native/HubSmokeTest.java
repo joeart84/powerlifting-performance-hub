@@ -29,8 +29,9 @@ public class HubSmokeTest {
         try(ActivityScenario<MainActivity> scenario=ActivityScenario.launch(MainActivity.class)){
             waitFor(scenario,"!!window.PPHNative && !!document.getElementById('saveProfile') && document.documentElement.lang==='en'");
             assertEquals("true",js(scenario,"window.Capacitor.isNativePlatform()"));
-            js(scenario,"(()=>{for(const [id,v] of Object.entries({name:'Android Test',bodyweight:'83,5',age:'40',squatBest:'200',benchBest:'120',deadliftBest:'240',meetDate:'2026-12-01'})){let e=document.getElementById(id);e.value=v;e.dispatchEvent(new Event('input',{bubbles:true}));}document.getElementById('saveProfile').click();return true})()");
+            js(scenario,"(()=>{for(const [id,v] of Object.entries({name:'Android Test',bodyweight:'109,37',age:'40',squatBest:'200',benchBest:'120',deadliftBest:'240',meetDate:'2026-12-01'})){let e=document.getElementById(id);e.value=v;e.dispatchEvent(new Event('input',{bubbles:true}));}document.getElementById('saveProfile').click();return true})()");
             waitFor(scenario,"document.getElementById('athleteName').textContent==='Android Test'");
+            assertEquals("true",js(scenario,"document.getElementById('currentReshel').textContent==='496.72' && JSON.parse(localStorage.getItem('plc-performance-hub-v6')).profile.bodyweight===109.37"));
             js(scenario,"document.getElementById('nextStepAction').click()");
             waitFor(scenario,"document.body.classList.contains('meetFocusMode')");
             js(scenario,"document.getElementById('focusGood').click()");

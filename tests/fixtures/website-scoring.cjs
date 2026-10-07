@@ -20,7 +20,7 @@
     male:   { a: -0.0000010930, b: 0.0007391293, c: -0.1918759221, d: 24.0900756, e: -307.75076 },
     female: { a: -0.0000010706, b: 0.0005158568, c: -0.1126655495, d: 13.6175032, e: -57.96288  },
   };
-const RESHEL={male:{...require('../../scoring-reference/reshel_male.json'),loaded:true},female:{...require('../../scoring-reference/reshel_female.json'),loaded:true}};
+const RESHEL={male:{...require('./legacy-reshel-male.json'),loaded:true},female:{...require('./legacy-reshel-female.json'),loaded:true}};
   function ageCoeff(ageRaw) {
     if (!Number.isFinite(ageRaw) || ageRaw <= 0) return { coeff: NaN, label: "" };
     if (!Number.isInteger(ageRaw) || ageRaw < 14 || ageRaw > 90) return {coeff:NaN,label:""};

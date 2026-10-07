@@ -12,5 +12,16 @@
       "url": "https://powerlifting-calculator.com/wp-content/plugins/powerlifting-calculators/assets/reshel_female.json",
       "sha256": "8c353f738be1a2978422c32a30568a6d453ea2b8834ae27faddf4591de99bac9"
     }
+  },
+  "restoration": {
+    "checked_at": "2026-10-07",
+    "male_source": "https://www.purepowerlifting.de/pdf/reshel_men.pdf",
+    "female_source": "https://www.worldgpc.com/index.php/downloads/category/19-weight-age-formulas?download=48%3Aweight-formula-women",
+    "female_crosscheck": "https://www.gpcbrasil.com/regras-e-mais/formula-reshel-para-mulheres",
+    "restored_counts": {
+      "male": 57,
+      "female": 37
+    },
+    "policy": "Only missing entries added. Existing coefficients and quarter-kilogram lookup unchanged. Female 119.25 is a source typo (q.307), so not restored; existing lookup falls back to 119.00. No unsourced high-weight entries extrapolated."
   }
 }

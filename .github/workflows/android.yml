@@ -39,7 +39,7 @@ jobs:
       - name: Save Android build outputs
         uses: actions/upload-artifact@v4
         with:
-          name: hub-android-0.14.0-test-builds
+          name: hub-android-0.14.1-test-builds
           path: |
             android/app/build/outputs/apk/debug/app-debug.apk
             android/app/build/outputs/bundle/release/app-release.aab

@@ -10,16 +10,30 @@ test('DOTS matches live website coefficients and boundary rules for both sexes',
  assert.equal(scoring.dots('M',83,600).toFixed(2),'405.05');
  assert.equal(scoring.dots('F',63,400).toFixed(2),'430.21');
 });
-test('Reshel matches all quarter-kilogram keys, gaps, bounds and conversion noise',()=>{
+test('Reshel retains legacy lookup rules and restores independently sourced missing entries',()=>{
+ const restored=require('../scoring-reference/reshel-restored.json');
+ for(const [gender,entries] of Object.entries(restored))for(const [weight,value] of Object.entries(entries)){
+  assert.equal(require(`./fixtures/legacy-reshel-${gender}.json`).coeff[weight],undefined);
+  assert.equal(scoring.reshelCoefficient(gender==='male'?'M':'F',Number(weight)),value);
+ }
  for(const [sex,gender,max] of [['M','male',200],['F','female',125.24]]){
+  const legacy=require(`./fixtures/legacy-reshel-${gender}.json`);
+  const entries=Object.entries({...legacy.coeff,...restored[gender]}).map(([k,v])=>[Number(k),v]).sort((a,b)=>a[0]-b[0]);
   for(let bw=39.75;bw<=max+.25;bw+=.25){
    for(const delta of [0,.001,.249999999]){
-    const expected=website.reshelCoeff(gender,bw+delta),actual=scoring.reshelCoefficient(sex,bw+delta);
+    const weight=Math.round((bw+delta)*1e8)/1e8,key=Math.floor(weight/.25)*.25;
+    const expected=weight<legacy.min||weight>legacy.max?NaN:entries.filter(([k])=>k<=key&&k>=key-1).at(-1)?.[1];
+    const actual=scoring.reshelCoefficient(sex,bw+delta);
     assert.equal(actual,Number.isFinite(expected)?expected:null,`${sex} ${bw+delta}`);
    }
   }
  }
  assert.equal(scoring.reshelCoefficient('M',NaN),null);
+ assert.equal(scoring.reshel('M',109.37,600).toFixed(2),'532.20');
+ assert.equal(scoring.reshelCoefficient('M',109.499),.887);
+ assert.equal(scoring.reshelCoefficient('M',109.5),.886);
+ assert.equal(scoring.reshel('F',118.65,400).toFixed(2),'523.20');
+ assert.equal(scoring.reshelCoefficient('M',195),null);
 });
 test('Age-adjusted total agrees with website across all supported ages',()=>{
  for(let age=13;age<=91;age++){
