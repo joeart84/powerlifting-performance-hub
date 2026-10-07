@@ -83,3 +83,13 @@ try {
 } catch (error) { if (error.code !== 'ENOENT') throw error; }
 
 await cp(new URL('../native/MainActivity.java',import.meta.url),new URL('../android/app/src/main/java/com/powerliftingcalculator/performancehub/MainActivity.java',import.meta.url));
+
+// Plugin hooks write provider flags into the dependency folder; Gradle needs them
+// in the consuming Android root so unused social SDKs cannot enter the APK.
+const propertiesUrl=new URL('../android/gradle.properties',import.meta.url);
+const properties=(await readFile(propertiesUrl,'utf8')).split('\n').filter(line=>!line.startsWith('socialLogin.')).join('\n');
+const providerFlags=['google','facebook','apple','twitter'].flatMap(provider=>[
+  `socialLogin.${provider}.include=${provider==='google'?'true':'false'}`,
+  `socialLogin.${provider}.dependencyType=${provider==='google'?'implementation':'compileOnly'}`
+]);
+await writeFile(propertiesUrl,properties.trimEnd()+'\n\n'+providerFlags.join('\n')+'\n');
