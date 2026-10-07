@@ -1161,9 +1161,7 @@ function openAccountFromOnboarding(){
 function openAccountTab(mode){
   if(!state.profile){if(mode==="signin"||mode==="signup")setEmailMode(mode,true);openAccountFromOnboarding();return}
   if(mode==="signin"||mode==="signup")setEmailMode(mode,true);
-  const accountButton=document.querySelector('[data-tab="account"]');
-  if(accountButton)accountButton.click();
-  scrollToContent($("legacyAccount"));
+  navigateTab("account",{element:$("legacyAccount")});
 }
 function setEmailMode(mode,reset=false){
   emailMode=mode==="signin"?"signin":"signup";
@@ -1666,7 +1664,7 @@ function scrollToContent(element,position){
   if(position!==undefined)window.scrollTo({top:position,behavior:'auto'});
   else if(element&&!element.hidden)element.scrollIntoView({block:'start',behavior:'auto'});
 }
-function navigateTab(target,{position}={}){
+function navigateTab(target,{position,element}={}){
   if(!document.getElementById('tab-'+target))return;
   if(target!=='meetday'&&meetFocus){meetFocus=false;focusReturn=null}
 
@@ -1675,7 +1673,7 @@ function navigateTab(target,{position}={}){
   document.querySelectorAll(".tab").forEach(x=>x.hidden=x.id!=="tab-"+target);
   moveBackupCard();renderMeetFocus();
   document.dispatchEvent(new Event("pph:tab-change"));
-    scrollToContent($('tab-'+target),position);
+    scrollToContent(element||$('tab-'+target),position);
 }
 document.querySelectorAll('[data-tab]').forEach(button=>button.addEventListener('click',()=>navigateTab(button.dataset.tab)));
 $("shareReport").addEventListener("click",async()=>{const mm=madeMiss(),p=state.profile||{},total=liveTotal(),dots=total?chosenScore(p.sex,p.bodyweight,total):null,text=(p.name?p.name+"'s":"My")+" powerlifting meet: "+mm.made+"/"+(mm.made+mm.miss)+" attempts made, "+weightText(total)+" total"+(dots?", "+dots.toFixed(2)+" "+scoreName():"")+". Built with Powerlifting Performance Hub.";if(navigator.share){await navigator.share({title:"Powerlifting Meet Report",text})}else if(navigator.clipboard){await navigator.clipboard.writeText(text);alert(t("dynamic.report_copied"))}});
