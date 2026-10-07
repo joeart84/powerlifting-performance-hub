@@ -1825,7 +1825,7 @@ const HUB_VERSION='0.16.0';
 let appBuildInfo={version:HUB_VERSION,build:'web',platform:'web'};
 let adDiagnostics={state:'web'};
 function renderAppDiagnostics(){
- $('appVersion').textContent=appBuildInfo.version+' · '+appBuildInfo.build+' · '+appBuildInfo.platform;
+ $('appVersion').textContent=appBuildInfo.version+(appBuildInfo.platform==='web'?' · web':' · '+appBuildInfo.build+' · '+appBuildInfo.platform);
  $('adStatus').textContent=t('support.ads_'+adDiagnostics.state);
  $('adDetails').textContent=adDiagnostics.detail||'';
  $('retryAds').hidden=!window.PPHNative?.retryAds;

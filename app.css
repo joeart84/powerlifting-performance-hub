@@ -530,3 +530,5 @@ body{background:radial-gradient(circle at 85% 0,rgba(207,32,53,.06),transparent 
 .competitionResults{max-height:600px;overflow-y:auto;overscroll-behavior:contain;padding-right:4px}
 
 .tab,#onboarding,.authCard,#manualMeetForm{scroll-margin-top:85px}.focusBack{display:block;margin-bottom:20px}.checkLabel{display:flex;align-items:flex-start;gap:10px;margin:16px 0}.checkLabel input{width:20px;min-height:20px;flex-shrink:0}#problemReportActions{margin-top:18px}#problemDescription,#problemReportPreview{width:100%;resize:vertical}
+
+#supportSettings label{display:grid;width:100%;max-width:none;margin-bottom:12px}#supportSettings .checkLabel{display:flex}#supportSettings textarea{font:inherit;color:#edf2f0;background:#0f1114;border:1px solid #333941;border-radius:10px;padding:12px 13px;line-height:1.55;min-height:120px}#supportSettings textarea:focus-visible{outline:2px solid var(--accent);outline-offset:2px}#problemReportPreview{min-height:210px}

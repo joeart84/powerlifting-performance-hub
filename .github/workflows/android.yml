@@ -36,12 +36,15 @@ jobs:
           ./gradlew --no-daemon assembleDebug bundleRelease lintDebug
       - name: Check bundle native libraries for 16 KB support
         run: python3 scripts/check-android-bundle.py android/app/build/outputs/bundle/release/app-release.aab
+      - name: Record installed APK signing certificate
+        run: $ANDROID_HOME/build-tools/36.0.0/apksigner verify --print-certs android/app/build/outputs/apk/debug/app-debug.apk > android/app/build/outputs/apk/debug/signing-certificate.txt
       - name: Save Android build outputs
         uses: actions/upload-artifact@v4
         with:
           name: hub-android-0.16.0-test-builds
           path: |
             android/app/build/outputs/apk/debug/app-debug.apk
+            android/app/build/outputs/apk/debug/signing-certificate.txt
             android/app/build/outputs/bundle/release/app-release.aab
             android/app/build/reports/lint-results-debug.html
           retention-days: 14

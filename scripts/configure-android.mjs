@@ -57,6 +57,7 @@ try {
 // Reproducible release metadata; keep the existing package identity.
 const { cp, mkdir } = await import('node:fs/promises');
 const release = JSON.parse(await readFile(new URL('../android-release.json',import.meta.url),'utf8'));
+if(release.adsMode!==adConfig.mode)throw new Error('android-release.json adsMode must match admob-config.json mode');
 buildGradle = await readFile(buildGradlePath,'utf8');
 buildGradle = buildGradle.replace(/versionCode \d+/,`versionCode ${release.versionCode}`).replace(/versionName "[^"]+"/,`versionName "${release.versionName}"`);
 if (!buildGradle.includes('hub-release.gradle')) buildGradle += "\napply from: 'hub-release.gradle'\n";
