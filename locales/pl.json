@@ -421,7 +421,7 @@
   "ux.score_total_note": "Suma najlepszych wyników w przysiadzie, wyciskaniu i martwym ciągu w kg. Rekordy mogą pochodzić z różnych zawodów.",
   "ux.score_dots_title": "DOTS",
   "ux.score_dots_note": "DOTS porównuje total według płci i masy ciała, bez korekty wieku. Wzór i granice masy odpowiadają stronie.",
-  "ux.score_reshel_title": "Reshel · starsza tabela",
+  "ux.score_reshel_title": "Reshel",
   "ux.score_reshel_note": "Używa płci i masy ciała; współczynnik wybierany jest co 0,25 kg, a oryginalna masa pozostaje zachowana. Brakujące wartości uzupełniono ze źródeł GPC. Bez zapisanego współczynnika wynik nie jest wyświetlany. Oficjalne wyniki określają przepisy zawodów.",
   "ux.score_age_title": "Total skorygowany o wiek",
   "ux.score_age_note": "Total w kg pomnożony przez starszy współczynnik wieku strony dla 14–90 lat. Dla 24–39 lat ×1. To skorygowany total, nie DOTS ani Reshel.",

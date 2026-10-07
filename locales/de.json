@@ -421,7 +421,7 @@
   "ux.score_total_note": "Summe deiner besten Kniebeuge, Bankdrück- und Kreuzhebeleistung in kg. Bestleistungen können aus verschiedenen Wettkämpfen stammen.",
   "ux.score_dots_title": "DOTS",
   "ux.score_dots_note": "DOTS vergleicht Totals nach Geschlecht und Körpergewicht, ohne Altersanpassung. Formel und Gewichtsgrenzen entsprechen der Website.",
-  "ux.score_reshel_title": "Reshel · ältere Tabelle",
+  "ux.score_reshel_title": "Reshel",
   "ux.score_reshel_note": "Verwendet Geschlecht und Körpergewicht. Der Koeffizient wird in Schritten von 0,25 kg gewählt; das ursprüngliche Körpergewicht bleibt erhalten. Fehlende Werte wurden aus GPC-Quellen ergänzt. Ohne gespeicherten Koeffizienten wird kein Wert angezeigt. Die Wettkampfregeln bestimmen offizielle Ergebnisse.",
   "ux.score_age_title": "Altersangepasstes Total",
   "ux.score_age_note": "Total in kg mal älterem Altersfaktor der Website für 14–90 Jahre. Für 24–39 Jahre gilt ×1. Ein angepasstes Total, kein DOTS- oder Reshel-Wert.",

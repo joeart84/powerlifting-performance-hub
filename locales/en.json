@@ -460,7 +460,7 @@
   "ux.score_total_note": "Sum of your best squat, bench and deadlift in kilograms. Personal bests may come from different meets.",
   "ux.score_dots_title": "DOTS",
   "ux.score_dots_note": "DOTS compares totals using sex and bodyweight. It does not adjust for age. This app uses the same formula and bodyweight limits as the website.",
-  "ux.score_reshel_title": "Reshel · legacy",
+  "ux.score_reshel_title": "Reshel",
   "ux.score_reshel_note": "Uses sex and bodyweight, with a coefficient selected in 0.25 kg steps; your original bodyweight is retained. Missing table entries were restored from GPC references. A score is unavailable where no coefficient is stored. Event rules determine official results.",
   "ux.score_age_title": "Age-adjusted total",
   "ux.score_age_note": "Your total in kilograms multiplied by the website's legacy age factor for ages 14–90. Ages 24–39 use ×1. This is an adjusted total, not a DOTS or Reshel score.",

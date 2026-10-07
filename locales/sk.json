@@ -460,7 +460,7 @@
   "ux.score_total_note": "Súčet najlepšieho drepu, tlaku a mŕtveho ťahu v kilogramoch. Osobné rekordy môžu pochádzať z rôznych pretekov.",
   "ux.score_dots_title": "DOTS",
   "ux.score_dots_note": "DOTS porovnáva total podľa pohlavia a hmotnosti. Nezohľadňuje vek. Appka používa rovnaký vzorec a hranice hmotnosti ako web.",
-  "ux.score_reshel_title": "Reshel · staršia tabuľka",
+  "ux.score_reshel_title": "Reshel",
   "ux.score_reshel_note": "Používa pohlavie a hmotnosť; koeficient sa vyberá v krokoch 0,25 kg, pôvodná hmotnosť zostáva zachovaná. Chýbajúce hodnoty sme doplnili zo zdrojov GPC. Bez uloženého koeficientu sa skóre nezobrazí. Oficiálny výsledok určujú pravidlá súťaže.",
   "ux.score_age_title": "Vekovo upravený total",
   "ux.score_age_note": "Total v kilogramoch krát starší vekový násobiteľ webu pre vek 14–90 rokov. Vek 24–39 používa ×1. Ide o upravený total, nie skóre DOTS ani Reshel.",

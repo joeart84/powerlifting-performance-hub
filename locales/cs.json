@@ -421,7 +421,7 @@
   "ux.score_total_note": "Součet nejlepšího dřepu, tlaku a mrtvého tahu v kilogramech. Osobní rekordy mohou pocházet z různých závodů.",
   "ux.score_dots_title": "DOTS",
   "ux.score_dots_note": "DOTS porovnává total podle pohlaví a hmotnosti. Nezohledňuje věk. Aplikace používá stejný vzorec a hranice hmotnosti jako web.",
-  "ux.score_reshel_title": "Reshel · starší tabulka",
+  "ux.score_reshel_title": "Reshel",
   "ux.score_reshel_note": "Používá pohlaví a hmotnost; koeficient se vybírá v krocích 0,25 kg, původní hmotnost zůstává zachována. Chybějící hodnoty jsme doplnili ze zdrojů GPC. Bez uloženého koeficientu se skóre nezobrazí. Oficiální výsledek určují pravidla soutěže.",
   "ux.score_age_title": "Total upravený podle věku",
   "ux.score_age_note": "Total v kilogramech krát starší věkový násobitel webu pro věk 14–90 let. Věk 24–39 používá ×1. Jde o upravený total, ne skóre DOTS ani Reshel.",

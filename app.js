@@ -168,7 +168,8 @@ function setAnimatedMetric(id,value){
   const parsed=Number(target.replace(",","."));
   if(target==="—"||!Number.isFinite(parsed)||reducedMotion()||document.hidden){el.textContent=target;return}
   const previous=Number(el.textContent.replace(",","."));
-  const from=Number.isFinite(previous)?previous:0;
+  if(!Number.isFinite(previous)){el.textContent=target;return}
+  const from=previous;
   const decimals=(target.split(/[.,]/)[1]||"").length;
   const started=performance.now(),duration=550;
   function step(now){
@@ -632,7 +633,7 @@ function renderPlanner(){
     state.plan[l].forEach((v,i)=>{
       const row=document.createElement("div");row.className="attemptRow";
       const label=t("progress."+l)+" · "+t(i===3?"ux.record_attempt":"planner.attempt")+" "+(i+1);
-      row.innerHTML='<label for="weight-'+l+'-'+i+'">'+esc(i===3?t("ux.record_attempt"):t("planner.attempt"))+' '+(i+1)+'</label><div class="weightStepper"><button class="ghost" type="button" data-delta="-2.5" aria-label="'+esc(t("ux.decrease",{attempt:label}).replace("2.5 kg",weightText(2.5)))+'">−</button><input id="weight-'+l+'-'+i+'" type="text" inputmode="decimal" data-decimal data-min="0" pattern="[0-9]+([.,][0-9]+)?" data-lift="'+l+'" data-idx="'+i+'" value="'+(v?displayWeight(v):'')+'" data-weight data-kg-value="'+v+'" data-display-value="'+(v?displayWeight(v):'')+'" placeholder="'+weightUnit()+'" aria-label="'+esc(label)+'"><button class="ghost" type="button" data-delta="2.5" aria-label="'+esc(t("ux.increase",{attempt:label}).replace("2.5 kg",weightText(2.5)))+'">+</button></div>';
+      row.innerHTML='<label for="weight-'+l+'-'+i+'">'+esc(i===3?t("ux.record_attempt"):t("planner.attempt"))+' '+(i+1)+'</label><div class="weightStepper"><button class="ghost" type="button" data-delta="-2.5" aria-label="'+esc(t("ux.decrease",{attempt:label}).replace(/2[.,]5\s*kg/,weightText(2.5)))+'">−</button><input id="weight-'+l+'-'+i+'" type="text" inputmode="decimal" data-decimal data-min="0" pattern="[0-9]+([.,][0-9]+)?" data-lift="'+l+'" data-idx="'+i+'" value="'+(v?displayWeight(v):'')+'" data-weight data-kg-value="'+v+'" data-display-value="'+(v?displayWeight(v):'')+'" placeholder="'+weightUnit()+'" aria-label="'+esc(label)+'"><button class="ghost" type="button" data-delta="2.5" aria-label="'+esc(t("ux.increase",{attempt:label}).replace(/2[.,]5\s*kg/,weightText(2.5)))+'">+</button></div>';
       const input=row.querySelector("input");
       const commit=()=>{if(!validateDecimalInput(input))return;clearAttemptUndo();state.plan[l][i]=inputKg(input);save();$("projectedTotal").textContent=weightText(totalFromPlan());$("recordAttemptNote").textContent=t("ux.fourth_note");renderMeetDay();renderReport();renderNextStep()};
       input.addEventListener("input",commit);
@@ -1100,6 +1101,8 @@ async function makeResultCardBlob(){
     ctx.fillStyle="#9ca3ab";ctx.font="700 24px system-ui";ctx.fillText(b[0],x+28,y+48);
     ctx.fillStyle=i>=3?"#ff8797":"#ffffff";ctx.font="800 46px system-ui";ctx.fillText(String(b[1]),x+28,y+118);
   });
+  ctx.fillStyle="#a0a7af";ctx.font="500 24px system-ui";
+  Object.entries(record.recordAttempts||{}).forEach(([lift,a],i)=>ctx.fillText(t('ux.record_attempt')+' · '+t('progress.'+lift)+' · '+weightText(a.weight)+' · '+t(a.result==='good'?'meetday.good':a.result==='miss'?'meetday.miss':'common.not_set'),70,820+i*48));
   ctx.fillStyle="#a0a7af";ctx.font="500 26px system-ui";ctx.fillText("powerlifting-calculator.com",70,1010);
   return await new Promise((resolve,reject)=>canvas.toBlob(blob=>blob?resolve(blob):reject(new Error(t("dynamic.image_failed"))),"image/png",0.95));
 }

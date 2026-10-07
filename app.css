@@ -526,3 +526,5 @@ body{background:radial-gradient(circle at 85% 0,rgba(207,32,53,.06),transparent 
 /* User preferences and optional record attempts */
 .scoreChoice{display:flex;justify-content:flex-end;margin:12px 0}.scoreChoice label{display:flex;align-items:center;gap:12px}.scoreChoice select{width:auto;min-width:115px}.finderLocation{margin:12px 0}.finderLocation summary{cursor:pointer;padding:8px 0}.finderLocation .grid{margin:12px 0}.recordToggle{display:flex;align-items:center;gap:8px;font-size:.85rem;color:var(--muted);margin:10px 0}.recordToggle input{width:18px;height:18px;margin:0}.recordSummary{margin-top:18px}.recordSummary li{margin:6px 0}.settingsCard.grid p{grid-column:1/-1}.tableWrap{overflow-x:auto}
 @media(max-width:600px){.scoreChoice{justify-content:flex-start}.scoreChoice label{width:100%;justify-content:space-between}.finderLocation .grid{grid-template-columns:1fr}}
+
+.competitionResults{max-height:600px;overflow-y:auto;overscroll-behavior:contain;padding-right:4px}
