@@ -474,5 +474,5 @@
   "support.ads_error": "Der Werbedienst konnte kein Banner laden. Details prüfen oder erneut versuchen.",
   "support.google_loading": "Google-Anmeldung wird vorbereitet…",
   "support.google_cancelled": "Google-Anmeldung abgebrochen.",
-  "support.google_failed": "Google-Anmeldung fehlgeschlagen. Prüfe die Verbindung; das Android-Signaturzertifikat muss möglicherweise in Google Cloud registriert werden. E-Mail-Anmeldung bleibt verfügbar."
+  "support.google_failed": "Die Google-Anmeldung konnte nicht abgeschlossen werden. Prüfe die Verbindung und versuche es erneut oder melde dich per E-Mail an. Melde anhaltende Probleme in den Einstellungen."
 }

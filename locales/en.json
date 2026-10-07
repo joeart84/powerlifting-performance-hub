@@ -513,5 +513,5 @@
   "support.ads_error": "The ad service could not load a banner. See details or retry.",
   "support.google_loading": "Preparing Google sign-in…",
   "support.google_cancelled": "Google sign-in was cancelled.",
-  "support.google_failed": "Google sign-in could not finish. Check the connection; the Android signing certificate may need registering in Google Cloud. Email sign-in remains available."
+  "support.google_failed": "Google sign-in could not finish. Check your connection and try again, or use email sign-in. If the problem continues, report it in Settings."
 }

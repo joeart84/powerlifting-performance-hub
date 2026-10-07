@@ -474,5 +474,5 @@
   "support.ads_error": "Reklamní služba nenačetla banner. Podívej se na podrobnosti nebo to zkus znovu.",
   "support.google_loading": "Připravuji přihlášení přes Google…",
   "support.google_cancelled": "Přihlášení přes Google bylo zrušeno.",
-  "support.google_failed": "Přihlášení přes Google se nedokončilo. Zkontroluj připojení; podpis aplikace Android může vyžadovat registraci v Google Cloud. Přihlášení e-mailem je dostupné."
+  "support.google_failed": "Přihlášení přes Google se nedokončilo. Zkontroluj připojení a zkus to znovu nebo se přihlas e-mailem. Pokud problém trvá, nahlas ho v nastavení."
 }

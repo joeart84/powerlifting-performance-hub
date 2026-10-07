@@ -474,5 +474,5 @@
   "support.ads_error": "Usługa reklamowa nie załadowała banera. Sprawdź szczegóły lub spróbuj ponownie.",
   "support.google_loading": "Przygotowywanie logowania Google…",
   "support.google_cancelled": "Logowanie Google anulowane.",
-  "support.google_failed": "Nie udało się zalogować przez Google. Sprawdź połączenie; certyfikat aplikacji Android może wymagać rejestracji w Google Cloud. Logowanie e-mailem jest dostępne."
+  "support.google_failed": "Nie udało się zalogować przez Google. Sprawdź połączenie i spróbuj ponownie lub zaloguj się e-mailem. Jeśli problem się powtarza, zgłoś go w ustawieniach."
 }

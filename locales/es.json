@@ -474,5 +474,5 @@
   "support.ads_error": "El servicio no pudo cargar el banner. Consulta los detalles o vuelve a intentarlo.",
   "support.google_loading": "Preparando el acceso con Google…",
   "support.google_cancelled": "Acceso con Google cancelado.",
-  "support.google_failed": "No se pudo completar el acceso con Google. Revisa la conexión; quizá sea necesario registrar el certificado de Android en Google Cloud. Puedes acceder por correo."
+  "support.google_failed": "No se pudo completar el acceso con Google. Revisa la conexión e inténtalo de nuevo o accede por correo. Si el problema continúa, infórmalo en Ajustes."
 }

@@ -513,5 +513,5 @@
   "support.ads_error": "Reklamná služba nenačítala banner. Pozri podrobnosti alebo to skús znova.",
   "support.google_loading": "Pripravujem Google prihlásenie…",
   "support.google_cancelled": "Google prihlásenie bolo zrušené.",
-  "support.google_failed": "Google prihlásenie sa nedokončilo. Skontroluj pripojenie; podpis Android appky môže vyžadovať registráciu v Google Cloud. Prihlásenie e-mailom je dostupné."
+  "support.google_failed": "Google prihlásenie sa nedokončilo. Skontroluj pripojenie a skús znova alebo sa prihlás e-mailom. Ak problém pretrváva, nahlás ho v nastaveniach."
 }
