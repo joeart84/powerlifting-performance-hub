@@ -1,9 +1,7 @@
 name: Android build and device smoke test
 on:
-  push:
-    branches: [main]
-  pull_request:
   workflow_dispatch:
+
 permissions:
   contents: read
 jobs:
